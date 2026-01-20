@@ -1,6 +1,7 @@
 """Artists router - CRUD operations for artist profiles."""
 
 from typing import Optional
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,8 +10,14 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.artist import Artist
 from app.models.category import Category
+from app.models.user import User
+from app.models.community import Community
+from app.models.booking import Booking
 from app.schemas.artist import ArtistResponse, ArtistListResponse
+from app.utils.security import get_password_hash
+from app.config import get_settings
 
+settings = get_settings()
 router = APIRouter()
 
 
@@ -92,16 +99,6 @@ async def create_artist():
 async def update_artist(artist_id: int):
     """Update artist profile (authenticated, owner only)."""
     return {"message": f"Update artist {artist_id} - to be implemented with auth"}
-
-
-from app.models.user import User
-from app.models.community import Community
-from app.models.booking import Booking
-from app.utils.security import get_password_hash
-from app.config import get_settings
-from datetime import datetime, timedelta
-
-settings = get_settings()
 
 
 @router.post("/seed")
