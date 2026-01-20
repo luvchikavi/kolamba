@@ -83,12 +83,12 @@ async def register(
     request: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Register new user (artist or community)."""
+    """Register new user (artist, community, or admin)."""
     # Validate role
-    if request.role not in ["artist", "community"]:
+    if request.role not in ["artist", "community", "admin"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Role must be 'artist' or 'community'",
+            detail="Role must be 'artist', 'community', or 'admin'",
         )
 
     # Check if email already exists
