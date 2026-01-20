@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X, Search, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -17,11 +18,16 @@ export default function Header() {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - animated gradient like kolamba.org */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-display font-bold text-brand-gradient-animated tracking-wide">
-              {t.brand.name}
-            </span>
+          {/* Logo - from kolamba.org */}
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.svg"
+              alt={t.brand.name}
+              width={140}
+              height={58}
+              priority
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

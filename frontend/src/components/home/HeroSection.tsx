@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import FloatingDecorations from "@/components/ui/FloatingDecorations";
 
 export default function HeroSection() {
   const router = useRouter();
@@ -25,11 +26,14 @@ export default function HeroSection() {
     : ["Music", "Lectures", "Workshops", "Theater"];
 
   return (
-    <section className="relative bg-gradient-to-br from-neutral-100 via-white to-neutral-100 py-16 md:py-24">
+    <section className="relative bg-gradient-to-br from-neutral-100 via-white to-neutral-100 py-16 md:py-24 overflow-hidden">
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 bg-brand-gradient opacity-5"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Floating decorations - kolamba.org style */}
+      <FloatingDecorations />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         {/* Logo */}
         <h1 className="text-5xl md:text-7xl font-display font-bold text-brand-gradient mb-2 tracking-wide">
           {t.brand.name}

@@ -218,6 +218,24 @@ export const translations = {
       artistDetails: 'פרטי האמן',
       hello: 'שלום',
       budget: 'תקציב',
+      fromPrice: 'החל מ-$',
+      communityGreeting: 'שלום, {name}',
+      stats: {
+        totalBookings: 'סה"כ הזמנות',
+        pending: 'ממתינות',
+        approved: 'מאושרות',
+        completed: 'הושלמו',
+      },
+      filters: {
+        all: 'הכל',
+        pending: 'ממתינות',
+        approved: 'מאושרות',
+      },
+      empty: {
+        noBookingsYet: 'עדיין אין הזמנות',
+        noBookingsStatus: 'אין הזמנות בסטטוס זה',
+        searchAndBook: 'חפש אמנים ושלח בקשות להופעות',
+      },
     },
 
     // Statuses
@@ -304,6 +322,16 @@ export const translations = {
       terms: 'תנאי שימוש',
       privacy: 'מדיניות פרטיות',
       copyright: '© 2026 Kolamba בע״מ. כל הזכויות שמורות.',
+    },
+
+    // CTA Section
+    cta: {
+      artistTitle: 'אתה אמן?',
+      artistDescription: 'הצטרף לפלטפורמה והגיע לקהילות יהודיות ברחבי העולם',
+      artistButton: 'הצטרף כאמן',
+      communityTitle: 'מייצג קהילה?',
+      communityDescription: 'הרשם וגלה אמנים מוכשרים לאירועים בקהילה שלך',
+      communityButton: 'הרשם כקהילה',
     },
 
     // Common
@@ -535,6 +563,24 @@ export const translations = {
       artistDetails: 'Artist Details',
       hello: 'Hello',
       budget: 'Budget',
+      fromPrice: 'From $',
+      communityGreeting: 'Hello, {name}',
+      stats: {
+        totalBookings: 'Total Bookings',
+        pending: 'Pending',
+        approved: 'Approved',
+        completed: 'Completed',
+      },
+      filters: {
+        all: 'All',
+        pending: 'Pending',
+        approved: 'Approved',
+      },
+      empty: {
+        noBookingsYet: 'No bookings yet',
+        noBookingsStatus: 'No bookings with this status',
+        searchAndBook: 'Search artists and send booking requests',
+      },
     },
 
     // Statuses
@@ -621,6 +667,16 @@ export const translations = {
       terms: 'Terms of Service',
       privacy: 'Privacy Policy',
       copyright: '© 2026 Kolamba Ltd. All rights reserved.',
+    },
+
+    // CTA Section
+    cta: {
+      artistTitle: 'Are you an artist?',
+      artistDescription: 'Join the platform and reach Jewish communities around the world',
+      artistButton: 'Join as Artist',
+      communityTitle: 'Representing a community?',
+      communityDescription: 'Register and discover talented artists for your community events',
+      communityButton: 'Register as Community',
     },
 
     // Common
