@@ -9,17 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Kolamba Brand Colors
+        // Kolamba Brand Colors - from kolamba.org
         // Primary - Teal/Cyan (brand identity)
         primary: {
           50: "#e8f7fa",
           100: "#d1eff5",
           200: "#a3dfeb",
           300: "#75cfe1",
-          400: "#53b9cc", // Main brand teal
-          500: "#53b9cc",
-          600: "#4294a3",
-          700: "#326f7a",
+          400: "#53B9CC", // Main brand teal (kolamba.org)
+          500: "#53B9CC",
+          600: "#368A9D", // Deeper teal (kolamba.org)
+          700: "#2d7385",
           800: "#214a52",
           900: "#112529",
         },
@@ -29,17 +29,17 @@ const config: Config = {
           100: "#fbe5e9",
           200: "#f7ccd3",
           300: "#e9a5b0",
-          400: "#ca7283", // Main brand rose
-          500: "#ca7283",
-          600: "#a25b69",
-          700: "#79444f",
+          400: "#CA7383", // Main brand rose (kolamba.org)
+          500: "#CA7383",
+          600: "#B35F6F", // Dusty rose (kolamba.org)
+          700: "#8f4c59",
           800: "#512d34",
           900: "#28171a",
         },
         // Neutral - Light Gray (backgrounds)
         neutral: {
           50: "#f8f9f9",
-          100: "#e8e9ea", // Main brand light gray
+          100: "#e1e1e1", // kolamba.org light gray
           200: "#d1d3d5",
           300: "#babdc0",
           400: "#a3a7ab",
@@ -49,22 +49,34 @@ const config: Config = {
           800: "#373a3c",
           900: "#1c1d1e",
         },
-        // Keep black for text
+        // Brand colors for direct use
         brand: {
-          teal: "#53b9cc",
-          rose: "#ca7283",
-          gray: "#e8e9ea",
+          teal: "#53B9CC",
+          "teal-dark": "#368A9D",
+          rose: "#CA7383",
+          "rose-dark": "#B35F6F",
+          gray: "#e1e1e1",
           black: "#000000",
         },
       },
       fontFamily: {
         sans: ["Inter", "Open Sans", "sans-serif"],
         hebrew: ["Open Sans Hebrew", "Rubik", "sans-serif"],
-        display: ["Georgia", "Times New Roman", "serif"], // For logo-style headings
+        display: ["Georgia", "Times New Roman", "serif"],
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(to right, #ca7283, #53b9cc)",
-        "brand-gradient-vertical": "linear-gradient(to bottom, #ca7283, #53b9cc)",
+        "brand-gradient": "linear-gradient(135deg, #CA7383, #53B9CC)",
+        "brand-gradient-vertical": "linear-gradient(to bottom, #CA7383, #53B9CC)",
+        "brand-gradient-animated": "linear-gradient(90deg, #CA7383, #53B9CC, #368A9D, #B35F6F, #CA7383)",
+      },
+      animation: {
+        "gradient-shift": "gradient-shift 8s ease infinite",
+      },
+      keyframes: {
+        "gradient-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
       },
     },
   },

@@ -3,14 +3,16 @@
 @tailwind utilities;
 
 :root {
-  /* Kolamba Brand Colors */
-  --brand-teal: #53b9cc;
-  --brand-rose: #ca7283;
-  --brand-gray: #e8e9ea;
+  /* Kolamba Brand Colors - from kolamba.org */
+  --brand-teal: #53B9CC;
+  --brand-teal-dark: #368A9D;
+  --brand-rose: #CA7383;
+  --brand-rose-dark: #B35F6F;
+  --brand-gray: #e1e1e1;
   --brand-black: #000000;
 
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 232, 233, 234;
+  --background-rgb: 248, 249, 249;
 }
 
 body {
@@ -31,9 +33,34 @@ body {
   background-clip: text;
 }
 
+/* Animated gradient text - like kolamba.org logo */
+.text-brand-gradient-animated {
+  background: linear-gradient(90deg,
+    var(--brand-rose),
+    var(--brand-teal),
+    var(--brand-teal-dark),
+    var(--brand-rose-dark),
+    var(--brand-rose)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 /* Brand gradient background */
 .bg-brand-gradient {
-  background: linear-gradient(to right, var(--brand-rose), var(--brand-teal));
+  background: linear-gradient(135deg, var(--brand-rose), var(--brand-teal));
 }
 
 /* Custom scrollbar with brand colors */

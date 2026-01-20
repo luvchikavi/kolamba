@@ -17,9 +17,9 @@ export default function Header() {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Logo - animated gradient like kolamba.org */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-display font-bold text-brand-gradient tracking-wide">
+            <span className="text-2xl font-display font-bold text-brand-gradient-animated tracking-wide">
               {t.brand.name}
             </span>
           </Link>
