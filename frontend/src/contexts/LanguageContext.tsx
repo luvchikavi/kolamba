@@ -1,12 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Language, translations, TranslationKeys } from '@/lib/translations';
+import { Language, translations } from '@/lib/translations';
+
+// Define a more flexible type for translations
+type Translations = typeof translations.he | typeof translations.en;
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: TranslationKeys;
+  t: Translations;
   isRTL: boolean;
 }
 

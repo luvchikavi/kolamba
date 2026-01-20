@@ -277,6 +277,7 @@ export const translations = {
       showLess: 'Show Less',
     },
   },
-} as const;
+};
 
+// Type for translation structure (using Hebrew as base)
 export type TranslationKeys = typeof translations.he;
