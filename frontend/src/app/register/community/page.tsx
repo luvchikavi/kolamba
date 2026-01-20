@@ -12,12 +12,7 @@ import {
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
-
-const audienceSizes = [
-  { value: "small", label: "קהילה קטנה", description: "עד 50 משפחות" },
-  { value: "medium", label: "קהילה בינונית", description: "50-200 משפחות" },
-  { value: "large", label: "קהילה גדולה", description: "מעל 200 משפחות" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const languages = [
   { value: "English", label: "English" },
@@ -28,6 +23,7 @@ const languages = [
 ];
 
 export default function CommunityRegistrationPage() {
+  const { t, language, isRTL } = useLanguage();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,23 +36,29 @@ export default function CommunityRegistrationPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const audienceSizes = [
+    { value: "small", labelKey: "small" as const },
+    { value: "medium", labelKey: "medium" as const },
+    { value: "large", labelKey: "large" as const },
+  ];
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "נא להזין כתובת אימייל תקינה";
+      newErrors.email = t.registration.validation.emailRequired;
     }
 
     if (!formData.name || formData.name.length < 2) {
-      newErrors.name = "נא להזין שם מלא";
+      newErrors.name = t.registration.validation.nameRequired;
     }
 
     if (!formData.communityName || formData.communityName.length < 2) {
-      newErrors.communityName = "נא להזין שם הקהילה";
+      newErrors.communityName = t.registration.validation.communityNameRequired;
     }
 
     if (!formData.location || formData.location.length < 3) {
-      newErrors.location = "נא להזין מיקום (לפחות 3 תווים)";
+      newErrors.location = t.registration.validation.locationRequired;
     }
 
     setErrors(newErrors);
@@ -100,7 +102,7 @@ export default function CommunityRegistrationPage() {
         submit:
           error instanceof Error
             ? error.message
-            : "שגיאה בהרשמה. נסה שוב מאוחר יותר.",
+            : t.registration.validation.submitError,
       });
     } finally {
       setIsSubmitting(false);
@@ -115,24 +117,24 @@ export default function CommunityRegistrationPage() {
             <CheckCircle className="text-green-600" size={40} />
           </div>
           <h1 className="text-2xl font-bold text-neutral-800 mb-2">
-            ברוכים הבאים לקולמבה!
+            {t.registration.success.title}
           </h1>
           <p className="text-neutral-600 mb-6">
-            הקהילה שלכם נרשמה בהצלחה. כעת תוכלו לגלוש באמנים ולשלוח בקשות להופעות.
+            {t.registration.success.message}
           </p>
           <div className="flex flex-col gap-3">
             <Link
               href="/artists"
               className="px-6 py-3 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             >
-              גלה אמנים
-              <ArrowRight size={18} />
+              {t.registration.success.discoverArtists}
+              <ArrowRight size={18} className={isRTL ? 'rotate-180' : ''} />
             </Link>
             <Link
               href="/"
               className="px-6 py-3 text-neutral-600 hover:text-neutral-800 transition-colors"
             >
-              חזור לדף הבית
+              {t.registration.success.backToHome}
             </Link>
           </div>
         </div>
@@ -147,10 +149,10 @@ export default function CommunityRegistrationPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="text-sm text-neutral-500">
             <Link href="/" className="hover:text-primary-500">
-              דף הבית
+              {t.pages.home}
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-neutral-800">הרשמת קהילה</span>
+            <span className="text-neutral-800">{t.registration.breadcrumb}</span>
           </nav>
         </div>
       </div>
@@ -160,9 +162,9 @@ export default function CommunityRegistrationPage() {
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           {/* Header */}
           <div className="bg-brand-gradient p-6 text-white">
-            <h1 className="text-2xl font-bold mb-2">הרשמת קהילה חדשה</h1>
+            <h1 className="text-2xl font-bold mb-2">{t.registration.title}</h1>
             <p className="text-white/80">
-              הצטרפו לקולמבה וקבלו גישה לאמנים הטובים ביותר מישראל
+              {t.registration.subtitle}
             </p>
           </div>
 
@@ -174,7 +176,7 @@ export default function CommunityRegistrationPage() {
                   <Users className="text-primary-600" size={24} />
                 </div>
                 <p className="text-sm text-neutral-700">
-                  גישה למאות אמנים ישראליים
+                  {t.registration.benefits.accessArtists}
                 </p>
               </div>
               <div className="text-center">
@@ -182,7 +184,7 @@ export default function CommunityRegistrationPage() {
                   <Globe className="text-primary-600" size={24} />
                 </div>
                 <p className="text-sm text-neutral-700">
-                  תיאום הופעות בקלות
+                  {t.registration.benefits.easyBooking}
                 </p>
               </div>
               <div className="text-center">
@@ -190,7 +192,7 @@ export default function CommunityRegistrationPage() {
                   <CheckCircle className="text-primary-600" size={24} />
                 </div>
                 <p className="text-sm text-neutral-700">
-                  תמיכה בעברית ואנגלית
+                  {t.registration.benefits.bilingualSupport}
                 </p>
               </div>
             </div>
@@ -199,14 +201,14 @@ export default function CommunityRegistrationPage() {
               {/* Contact Info Section */}
               <div className="border-b pb-6">
                 <h2 className="font-bold text-lg text-neutral-800 mb-4">
-                  פרטי איש קשר
+                  {t.registration.sections.contactInfo}
                 </h2>
 
                 {/* Email */}
                 <div className="mb-4">
                   <label className="block font-medium text-neutral-700 mb-2">
-                    <Mail className="inline-block ml-2" size={18} />
-                    אימייל *
+                    <Mail className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                    {t.registration.fields.email} *
                   </label>
                   <input
                     type="email"
@@ -230,8 +232,8 @@ export default function CommunityRegistrationPage() {
                 {/* Name */}
                 <div>
                   <label className="block font-medium text-neutral-700 mb-2">
-                    <User className="inline-block ml-2" size={18} />
-                    שם מלא *
+                    <User className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                    {t.registration.fields.fullName} *
                   </label>
                   <input
                     type="text"
@@ -239,7 +241,7 @@ export default function CommunityRegistrationPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="השם שלך"
+                    placeholder={t.registration.placeholders.fullName}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.name
                         ? "border-red-400 focus:ring-red-200"
@@ -255,14 +257,14 @@ export default function CommunityRegistrationPage() {
               {/* Community Info Section */}
               <div className="space-y-4">
                 <h2 className="font-bold text-lg text-neutral-800 mb-4">
-                  פרטי הקהילה
+                  {t.registration.sections.communityInfo}
                 </h2>
 
                 {/* Community Name */}
                 <div>
                   <label className="block font-medium text-neutral-700 mb-2">
-                    <Building2 className="inline-block ml-2" size={18} />
-                    שם הקהילה *
+                    <Building2 className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                    {t.registration.fields.communityName} *
                   </label>
                   <input
                     type="text"
@@ -270,7 +272,7 @@ export default function CommunityRegistrationPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, communityName: e.target.value })
                     }
-                    placeholder="לדוגמה: Beth Israel Synagogue"
+                    placeholder={t.registration.placeholders.communityName}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.communityName
                         ? "border-red-400 focus:ring-red-200"
@@ -287,8 +289,8 @@ export default function CommunityRegistrationPage() {
                 {/* Location */}
                 <div>
                   <label className="block font-medium text-neutral-700 mb-2">
-                    <MapPin className="inline-block ml-2" size={18} />
-                    מיקום *
+                    <MapPin className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                    {t.registration.fields.location} *
                   </label>
                   <input
                     type="text"
@@ -296,7 +298,7 @@ export default function CommunityRegistrationPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, location: e.target.value })
                     }
-                    placeholder="לדוגמה: New York, NY, USA"
+                    placeholder={t.registration.placeholders.location}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.location
                         ? "border-red-400 focus:ring-red-200"
@@ -311,8 +313,8 @@ export default function CommunityRegistrationPage() {
                 {/* Audience Size */}
                 <div>
                   <label className="block font-medium text-neutral-700 mb-2">
-                    <Users className="inline-block ml-2" size={18} />
-                    גודל הקהילה
+                    <Users className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                    {t.registration.fields.audienceSize}
                   </label>
                   <div className="grid grid-cols-3 gap-3">
                     {audienceSizes.map((size) => (
@@ -328,9 +330,9 @@ export default function CommunityRegistrationPage() {
                             : "border-neutral-200 hover:border-neutral-300"
                         }`}
                       >
-                        <p className="font-medium text-sm">{size.label}</p>
+                        <p className="font-medium text-sm">{t.registration.audienceSizes[size.labelKey].label}</p>
                         <p className="text-xs text-neutral-500">
-                          {size.description}
+                          {t.registration.audienceSizes[size.labelKey].description}
                         </p>
                       </button>
                     ))}
@@ -340,8 +342,8 @@ export default function CommunityRegistrationPage() {
                 {/* Language */}
                 <div>
                   <label className="block font-medium text-neutral-700 mb-2">
-                    <Globe className="inline-block ml-2" size={18} />
-                    שפה עיקרית
+                    <Globe className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                    {t.registration.fields.primaryLanguage}
                   </label>
                   <select
                     value={formData.language}
@@ -375,31 +377,31 @@ export default function CommunityRegistrationPage() {
                 {isSubmitting ? (
                   <>
                     <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    נרשם...
+                    {t.registration.submitting}
                   </>
                 ) : (
-                  "הרשמה"
+                  t.registration.submit
                 )}
               </button>
 
               <p className="text-sm text-neutral-500 text-center">
-                בלחיצה על &quot;הרשמה&quot; אתה מסכים ל
+                {t.registration.termsPrefix}
                 <Link href="/terms" className="text-primary-500 hover:underline">
-                  תנאי השימוש
+                  {t.registration.termsLink}
                 </Link>{" "}
-                ול
+                {t.registration.and}
                 <Link href="/privacy" className="text-primary-500 hover:underline">
-                  מדיניות הפרטיות
+                  {t.registration.privacyLink}
                 </Link>
               </p>
 
               <p className="text-sm text-neutral-500 text-center border-t pt-4">
-                כבר רשום?{" "}
+                {t.registration.alreadyRegistered}{" "}
                 <Link
                   href="/login"
                   className="text-primary-500 hover:underline font-medium"
                 >
-                  התחבר כאן
+                  {t.registration.loginHere}
                 </Link>
               </p>
             </form>

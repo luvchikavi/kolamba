@@ -14,6 +14,7 @@ import {
   Music,
 } from "lucide-react";
 import type { Booking, ArtistListItem } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Mock community data (will be replaced with auth)
 const mockCommunity = {
@@ -86,7 +87,7 @@ const mockRecommendedArtists: ArtistListItem[] = [
   },
 ];
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLanguage>['t'] }) {
   const styles: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-700",
     approved: "bg-green-100 text-green-700",
@@ -95,43 +96,46 @@ function StatusBadge({ status }: { status: string }) {
     cancelled: "bg-neutral-100 text-neutral-600",
   };
 
-  const labels: Record<string, string> = {
-    pending: "ממתין לאישור",
-    approved: "מאושר",
-    rejected: "נדחה",
-    completed: "הושלם",
-    cancelled: "בוטל",
-  };
+  const statusKey = status as keyof typeof t.status;
+  const label = t.status[statusKey] || status;
 
   return (
     <span className={`px-2 py-0.5 text-xs rounded-full ${styles[status] || styles.pending}`}>
-      {labels[status] || status}
+      {label}
     </span>
   );
 }
 
 function BookingCard({
   booking,
+  t,
+  language,
 }: {
   booking: Booking & { artist?: { name_he: string; name_en?: string } };
+  t: ReturnType<typeof useLanguage>['t'];
+  language: string;
 }) {
+  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
+  const artistName = language === 'he' ? booking.artist?.name_he : (booking.artist?.name_en || booking.artist?.name_he);
+  const altName = language === 'he' ? booking.artist?.name_en : booking.artist?.name_he;
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-5">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-bold text-neutral-800">{booking.artist?.name_he}</h3>
-          {booking.artist?.name_en && (
-            <p className="text-sm text-neutral-500">{booking.artist.name_en}</p>
+          <h3 className="font-bold text-neutral-800">{artistName}</h3>
+          {altName && (
+            <p className="text-sm text-neutral-500">{altName}</p>
           )}
         </div>
-        <StatusBadge status={booking.status} />
+        <StatusBadge status={booking.status} t={t} />
       </div>
 
       <div className="space-y-2 text-sm text-neutral-600">
         {booking.requested_date && (
           <div className="flex items-center gap-2">
             <Calendar size={14} className="text-neutral-400" />
-            <span>{new Date(booking.requested_date).toLocaleDateString("he-IL")}</span>
+            <span>{new Date(booking.requested_date).toLocaleDateString(dateLocale)}</span>
           </div>
         )}
         {booking.location && (
@@ -150,12 +154,12 @@ function BookingCard({
 
       {booking.status === "approved" && (
         <div className="mt-4 pt-4 border-t flex justify-between items-center">
-          <span className="text-sm text-green-600 font-medium">ההזמנה אושרה!</span>
+          <span className="text-sm text-green-600 font-medium">{t.dashboard.bookingApproved}</span>
           <Link
             href={`/artists/${booking.artist_id}`}
             className="text-sm text-primary-500 hover:underline"
           >
-            פרטי האמן
+            {t.dashboard.artistDetails}
           </Link>
         </div>
       )}
@@ -163,7 +167,11 @@ function BookingCard({
   );
 }
 
-function ArtistRecommendationCard({ artist }: { artist: ArtistListItem }) {
+function ArtistRecommendationCard({ artist, t, language }: { artist: ArtistListItem; t: ReturnType<typeof useLanguage>['t']; language: string }) {
+  const artistName = language === 'he' ? artist.name_he : (artist.name_en || artist.name_he);
+  const altName = language === 'he' ? artist.name_en : artist.name_he;
+  const categoryName = language === 'he' ? artist.categories[0]?.name_he : (artist.categories[0]?.name_en || artist.categories[0]?.name_he);
+
   return (
     <Link
       href={`/artists/${artist.id}`}
@@ -172,19 +180,19 @@ function ArtistRecommendationCard({ artist }: { artist: ArtistListItem }) {
       <div className="flex gap-4">
         <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center flex-shrink-0">
           <span className="text-xl font-bold text-white/50">
-            {artist.name_he.charAt(0)}
+            {artistName.charAt(0)}
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-neutral-800 truncate">{artist.name_he}</h4>
-          <p className="text-sm text-neutral-500 truncate">{artist.name_en}</p>
+          <h4 className="font-bold text-neutral-800 truncate">{artistName}</h4>
+          <p className="text-sm text-neutral-500 truncate">{altName}</p>
           <div className="flex items-center gap-2 mt-1 text-sm text-neutral-600">
             <Music size={12} className="text-neutral-400" />
-            <span>{artist.categories[0]?.name_he}</span>
+            <span>{categoryName}</span>
             {artist.price_single && (
               <>
                 <span className="text-neutral-300">•</span>
-                <span>מ-${artist.price_single}</span>
+                <span>{t.dashboard.fromPrice}${artist.price_single}</span>
               </>
             )}
           </div>
@@ -195,6 +203,7 @@ function ArtistRecommendationCard({ artist }: { artist: ArtistListItem }) {
 }
 
 export default function CommunityDashboardPage() {
+  const { t, language, isRTL } = useLanguage();
   const [bookings] = useState(mockBookings);
   const [recommendedArtists] = useState(mockRecommendedArtists);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -218,10 +227,10 @@ export default function CommunityDashboardPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-neutral-800">
-                שלום, {mockCommunity.name}
+                {t.dashboard.communityGreeting.replace('{name}', mockCommunity.name)}
               </h1>
               <p className="text-neutral-500">
-                <MapPin className="inline-block ml-1" size={14} />
+                <MapPin className={`inline-block ${isRTL ? 'ml-1' : 'mr-1'}`} size={14} />
                 {mockCommunity.location}
               </p>
             </div>
@@ -230,7 +239,7 @@ export default function CommunityDashboardPage() {
               className="px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
             >
               <Search size={18} />
-              חפש אמנים
+              {t.dashboard.searchArtists}
             </Link>
           </div>
         </div>
@@ -246,7 +255,7 @@ export default function CommunityDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-800">{stats.total}</p>
-                <p className="text-sm text-neutral-500">סה״כ הזמנות</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.totalBookings}</p>
               </div>
             </div>
           </div>
@@ -257,7 +266,7 @@ export default function CommunityDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-800">{stats.pending}</p>
-                <p className="text-sm text-neutral-500">ממתינות</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.pending}</p>
               </div>
             </div>
           </div>
@@ -268,7 +277,7 @@ export default function CommunityDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-800">{stats.approved}</p>
-                <p className="text-sm text-neutral-500">מאושרות</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.approved}</p>
               </div>
             </div>
           </div>
@@ -279,7 +288,7 @@ export default function CommunityDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-800">{stats.completed}</p>
-                <p className="text-sm text-neutral-500">הושלמו</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.completed}</p>
               </div>
             </div>
           </div>
@@ -289,7 +298,7 @@ export default function CommunityDashboardPage() {
           {/* Bookings */}
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-lg text-neutral-800">ההזמנות שלי</h2>
+              <h2 className="font-bold text-lg text-neutral-800">{t.dashboard.myBookings}</h2>
               <div className="flex gap-2">
                 <button
                   onClick={() => setActiveFilter(null)}
@@ -299,7 +308,7 @@ export default function CommunityDashboardPage() {
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                   }`}
                 >
-                  הכל
+                  {t.dashboard.filters.all}
                 </button>
                 <button
                   onClick={() => setActiveFilter("pending")}
@@ -309,7 +318,7 @@ export default function CommunityDashboardPage() {
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                   }`}
                 >
-                  ממתינות
+                  {t.dashboard.filters.pending}
                 </button>
                 <button
                   onClick={() => setActiveFilter("approved")}
@@ -319,7 +328,7 @@ export default function CommunityDashboardPage() {
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                   }`}
                 >
-                  מאושרות
+                  {t.dashboard.filters.approved}
                 </button>
               </div>
             </div>
@@ -328,22 +337,22 @@ export default function CommunityDashboardPage() {
               <div className="bg-white rounded-xl p-8 text-center">
                 <Calendar size={48} className="text-neutral-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  אין הזמנות {activeFilter ? "בסטטוס זה" : "עדיין"}
+                  {activeFilter ? t.dashboard.empty.noBookingsStatus : t.dashboard.empty.noBookingsYet}
                 </h3>
                 <p className="text-neutral-500 mb-4">
-                  חפש אמנים ושלח בקשות להופעות
+                  {t.dashboard.empty.searchAndBook}
                 </p>
                 <Link
                   href="/artists"
                   className="inline-block px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
                 >
-                  חפש אמנים
+                  {t.dashboard.searchArtists}
                 </Link>
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredBookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} />
+                  <BookingCard key={booking.id} booking={booking} t={t} language={language} />
                 ))}
               </div>
             )}
@@ -352,11 +361,11 @@ export default function CommunityDashboardPage() {
           {/* Sidebar - Recommendations */}
           <div>
             <h2 className="font-bold text-lg text-neutral-800 mb-4">
-              אמנים מומלצים עבורך
+              {t.dashboard.recommendedArtists}
             </h2>
             <div className="space-y-3">
               {recommendedArtists.map((artist) => (
-                <ArtistRecommendationCard key={artist.id} artist={artist} />
+                <ArtistRecommendationCard key={artist.id} artist={artist} t={t} language={language} />
               ))}
             </div>
 
@@ -364,27 +373,27 @@ export default function CommunityDashboardPage() {
               href="/artists"
               className="mt-4 flex items-center justify-center gap-2 text-primary-500 hover:text-primary-600 font-medium"
             >
-              ראה עוד אמנים
-              <ChevronRight size={18} />
+              {t.dashboard.seeMoreArtists}
+              <ChevronRight size={18} className={isRTL ? '' : 'rotate-180'} />
             </Link>
 
             {/* Quick actions */}
             <div className="mt-8 bg-white rounded-xl p-5 shadow-sm border border-neutral-100">
-              <h3 className="font-bold text-neutral-800 mb-4">פעולות מהירות</h3>
+              <h3 className="font-bold text-neutral-800 mb-4">{t.dashboard.quickActions}</h3>
               <div className="space-y-2">
                 <Link
                   href="/search"
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors"
                 >
                   <Search size={18} className="text-primary-500" />
-                  <span className="text-neutral-700">חיפוש מתקדם</span>
+                  <span className="text-neutral-700">{t.dashboard.advancedSearch}</span>
                 </Link>
                 <Link
                   href="/dashboard/community/settings"
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors"
                 >
                   <MapPin size={18} className="text-primary-500" />
-                  <span className="text-neutral-700">עדכן פרטי קהילה</span>
+                  <span className="text-neutral-700">{t.dashboard.updateCommunityDetails}</span>
                 </Link>
               </div>
             </div>

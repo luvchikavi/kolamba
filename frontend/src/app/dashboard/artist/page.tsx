@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { TourSuggestion, Tour, Booking } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Mock artist ID (will be replaced with auth)
 const MOCK_ARTIST_ID = 1;
@@ -91,7 +92,7 @@ const mockPendingBookings: Booking[] = [
   },
 ];
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLanguage>['t'] }) {
   const styles: Record<string, string> = {
     draft: "bg-neutral-100 text-neutral-600",
     proposed: "bg-yellow-100 text-yellow-700",
@@ -104,21 +105,12 @@ function StatusBadge({ status }: { status: string }) {
     rejected: "bg-red-100 text-red-700",
   };
 
-  const labels: Record<string, string> = {
-    draft: "טיוטה",
-    proposed: "הוצע",
-    confirmed: "מאושר",
-    in_progress: "בתהליך",
-    completed: "הושלם",
-    cancelled: "בוטל",
-    pending: "ממתין",
-    approved: "מאושר",
-    rejected: "נדחה",
-  };
+  const statusKey = status as keyof typeof t.status;
+  const label = t.status[statusKey] || status;
 
   return (
     <span className={`px-2 py-0.5 text-xs rounded-full ${styles[status] || styles.pending}`}>
-      {labels[status] || status}
+      {label}
     </span>
   );
 }
@@ -126,22 +118,28 @@ function StatusBadge({ status }: { status: string }) {
 function TourSuggestionCard({
   suggestion,
   onCreateTour,
+  t,
+  language,
 }: {
   suggestion: TourSuggestion;
   onCreateTour: (suggestion: TourSuggestion) => void;
+  t: ReturnType<typeof useLanguage>['t'];
+  language: string;
 }) {
+  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-6">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="font-bold text-lg text-neutral-800">{suggestion.region}</h3>
           <p className="text-sm text-neutral-500">
-            {suggestion.communities.length} קהילות • {suggestion.booking_ids.length} הזמנות
+            {suggestion.communities.length} {t.dashboard.tourSuggestions.communities} • {suggestion.booking_ids.length} {t.dashboard.tourSuggestions.bookings}
           </p>
         </div>
         <div className="flex items-center gap-2 text-primary-500">
           <Route size={20} />
-          <span className="text-sm font-medium">{suggestion.total_distance_km} ק״מ</span>
+          <span className="text-sm font-medium">{suggestion.total_distance_km} {t.dashboard.tourSuggestions.km}</span>
         </div>
       </div>
 
@@ -165,10 +163,10 @@ function TourSuggestionCard({
           <div className="flex items-center gap-2">
             <Calendar size={16} className="text-neutral-400" />
             <div>
-              <p className="text-xs text-neutral-500">תאריכים מוצעים</p>
+              <p className="text-xs text-neutral-500">{t.dashboard.tourSuggestions.suggestedDates}</p>
               <p className="text-sm font-medium">
-                {new Date(suggestion.suggested_start).toLocaleDateString("he-IL")} -{" "}
-                {new Date(suggestion.suggested_end).toLocaleDateString("he-IL")}
+                {new Date(suggestion.suggested_start).toLocaleDateString(dateLocale)} -{" "}
+                {new Date(suggestion.suggested_end).toLocaleDateString(dateLocale)}
               </p>
             </div>
           </div>
@@ -177,7 +175,7 @@ function TourSuggestionCard({
           <div className="flex items-center gap-2">
             <DollarSign size={16} className="text-neutral-400" />
             <div>
-              <p className="text-xs text-neutral-500">תקציב משוער</p>
+              <p className="text-xs text-neutral-500">{t.dashboard.tourSuggestions.estimatedBudget}</p>
               <p className="text-sm font-medium">${suggestion.estimated_budget.toLocaleString()}</p>
             </div>
           </div>
@@ -189,13 +187,15 @@ function TourSuggestionCard({
         className="w-full py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
       >
         <Plus size={18} />
-        צור סבב הופעות
+        {t.dashboard.tourSuggestions.createTour}
       </button>
     </div>
   );
 }
 
-function TourCard({ tour }: { tour: Tour }) {
+function TourCard({ tour, t, language, isRTL }: { tour: Tour; t: ReturnType<typeof useLanguage>['t']; language: string; isRTL: boolean }) {
+  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
+
   return (
     <Link
       href={`/dashboard/artist/tours/${tour.id}`}
@@ -206,7 +206,7 @@ function TourCard({ tour }: { tour: Tour }) {
           <h3 className="font-bold text-lg text-neutral-800">{tour.name}</h3>
           {tour.region && <p className="text-sm text-neutral-500">{tour.region}</p>}
         </div>
-        <StatusBadge status={tour.status} />
+        <StatusBadge status={tour.status} t={t} />
       </div>
 
       <div className="flex flex-wrap gap-4 text-sm text-neutral-600">
@@ -214,8 +214,8 @@ function TourCard({ tour }: { tour: Tour }) {
           <div className="flex items-center gap-1">
             <Calendar size={14} className="text-neutral-400" />
             <span>
-              {new Date(tour.start_date).toLocaleDateString("he-IL")} -{" "}
-              {new Date(tour.end_date).toLocaleDateString("he-IL")}
+              {new Date(tour.start_date).toLocaleDateString(dateLocale)} -{" "}
+              {new Date(tour.end_date).toLocaleDateString(dateLocale)}
             </span>
           </div>
         )}
@@ -227,19 +227,21 @@ function TourCard({ tour }: { tour: Tour }) {
         )}
         <div className="flex items-center gap-1">
           <Users size={14} className="text-neutral-400" />
-          <span>{tour.bookings.length} הופעות</span>
+          <span>{tour.bookings.length} {t.dashboard.stats.performances}</span>
         </div>
       </div>
 
       <div className="mt-4 flex items-center text-primary-500 text-sm font-medium">
-        פרטים נוספים
-        <ChevronRight size={16} className="mr-1" />
+        {t.dashboard.moreDetails}
+        <ChevronRight size={16} className={isRTL ? 'mr-1' : 'ml-1'} />
       </div>
     </Link>
   );
 }
 
-function BookingCard({ booking }: { booking: Booking }) {
+function BookingCard({ booking, t, language }: { booking: Booking; t: ReturnType<typeof useLanguage>['t']; language: string }) {
+  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
+
   return (
     <div className="bg-white rounded-lg border border-neutral-100 p-4">
       <div className="flex justify-between items-start">
@@ -247,20 +249,21 @@ function BookingCard({ booking }: { booking: Booking }) {
           <p className="font-medium text-neutral-800">{booking.location}</p>
           {booking.requested_date && (
             <p className="text-sm text-neutral-500">
-              {new Date(booking.requested_date).toLocaleDateString("he-IL")}
+              {new Date(booking.requested_date).toLocaleDateString(dateLocale)}
             </p>
           )}
         </div>
-        <StatusBadge status={booking.status} />
+        <StatusBadge status={booking.status} t={t} />
       </div>
       {booking.budget && (
-        <p className="text-sm text-neutral-600 mt-2">תקציב: ${booking.budget}</p>
+        <p className="text-sm text-neutral-600 mt-2">{t.dashboard.stats.budget}: ${booking.budget}</p>
       )}
     </div>
   );
 }
 
 export default function ArtistDashboardPage() {
+  const { t, language, isRTL } = useLanguage();
   const [suggestions, setSuggestions] = useState<TourSuggestion[]>(mockSuggestions);
   const [tours, setTours] = useState<Tour[]>(mockTours);
   const [pendingBookings, setPendingBookings] = useState<Booking[]>(mockPendingBookings);
@@ -268,10 +271,11 @@ export default function ArtistDashboardPage() {
 
   const handleCreateTour = (suggestion: TourSuggestion) => {
     // In real implementation, this would call the API
+    const tourName = language === 'he' ? `סבב ${suggestion.region}` : `${suggestion.region} Tour`;
     const newTour: Tour = {
       id: Date.now(),
       artist_id: MOCK_ARTIST_ID,
-      name: `סבב ${suggestion.region}`,
+      name: tourName,
       region: suggestion.region,
       start_date: suggestion.suggested_start,
       end_date: suggestion.suggested_end,
@@ -292,14 +296,14 @@ export default function ArtistDashboardPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-800">לוח בקרה לאמן</h1>
-              <p className="text-neutral-500">נהל את ההזמנות וסבבי ההופעות שלך</p>
+              <h1 className="text-2xl font-bold text-neutral-800">{t.dashboard.artistTitle}</h1>
+              <p className="text-neutral-500">{t.dashboard.artistSubtitle}</p>
             </div>
             <Link
               href="/dashboard/artist/settings"
               className="px-4 py-2 text-neutral-600 hover:text-neutral-800 border border-neutral-200 rounded-lg transition-colors"
             >
-              הגדרות
+              {t.dashboard.settings}
             </Link>
           </div>
         </div>
@@ -315,7 +319,7 @@ export default function ArtistDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-800">{pendingBookings.length}</p>
-                <p className="text-sm text-neutral-500">הזמנות ממתינות</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.pendingBookings}</p>
               </div>
             </div>
           </div>
@@ -326,7 +330,7 @@ export default function ArtistDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-800">{suggestions.length}</p>
-                <p className="text-sm text-neutral-500">סבבים מוצעים</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.suggestedTours}</p>
               </div>
             </div>
           </div>
@@ -339,7 +343,7 @@ export default function ArtistDashboardPage() {
                 <p className="text-2xl font-bold text-neutral-800">
                   {tours.filter((t) => t.status === "confirmed").length}
                 </p>
-                <p className="text-sm text-neutral-500">סבבים מאושרים</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.confirmedTours}</p>
               </div>
             </div>
           </div>
@@ -352,7 +356,7 @@ export default function ArtistDashboardPage() {
                 <p className="text-2xl font-bold text-neutral-800">
                   ${tours.reduce((sum, t) => sum + (t.total_budget || 0), 0).toLocaleString()}
                 </p>
-                <p className="text-sm text-neutral-500">הכנסות צפויות</p>
+                <p className="text-sm text-neutral-500">{t.dashboard.stats.expectedRevenue}</p>
               </div>
             </div>
           </div>
@@ -368,7 +372,7 @@ export default function ArtistDashboardPage() {
                 : "bg-white text-neutral-600 hover:bg-neutral-100"
             }`}
           >
-            הצעות לסבבים ({suggestions.length})
+            {t.dashboard.tabs.suggestions} ({suggestions.length})
           </button>
           <button
             onClick={() => setActiveTab("tours")}
@@ -378,7 +382,7 @@ export default function ArtistDashboardPage() {
                 : "bg-white text-neutral-600 hover:bg-neutral-100"
             }`}
           >
-            הסבבים שלי ({tours.length})
+            {t.dashboard.tabs.myTours} ({tours.length})
           </button>
           <button
             onClick={() => setActiveTab("bookings")}
@@ -388,7 +392,7 @@ export default function ArtistDashboardPage() {
                 : "bg-white text-neutral-600 hover:bg-neutral-100"
             }`}
           >
-            הזמנות ({pendingBookings.length})
+            {t.dashboard.tabs.bookings} ({pendingBookings.length})
           </button>
         </div>
 
@@ -399,10 +403,10 @@ export default function ArtistDashboardPage() {
               <div className="bg-white rounded-xl p-8 text-center">
                 <Route size={48} className="text-neutral-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  אין הצעות לסבבים כרגע
+                  {t.dashboard.empty.noSuggestions}
                 </h3>
                 <p className="text-neutral-500">
-                  כשיהיו מספיק הזמנות באזורים קרובים, נציע לך סבבי הופעות אופטימליים.
+                  {t.dashboard.empty.noSuggestionsDesc}
                 </p>
               </div>
             ) : (
@@ -412,6 +416,8 @@ export default function ArtistDashboardPage() {
                     key={idx}
                     suggestion={suggestion}
                     onCreateTour={handleCreateTour}
+                    t={t}
+                    language={language}
                   />
                 ))}
               </div>
@@ -425,14 +431,14 @@ export default function ArtistDashboardPage() {
               <div className="bg-white rounded-xl p-8 text-center">
                 <Route size={48} className="text-neutral-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  אין סבבים עדיין
+                  {t.dashboard.empty.noTours}
                 </h3>
                 <p className="text-neutral-500">
-                  צור סבב הופעות מההצעות או הוסף הזמנות ידנית.
+                  {t.dashboard.empty.noToursDesc}
                 </p>
               </div>
             ) : (
-              tours.map((tour) => <TourCard key={tour.id} tour={tour} />)
+              tours.map((tour) => <TourCard key={tour.id} tour={tour} t={t} language={language} isRTL={isRTL} />)
             )}
           </div>
         )}
@@ -443,16 +449,16 @@ export default function ArtistDashboardPage() {
               <div className="bg-white rounded-xl p-8 text-center">
                 <Users size={48} className="text-neutral-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  אין הזמנות ממתינות
+                  {t.dashboard.empty.noBookings}
                 </h3>
                 <p className="text-neutral-500">
-                  הזמנות חדשות יופיעו כאן כשקהילות ישלחו בקשות.
+                  {t.dashboard.empty.noBookingsDesc}
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pendingBookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} />
+                  <BookingCard key={booking.id} booking={booking} t={t} language={language} />
                 ))}
               </div>
             )}
