@@ -222,7 +222,6 @@ async def seed_artists(
             country="Israel",
             status="active",
             is_featured=data["is_featured"],
-            available_for_tour=True,
         )
 
         # Add categories
