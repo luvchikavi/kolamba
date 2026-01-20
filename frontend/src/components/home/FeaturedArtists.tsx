@@ -1,61 +1,82 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MapPin, DollarSign } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Placeholder data - will be replaced with API call
-const featuredArtists = [
+interface Artist {
+  id: number;
+  name_he: string;
+  name_en: string;
+  profile_image?: string;
+  price_single: number;
+  city: string;
+  categories: Array<{ name_he: string; name_en: string; slug: string }>;
+}
+
+// Fallback data in case API is unavailable
+const fallbackArtists: Artist[] = [
   {
     id: 1,
-    nameHe: "דוד כהן",
-    nameEn: "David Cohen",
-    profileImage: null,
-    priceSingle: 500,
-    cityHe: "תל אביב",
-    cityEn: "Tel Aviv",
-    categories: [
-      { nameHe: "שירה", nameEn: "Singing", slug: "singing" },
-      { nameHe: "חזנות", nameEn: "Cantorial", slug: "cantorial" },
-    ],
+    name_he: "אבי לבצ'יק",
+    name_en: "Avi Luvchik",
+    price_single: 800,
+    city: "Tel Aviv",
+    categories: [{ name_he: "מוסיקה", name_en: "Music", slug: "music" }],
   },
   {
     id: 2,
-    nameHe: "שרה לוי",
-    nameEn: "Sarah Levy",
-    profileImage: null,
-    priceSingle: 400,
-    cityHe: "ירושלים",
-    cityEn: "Jerusalem",
-    categories: [{ nameHe: "הרצאה", nameEn: "Lecture", slug: "lecture" }],
+    name_he: "דוד כהן",
+    name_en: "David Cohen",
+    price_single: 500,
+    city: "Jerusalem",
+    categories: [{ name_he: "שירה", name_en: "Singing", slug: "singing" }],
   },
   {
     id: 3,
-    nameHe: "יוסי מזרחי",
-    nameEn: "Yossi Mizrachi",
-    profileImage: null,
-    priceSingle: 600,
-    cityHe: "חיפה",
-    cityEn: "Haifa",
-    categories: [
-      { nameHe: "קומדיה", nameEn: "Comedy", slug: "comedy" },
-      { nameHe: "תיאטרון", nameEn: "Theater", slug: "theater" },
-    ],
+    name_he: "שרה לוי",
+    name_en: "Sarah Levy",
+    price_single: 400,
+    city: "Haifa",
+    categories: [{ name_he: "הרצאה", name_en: "Lecture", slug: "lecture" }],
   },
   {
     id: 4,
-    nameHe: "מירי גולן",
-    nameEn: "Miri Golan",
-    profileImage: null,
-    priceSingle: 350,
-    cityHe: "תל אביב",
-    cityEn: "Tel Aviv",
-    categories: [{ nameHe: "מוסיקה", nameEn: "Music", slug: "music" }],
+    name_he: "יוסי מזרחי",
+    name_en: "Yossi Mizrachi",
+    price_single: 600,
+    city: "Tel Aviv",
+    categories: [{ name_he: "קומדיה", name_en: "Comedy", slug: "comedy" }],
   },
 ];
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://kolamba-production.up.railway.app";
+
 export default function FeaturedArtists() {
   const { t, language, isRTL } = useLanguage();
+  const [artists, setArtists] = useState<Artist[]>(fallbackArtists);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/artists/featured?limit=4`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.length > 0) {
+            setArtists(data);
+          }
+        }
+      } catch (error) {
+        console.log("Using fallback artist data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArtists();
+  }, []);
 
   return (
     <section className="py-16 bg-neutral-50">
@@ -76,10 +97,9 @@ export default function FeaturedArtists() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredArtists.map((artist) => {
-            const artistName = language === 'he' ? artist.nameHe : artist.nameEn;
-            const altName = language === 'he' ? artist.nameEn : artist.nameHe;
-            const city = language === 'he' ? artist.cityHe : artist.cityEn;
+          {artists.map((artist) => {
+            const artistName = language === 'he' ? artist.name_he : artist.name_en;
+            const altName = language === 'he' ? artist.name_en : artist.name_he;
 
             return (
               <Link
@@ -107,7 +127,7 @@ export default function FeaturedArtists() {
                         key={cat.slug}
                         className="px-2 py-0.5 text-xs bg-primary-50 text-primary-600 rounded-full"
                       >
-                        {language === 'he' ? cat.nameHe : cat.nameEn}
+                        {language === 'he' ? cat.name_he : cat.name_en}
                       </span>
                     ))}
                   </div>
@@ -116,11 +136,11 @@ export default function FeaturedArtists() {
                   <div className="flex justify-between items-center text-sm text-neutral-600">
                     <div className="flex items-center gap-1">
                       <MapPin size={14} />
-                      <span>{city}</span>
+                      <span>{artist.city}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <DollarSign size={14} />
-                      <span>{t.search.from}{artist.priceSingle}</span>
+                      <span>{t.search.from}{artist.price_single}</span>
                     </div>
                   </div>
                 </div>
