@@ -33,20 +33,19 @@ body {
   background-clip: text;
 }
 
-/* Animated gradient text - like kolamba.org logo */
+/* Animated gradient text - exact kolamba.org logo colors */
 .text-brand-gradient-animated {
-  background: linear-gradient(90deg,
-    var(--brand-rose),
-    var(--brand-teal),
-    var(--brand-teal-dark),
-    var(--brand-rose-dark),
-    var(--brand-rose)
+  background: linear-gradient(to right,
+    #CA7383 15%,
+    #53B9CC 35%,
+    #368A9D 65%,
+    #B35F6F 85%
   );
-  background-size: 300% 100%;
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient-shift 8s ease infinite;
+  animation: gradient-shift 6s ease-in-out infinite;
 }
 
 @keyframes gradient-shift {
