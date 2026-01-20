@@ -286,7 +286,7 @@ async def seed_artists(
             location=bd["location"],
             budget=bd["budget"],
             status="pending",
-            message="We'd love to have you perform at our community!",
+            notes="We'd love to have you perform at our community!",
         )
         db.add(booking)
 
