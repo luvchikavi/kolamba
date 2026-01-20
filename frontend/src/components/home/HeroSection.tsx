@@ -1,98 +1,78 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import FloatingDecorations from "@/components/ui/FloatingDecorations";
 
 export default function HeroSection() {
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const { t, language, isRTL } = useLanguage();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-    } else {
-      router.push("/search");
-    }
-  };
-
-  // Popular categories for quick search
-  const popularCategories = language === 'he'
-    ? ["מוזיקה", "הרצאות", "סדנאות", "תיאטרון"]
-    : ["Music", "Lectures", "Workshops", "Theater"];
+  const { language } = useLanguage();
 
   return (
-    <section className="relative bg-gradient-to-br from-neutral-100 via-white to-neutral-100 py-16 md:py-24 overflow-hidden">
-      {/* Decorative gradient overlay */}
-      <div className="absolute inset-0 bg-brand-gradient opacity-5"></div>
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      {/* Dark gradient background - matching kolamba.org */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#1a3a4a]"></div>
 
-      {/* Floating decorations - kolamba.org style */}
-      <FloatingDecorations />
+      {/* Subtle gradient overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-[#ca7283]/5 to-[#53b9cc]/10"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        {/* Logo */}
-        <h1 className="text-5xl md:text-7xl font-display font-bold text-brand-gradient mb-2 tracking-wide">
-          {t.brand.name}
-        </h1>
-        <div className="h-1 w-48 md:w-64 bg-brand-gradient mx-auto mb-4"></div>
-        <p className="text-sm md:text-base text-primary-500 uppercase tracking-widest mb-8">
-          {t.brand.subtitle}
-        </p>
-
-        {/* Tagline */}
-        <h2 className="text-2xl md:text-3xl text-neutral-700 mb-4">
-          {t.hero.title}
-        </h2>
-
-        <p className="text-neutral-600 mb-8 max-w-2xl mx-auto">
-          {t.hero.description}
-        </p>
-
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
-          <div className={`flex flex-col sm:flex-row gap-3 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
-            <div className="relative flex-1">
-              <Search
-                className={`absolute top-1/2 -translate-y-1/2 text-neutral-400 ${isRTL ? 'right-4' : 'left-4'}`}
-                size={20}
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t.hero.searchPlaceholder}
-                className={`w-full py-4 rounded-lg border border-neutral-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none transition-all ${isRTL ? 'pr-12 pl-4 text-right' : 'pl-12 pr-4 text-left'}`}
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-8 py-4 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-semibold transition-colors"
-            >
-              {t.hero.searchButton}
-            </button>
-          </div>
-        </form>
-
-        {/* Quick category links */}
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <span className="text-neutral-500 text-sm">
-            {language === 'he' ? 'פופולרי:' : 'Popular:'}
-          </span>
-          {popularCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => router.push(`/search?q=${encodeURIComponent(cat)}`)}
-              className="px-3 py-1 text-sm bg-white hover:bg-primary-50 text-neutral-600 hover:text-primary-600 rounded-full border border-neutral-200 hover:border-primary-300 transition-colors"
-            >
-              {cat}
-            </button>
-          ))}
+      <div className="relative z-10 flex flex-col items-center justify-center px-4 text-center">
+        {/* KOLAMBA Logo Image */}
+        <div className="mb-8 animate-fade-in-up">
+          <Image
+            src="/kolamba_logo.png"
+            alt="KOLAMBA - The Jewish Culture Club"
+            width={600}
+            height={200}
+            priority
+            className="w-[300px] md:w-[450px] lg:w-[600px] h-auto"
+          />
         </div>
+
+        {/* Bilingual Tagline - side by side like kolamba.org */}
+        <div className="flex items-center justify-center gap-4 md:gap-6 mb-12 animate-fade-in-up delay-200">
+          {/* Hebrew tagline */}
+          <div className="text-right">
+            <p className="text-white text-lg md:text-2xl lg:text-3xl font-light leading-tight">
+              כל
+            </p>
+            <p className="text-white text-lg md:text-2xl lg:text-3xl font-light leading-tight">
+              העולם
+            </p>
+            <p className="text-white text-lg md:text-2xl lg:text-3xl font-light leading-tight">
+              במה
+            </p>
+          </div>
+
+          {/* Divider line */}
+          <div className="w-px h-20 md:h-24 bg-white/30"></div>
+
+          {/* English tagline */}
+          <div className="text-left">
+            <p className="text-white text-lg md:text-2xl lg:text-3xl font-light leading-tight">
+              ALL
+            </p>
+            <p className="text-white text-lg md:text-2xl lg:text-3xl font-light leading-tight">
+              THE WORLD&apos;S
+            </p>
+            <p className="text-white text-lg md:text-2xl lg:text-3xl font-light leading-tight">
+              A STAGE
+            </p>
+          </div>
+        </div>
+
+        {/* Join Us Button - matching kolamba.org style */}
+        <Link
+          href="/register/community"
+          className="group flex items-center gap-3 px-8 py-4 bg-[#1a1a2e] hover:bg-[#2a2a3e] border border-white/20 hover:border-white/40 text-white rounded-lg font-medium transition-all duration-300 animate-fade-in-up delay-300"
+        >
+          <span>{language === 'he' ? 'הצטרפו אלינו' : 'Join Us'}</span>
+          <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
       </div>
+
+      {/* Bottom gradient fade for smooth transition to next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#53b9cc]/20 to-transparent"></div>
     </section>
   );
 }
