@@ -14,9 +14,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Make startup script executable
+RUN chmod +x start.sh
+
 # Railway uses PORT env variable (default 8080)
 ENV PORT=8080
 EXPOSE 8080
 
-# Run the application - use shell form to expand $PORT
-CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
+# Run migrations then start the app
+CMD ["./start.sh"]
