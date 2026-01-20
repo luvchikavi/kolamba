@@ -39,6 +39,17 @@ export const translations = {
       searchButton: 'חפש',
     },
 
+    // How It Works
+    howItWorks: {
+      title: 'איך זה עובד?',
+      searchTitle: 'חיפוש',
+      searchDescription: 'חפשו אמנים לפי קטגוריה, מחיר, שפה ומיקום',
+      contactTitle: 'יצירת קשר',
+      contactDescription: 'שלחו בקשת הזמנה ותאמו פרטים עם האמן',
+      performanceTitle: 'ההופעה',
+      performanceDescription: 'האמן מגיע לקהילה שלכם להופעה בלתי נשכחת',
+    },
+
     // Categories
     categories: {
       title: 'קטגוריות פופולריות',
@@ -382,6 +393,17 @@ export const translations = {
       description: 'Discover talented artists for your community events - music, lectures, workshops and more',
       searchPlaceholder: 'Search artists, categories...',
       searchButton: 'Search',
+    },
+
+    // How It Works
+    howItWorks: {
+      title: 'How It Works',
+      searchTitle: 'Search',
+      searchDescription: 'Find artists by category, price, language, and location',
+      contactTitle: 'Contact',
+      contactDescription: 'Send a booking request and coordinate details with the artist',
+      performanceTitle: 'Performance',
+      performanceDescription: 'The artist comes to your community for an unforgettable show',
     },
 
     // Categories
