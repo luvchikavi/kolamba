@@ -14,9 +14,11 @@ const openSans = Open_Sans({
 
 export const metadata: Metadata = {
   title: "Kolamba - The Jewish Culture Club",
-  description:
-    "מקשרים אמנים ישראלים לקהילות יהודיות ברחבי העולם - פלטפורמת Marketplace לסיורי אמנים",
+  description: "Connecting Israeli artists with Jewish communities worldwide",
   keywords: ["Jewish artists", "Jewish communities", "Israeli performers", "cultural events"],
+  other: {
+    "build-version": "2026-01-20-v2",
+  },
 };
 
 export default function RootLayout({

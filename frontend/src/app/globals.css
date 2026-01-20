@@ -3,12 +3,10 @@
 @tailwind utilities;
 
 :root {
-  /* Kolamba Brand Colors - from kolamba.org */
-  --brand-teal: #53B9CC;
-  --brand-teal-dark: #368A9D;
-  --brand-rose: #CA7383;
-  --brand-rose-dark: #B35F6F;
-  --brand-gray: #e1e1e1;
+  /* Kolamba Brand Colors - from design PDF */
+  --brand-rose: #ca7283;
+  --brand-teal: #53b9cc;
+  --brand-gray: #e8e9ea;
   --brand-black: #000000;
 
   --foreground-rgb: 0, 0, 0;
@@ -33,14 +31,9 @@ body {
   background-clip: text;
 }
 
-/* Animated gradient text - exact kolamba.org logo colors */
+/* Animated gradient text - from design PDF */
 .text-brand-gradient-animated {
-  background: linear-gradient(to right,
-    #CA7383 15%,
-    #53B9CC 35%,
-    #368A9D 65%,
-    #B35F6F 85%
-  );
+  background: linear-gradient(to right, #ca7283, #53b9cc);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

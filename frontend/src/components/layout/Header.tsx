@@ -17,10 +17,13 @@ export default function Header() {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - gradient text like kolamba.org */}
-          <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-brand-gradient-animated tracking-wide">
+          {/* Logo - matching design PDF */}
+          <Link href="/" className="flex flex-col items-start">
+            <span className="text-2xl font-bold text-brand-gradient-animated tracking-wider">
               KOLAMBA
+            </span>
+            <span className="text-[8px] tracking-[0.2em] text-[#53b9cc] uppercase border-t border-b border-[#53b9cc] px-0.5">
+              THE JEWISH CULTURE CLUB
             </span>
           </Link>
 

@@ -65,9 +65,9 @@ const config: Config = {
         display: ["Georgia", "Times New Roman", "serif"],
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #CA7383, #53B9CC)",
-        "brand-gradient-vertical": "linear-gradient(to bottom, #CA7383, #53B9CC)",
-        "brand-gradient-animated": "linear-gradient(90deg, #CA7383, #53B9CC, #368A9D, #B35F6F, #CA7383)",
+        "brand-gradient": "linear-gradient(135deg, #ca7283, #53b9cc)",
+        "brand-gradient-vertical": "linear-gradient(to bottom, #ca7283, #53b9cc)",
+        "brand-gradient-animated": "linear-gradient(90deg, #ca7283, #53b9cc, #ca7283)",
       },
       animation: {
         "gradient-shift": "gradient-shift 8s ease infinite",
