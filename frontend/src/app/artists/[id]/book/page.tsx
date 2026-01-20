@@ -63,7 +63,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/bookings`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/bookings`,
         {
           method: "POST",
           headers: {
