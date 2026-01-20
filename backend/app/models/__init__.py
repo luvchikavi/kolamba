@@ -6,5 +6,16 @@ from app.models.artist import Artist
 from app.models.community import Community
 from app.models.category import Category, ArtistCategory
 from app.models.booking import Booking
+from app.models.tour import Tour, TourBooking
 
-__all__ = ["Base", "User", "Artist", "Community", "Category", "ArtistCategory", "Booking"]
+__all__ = [
+    "Base",
+    "User",
+    "Artist",
+    "Community",
+    "Category",
+    "ArtistCategory",
+    "Booking",
+    "Tour",
+    "TourBooking",
+]

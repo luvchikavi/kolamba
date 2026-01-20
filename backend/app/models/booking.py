@@ -10,6 +10,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.artist import Artist
     from app.models.community import Community
+    from app.models.tour import Tour
 
 
 class Booking(Base):
@@ -25,6 +26,10 @@ class Booking(Base):
     community_id: Mapped[int] = mapped_column(
         ForeignKey("communities.id", ondelete="CASCADE"),
         nullable=False,
+    )
+    tour_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("tours.id", ondelete="SET NULL"),
+        nullable=True,
     )
 
     # Booking details
@@ -45,3 +50,4 @@ class Booking(Base):
     # Relationships
     artist: Mapped["Artist"] = relationship("Artist", back_populates="bookings")
     community: Mapped["Community"] = relationship("Community", back_populates="bookings")
+    tour: Mapped[Optional["Tour"]] = relationship("Tour", back_populates="bookings")

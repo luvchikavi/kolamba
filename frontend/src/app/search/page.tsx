@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, Filter, X, MapPin, DollarSign } from "lucide-react";
 import Link from "next/link";
@@ -47,7 +47,7 @@ const mockArtists = [
   },
 ];
 
-export default function SearchPage() {
+function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -321,5 +321,21 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SearchFallback() {
+  return (
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+    </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchFallback />}>
+      <SearchContent />
+    </Suspense>
   );
 }

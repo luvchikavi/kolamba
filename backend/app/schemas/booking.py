@@ -32,6 +32,7 @@ class BookingResponse(BookingBase):
     """Schema for booking response."""
     id: int
     community_id: int
+    tour_id: Optional[int] = None
     status: str
     created_at: datetime
     updated_at: datetime

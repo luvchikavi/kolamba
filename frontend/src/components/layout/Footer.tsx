@@ -1,5 +1,23 @@
 import Link from "next/link";
 
+function DrishtiLogo({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 100 100"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" strokeWidth="2" />
+      <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" strokeWidth="2" />
+      <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" strokeWidth="2" />
+      <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" strokeWidth="2.5" />
+      <circle cx="50" cy="50" r="4" fill="#6366f1" />
+    </svg>
+  );
+}
+
 export default function Footer() {
   return (
     <footer className="bg-neutral-800 text-white">
@@ -60,9 +78,18 @@ export default function Footer() {
           <p className="text-neutral-500 text-sm">
             © 2026 Kolamba בע״מ. כל הזכויות שמורות.
           </p>
-          <p className="text-neutral-500 text-sm">
-            Developed by Drishti Consulting
-          </p>
+          <a
+            href="https://drishticonsulting.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-neutral-500 hover:text-neutral-300 transition-colors font-[var(--font-open-sans)]"
+          >
+            <span className="text-sm">Developed by</span>
+            <DrishtiLogo />
+            <span className="text-sm font-medium">Drishti</span>
+            <span className="text-neutral-600">|</span>
+            <span className="text-sm">2026</span>
+          </a>
         </div>
       </div>
     </footer>

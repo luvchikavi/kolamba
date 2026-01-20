@@ -5,6 +5,7 @@ from app.schemas.artist import ArtistCreate, ArtistUpdate, ArtistResponse, Artis
 from app.schemas.community import CommunityCreate, CommunityUpdate, CommunityResponse
 from app.schemas.category import CategoryResponse
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
+from app.schemas.tour import TourCreate, TourUpdate, TourResponse, TourSuggestion, TourGroupingRequest
 
 __all__ = [
     "UserCreate", "UserResponse", "UserLogin", "Token",
@@ -12,4 +13,5 @@ __all__ = [
     "CommunityCreate", "CommunityUpdate", "CommunityResponse",
     "CategoryResponse",
     "BookingCreate", "BookingUpdate", "BookingResponse",
+    "TourCreate", "TourUpdate", "TourResponse", "TourSuggestion", "TourGroupingRequest",
 ]

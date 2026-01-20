@@ -61,11 +61,40 @@ export default function BookingPage({ params }: { params: { id: string } }) {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/bookings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            artist_id: parseInt(params.id),
+            requested_date: formData.requestedDate || null,
+            location: formData.location,
+            budget: formData.budget ? parseInt(formData.budget) : null,
+            notes: formData.notes || null,
+          }),
+        }
+      );
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || "Booking request failed");
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      setErrors({
+        submit:
+          error instanceof Error
+            ? error.message
+            : "שגיאה בשליחת הבקשה. נסה שוב מאוחר יותר.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -267,6 +296,13 @@ export default function BookingPage({ params }: { params: { id: string } }) {
                     className="w-full px-4 py-3 rounded-lg border border-neutral-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none transition-all resize-none"
                   />
                 </div>
+
+                {/* Error Message */}
+                {errors.submit && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                    {errors.submit}
+                  </div>
+                )}
 
                 {/* Submit */}
                 <button

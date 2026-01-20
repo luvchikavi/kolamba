@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.category import Category
     from app.models.booking import Booking
+    from app.models.tour import Tour
 
 
 class Artist(Base):
@@ -65,3 +66,4 @@ class Artist(Base):
         back_populates="artists",
     )
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="artist")
+    tours: Mapped[list["Tour"]] = relationship("Tour", back_populates="artist")

@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Open_Sans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Providers from "@/lib/providers";
 
 const inter = Inter({ subsets: ["latin"] });
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  variable: "--font-open-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Kolamba - The Jewish Culture Club",
@@ -21,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl">
-      <body className={`${inter.className} bg-neutral-100`}>
+      <body className={`${inter.className} ${openSans.variable} bg-neutral-100`}>
         <Providers>
           <Header />
           <main className="min-h-screen">{children}</main>
