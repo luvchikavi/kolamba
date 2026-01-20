@@ -21,7 +21,7 @@ from app.config import get_settings
 
 settings = get_settings()
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 
 class RegisterRequest(BaseModel):
@@ -252,3 +252,40 @@ async def get_me(
         artist_id=artist_id,
         community_id=community_id,
     )
+
+
+class AdminPasswordReset(BaseModel):
+    """Request body for admin password reset."""
+    email: str
+    new_password: str
+    admin_secret: str
+
+
+@router.post("/admin/reset-password")
+async def admin_reset_password(
+    request: AdminPasswordReset,
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin endpoint to reset user password. Requires admin secret."""
+    # Verify admin secret (use the app's secret key for now)
+    if request.admin_secret != settings.secret_key:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid admin secret",
+        )
+
+    # Find user
+    result = await db.execute(select(User).where(User.email == request.email))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    # Update password
+    user.password_hash = get_password_hash(request.new_password)
+    await db.commit()
+
+    return {"message": f"Password updated for {request.email}"}
