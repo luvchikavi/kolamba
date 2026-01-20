@@ -3,10 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, Search, Globe } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isHebrew, setIsHebrew] = useState(true);
+  const { t, language, setLanguage, isRTL } = useLanguage();
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'he' ? 'en' : 'he');
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -15,7 +20,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl font-display font-bold text-brand-gradient tracking-wide">
-              KOLAMBA
+              {t.brand.name}
             </span>
           </Link>
 
@@ -26,42 +31,43 @@ export default function Header() {
               className="flex items-center gap-1 text-neutral-700 hover:text-primary-500 transition-colors"
             >
               <Search size={18} />
-              <span>{isHebrew ? "חיפוש" : "Search"}</span>
+              <span>{t.nav.search}</span>
             </Link>
             <Link
               href="/categories"
               className="text-neutral-700 hover:text-primary-500 transition-colors"
             >
-              {isHebrew ? "קטגוריות" : "Categories"}
+              {t.nav.categories}
             </Link>
             <Link
               href="/artists"
               className="text-neutral-700 hover:text-primary-500 transition-colors"
             >
-              {isHebrew ? "אמנים" : "Artists"}
+              {t.nav.artists}
             </Link>
           </nav>
 
           {/* Right side */}
           <div className="hidden md:flex items-center gap-4">
             <button
-              onClick={() => setIsHebrew(!isHebrew)}
+              onClick={toggleLanguage}
               className="flex items-center gap-1 text-neutral-600 hover:text-primary-500 transition-colors"
+              aria-label={language === 'he' ? 'Switch to English' : 'החלף לעברית'}
             >
               <Globe size={18} />
-              <span className="text-sm">{isHebrew ? "EN" : "עב"}</span>
+              <span className="text-sm">{language === 'he' ? 'EN' : 'עב'}</span>
             </button>
             <Link
               href="/login"
               className="px-4 py-2 text-primary-500 hover:text-primary-600 transition-colors"
             >
-              {isHebrew ? "התחבר" : "Login"}
+              {t.nav.login}
             </Link>
             <Link
-              href="/register"
+              href="/register/community"
               className="px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded transition-colors"
             >
-              {isHebrew ? "הרשמה" : "Sign Up"}
+              {t.nav.register}
             </Link>
           </div>
 
@@ -69,6 +75,7 @@ export default function Header() {
           <button
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -81,41 +88,46 @@ export default function Header() {
               <Link
                 href="/search"
                 className="flex items-center gap-2 text-neutral-700 hover:text-primary-500"
+                onClick={() => setIsMenuOpen(false)}
               >
                 <Search size={18} />
-                {isHebrew ? "חיפוש" : "Search"}
+                {t.nav.search}
               </Link>
               <Link
                 href="/categories"
                 className="text-neutral-700 hover:text-primary-500"
+                onClick={() => setIsMenuOpen(false)}
               >
-                {isHebrew ? "קטגוריות" : "Categories"}
+                {t.nav.categories}
               </Link>
               <Link
                 href="/artists"
                 className="text-neutral-700 hover:text-primary-500"
+                onClick={() => setIsMenuOpen(false)}
               >
-                {isHebrew ? "אמנים" : "Artists"}
+                {t.nav.artists}
               </Link>
               <hr className="my-2" />
               <Link
                 href="/login"
                 className="text-primary-500 hover:text-primary-600"
+                onClick={() => setIsMenuOpen(false)}
               >
-                {isHebrew ? "התחבר" : "Login"}
+                {t.nav.login}
               </Link>
               <Link
-                href="/register"
+                href="/register/community"
                 className="text-center px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded"
+                onClick={() => setIsMenuOpen(false)}
               >
-                {isHebrew ? "הרשמה" : "Sign Up"}
+                {t.nav.register}
               </Link>
               <button
-                onClick={() => setIsHebrew(!isHebrew)}
+                onClick={toggleLanguage}
                 className="flex items-center gap-2 text-neutral-600"
               >
                 <Globe size={18} />
-                {isHebrew ? "English" : "עברית"}
+                {language === 'he' ? 'English' : 'עברית'}
               </button>
             </nav>
           </div>

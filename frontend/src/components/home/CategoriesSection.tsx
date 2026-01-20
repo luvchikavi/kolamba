@@ -9,27 +9,32 @@ import {
   Sparkles,
   Theater,
   Mic,
-  Palette
+  Palette,
+  Film,
+  Newspaper
 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const categories = [
-  { slug: "singing", nameHe: "שירה", nameEn: "Singing", icon: Music },
-  { slug: "cantorial", nameHe: "חזנות", nameEn: "Cantorial", icon: Mic },
-  { slug: "lecture", nameHe: "הרצאה", nameEn: "Lecture", icon: BookOpen },
-  { slug: "workshop", nameHe: "סדנה", nameEn: "Workshop", icon: Users },
-  { slug: "children", nameHe: "מופע לילדים", nameEn: "Children", icon: Baby },
-  { slug: "comedy", nameHe: "קומדיה", nameEn: "Comedy", icon: Sparkles },
+  { slug: "music", nameHe: "מוזיקה", nameEn: "Music", icon: Music },
+  { slug: "dance", nameHe: "ריקוד", nameEn: "Dance", icon: Sparkles },
   { slug: "theater", nameHe: "תיאטרון", nameEn: "Theater", icon: Theater },
-  { slug: "visual-art", nameHe: "אמנות", nameEn: "Visual Art", icon: Palette },
+  { slug: "visual-arts", nameHe: "אמנות חזותית", nameEn: "Visual Arts", icon: Palette },
+  { slug: "workshops", nameHe: "סדנאות", nameEn: "Workshops", icon: Users },
+  { slug: "lectures", nameHe: "הרצאות", nameEn: "Lectures", icon: BookOpen },
+  { slug: "film", nameHe: "קולנוע", nameEn: "Film", icon: Film },
+  { slug: "journalism", nameHe: "עיתונות", nameEn: "Journalism", icon: Newspaper },
 ];
 
 export default function CategoriesSection() {
+  const { t, language, isRTL } = useLanguage();
+
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2">
-            קטגוריות פופולריות
+            {t.categories.title}
           </h2>
           <div className="h-0.5 w-32 bg-brand-gradient mx-auto"></div>
         </div>
@@ -47,7 +52,7 @@ export default function CategoriesSection() {
                   <Icon className="text-primary-500 group-hover:text-primary-600" size={24} />
                 </div>
                 <span className="text-sm font-medium text-neutral-700 group-hover:text-primary-600 text-center">
-                  {category.nameHe}
+                  {language === 'he' ? category.nameHe : category.nameEn}
                 </span>
               </Link>
             );
@@ -59,7 +64,7 @@ export default function CategoriesSection() {
             href="/categories"
             className="text-primary-500 hover:text-primary-600 font-medium"
           >
-            לכל הקטגוריות ←
+            {t.categories.viewAll} {isRTL ? '←' : '→'}
           </Link>
         </div>
       </div>
