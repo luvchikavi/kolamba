@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X, Search, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -17,14 +18,16 @@ export default function Header() {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo - matching design PDF */}
-          <Link href="/" className="flex flex-col items-start">
-            <span className="text-2xl font-bold text-brand-gradient-animated tracking-wider">
-              KOLAMBA
-            </span>
-            <span className="text-[8px] tracking-[0.2em] text-[#53b9cc] uppercase border-t border-b border-[#53b9cc] px-0.5">
-              THE JEWISH CULTURE CLUB
-            </span>
+          {/* Logo */}
+          <Link href="/">
+            <Image
+              src="/kolamba_logo.png"
+              alt="KOLAMBA - The Jewish Culture Club"
+              width={180}
+              height={60}
+              priority
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
