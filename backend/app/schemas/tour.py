@@ -61,6 +61,8 @@ class TourSuggestion(BaseModel):
     suggested_end: Optional[date] = None
     total_distance_km: Optional[float] = None
     estimated_budget: Optional[int] = None
+    total_audience: Optional[int] = None  # Combined audience size
+    score: Optional[float] = None  # Quality score (higher = better opportunity)
 
 
 class TourGroupingRequest(BaseModel):

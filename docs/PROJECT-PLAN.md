@@ -446,6 +446,99 @@ At project completion, client receives:
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2026-01-19
+---
+
+## 12. Post-MVP Phases (Added January 20, 2026)
+
+### Phase 8: Content & Localization (7 hours)
+
+**Content Source:** kolamba.org (extracted)
+
+| ID | Task | Hours | Deliverables |
+|----|------|-------|--------------|
+| 8.1 | Homepage Content Update | 2h | Bilingual hero, about section |
+| 8.2 | UI Labels Translation | 1h | All navigation and buttons |
+| 8.3 | Category Names (Bilingual) | 1h | Database seed update |
+| 8.4 | Artist Profile Labels | 1h | Bilingual profile pages |
+| 8.5 | Booking Form Labels | 1h | Bilingual booking flow |
+| 8.6 | Language Switcher | 1h | Working EN/HE toggle |
+
+**Key Content from kolamba.org:**
+- Tagline: "כל העולם במה" / "All the world's a stage"
+- Subtitle: "The Jewish Culture Club"
+- Team: Avital Indig, Michal Wachtel Halamish, Einat Kapach
+- Contact: contact@kolamba.org
+
+---
+
+### Phase 9: Smart Tour Algorithm Enhancement (4 hours) ✅ COMPLETED
+
+| ID | Task | Hours | Status |
+|----|------|-------|--------|
+| 9.1 | Community Size Weighting | 1h | ✅ Done |
+| 9.2 | Date Proximity Filtering | 1h | ✅ Done |
+| 9.3 | Multi-Factor Scoring | 1h | ✅ Done |
+| 9.4 | Score-Based Sorting | 1h | ✅ Done |
+
+**Algorithm now scores tours by:**
+- Number of bookings (25%)
+- Audience reach / community size (25%)
+- Budget potential (20%)
+- Route efficiency (15%)
+- Date clustering (15%)
+
+---
+
+### Phase 10: Design Polish (6 hours)
+
+| ID | Task | Hours | Deliverables |
+|----|------|-------|--------------|
+| 10.1 | Import brand colors from kolamba.org | 1h | Consistent color scheme |
+| 10.2 | Typography refinement | 1h | Hebrew/English font pairing |
+| 10.3 | Component polish | 2h | Shadows, animations, hover states |
+| 10.4 | Image optimization | 1h | Lazy loading, proper sizes |
+| 10.5 | Loading states | 1h | Skeletons and spinners |
+
+---
+
+### Phase 11-15: Future Roadmap
+
+| Phase | Focus | Estimated Hours |
+|-------|-------|-----------------|
+| 11 | Artist Features (profile editing, calendar) | 8h |
+| 12 | Community Dashboard | 6h |
+| 13 | Admin Panel | 10h |
+| 14 | Advanced Features (map view, recommendations) | 12h |
+| 15 | Production Launch (merge with kolamba.org) | 4h |
+
+---
+
+## 13. Updated Project Status
+
+### Completed Phases
+- [x] Phase 1: Foundation & Design (6h)
+- [x] Phase 2: Homepage & Search (8h)
+- [x] Phase 3: Artist Profiles (6h)
+- [x] Phase 4: Community & Booking (6h)
+- [x] Phase 5: Tour Logic (8h)
+- [x] Phase 6: Auth & Dashboard (4h)
+- [x] Phase 7: QA & Deployment (2h)
+- [x] Phase 9: Smart Tour Algorithm (4h) ← NEW
+
+### In Progress
+- [ ] Phase 8: Content & Localization (7h)
+
+### Pending
+- [ ] Phase 10: Design Polish (6h)
+- [ ] Phases 11-15: Future roadmap
+
+### Current Deployment
+- Frontend: https://kolamba.vercel.app
+- Backend: https://kolamba-production.up.railway.app
+- API Docs: https://kolamba-production.up.railway.app/api/docs
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** 2026-01-20
 **Prepared by:** Drishti Consulting
