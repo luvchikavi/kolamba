@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -25,6 +26,16 @@ class Settings(BaseSettings):
     # Environment
     env: str = "development"
     debug: bool = True
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def convert_database_url(cls, v: str) -> str:
+        """Convert Railway's postgres:// URL to asyncpg format."""
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+asyncpg://", 1)
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
 
     @property
     def cors_origins_list(self) -> list[str]:
