@@ -9,49 +9,62 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary - Warm Blue (trust, professionalism)
+        // Kolamba Brand Colors
+        // Primary - Teal/Cyan (brand identity)
         primary: {
-          50: "#eff6ff",
-          100: "#dbeafe",
-          200: "#bfdbfe",
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
-          900: "#1e3a8a",
+          50: "#e8f7fa",
+          100: "#d1eff5",
+          200: "#a3dfeb",
+          300: "#75cfe1",
+          400: "#53b9cc", // Main brand teal
+          500: "#53b9cc",
+          600: "#4294a3",
+          700: "#326f7a",
+          800: "#214a52",
+          900: "#112529",
         },
-        // Secondary - Teal (creativity, culture)
+        // Secondary - Rose/Pink (warm accent)
         secondary: {
-          50: "#f0fdfa",
-          100: "#ccfbf1",
-          200: "#99f6e4",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
+          50: "#fdf2f4",
+          100: "#fbe5e9",
+          200: "#f7ccd3",
+          300: "#e9a5b0",
+          400: "#ca7283", // Main brand rose
+          500: "#ca7283",
+          600: "#a25b69",
+          700: "#79444f",
+          800: "#512d34",
+          900: "#28171a",
         },
-        // Accent - Gold (premium, Jewish heritage)
-        accent: {
-          50: "#fffbeb",
-          100: "#fef3c7",
-          200: "#fde68a",
-          300: "#fcd34d",
-          400: "#fbbf24",
-          500: "#f59e0b",
-          600: "#d97706",
-          700: "#b45309",
-          800: "#92400e",
-          900: "#78350f",
+        // Neutral - Light Gray (backgrounds)
+        neutral: {
+          50: "#f8f9f9",
+          100: "#e8e9ea", // Main brand light gray
+          200: "#d1d3d5",
+          300: "#babdc0",
+          400: "#a3a7ab",
+          500: "#8c9196",
+          600: "#6e7378",
+          700: "#53575a",
+          800: "#373a3c",
+          900: "#1c1d1e",
+        },
+        // Keep black for text
+        brand: {
+          teal: "#53b9cc",
+          rose: "#ca7283",
+          gray: "#e8e9ea",
+          black: "#000000",
         },
       },
       fontFamily: {
         sans: ["Inter", "Open Sans", "sans-serif"],
         hebrew: ["Open Sans Hebrew", "Rubik", "sans-serif"],
+        display: ["Georgia", "Times New Roman", "serif"], // For logo-style headings
+      },
+      backgroundImage: {
+        "brand-gradient": "linear-gradient(to right, #ca7283, #53b9cc)",
+        "brand-gradient-vertical": "linear-gradient(to bottom, #ca7283, #53b9cc)",
       },
     },
   },

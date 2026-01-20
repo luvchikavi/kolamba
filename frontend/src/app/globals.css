@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 17, 24, 39;
-  --background-start-rgb: 249, 250, 251;
-  --background-end-rgb: 255, 255, 255;
+  /* Kolamba Brand Colors */
+  --brand-teal: #53b9cc;
+  --brand-rose: #ca7283;
+  --brand-gray: #e8e9ea;
+  --brand-black: #000000;
+
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 232, 233, 234;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: rgb(var(--background-rgb));
 }
 
 /* Hebrew text support */
@@ -23,20 +23,48 @@ body {
   text-align: right;
 }
 
-/* Custom scrollbar */
+/* Brand gradient text */
+.text-brand-gradient {
+  background: linear-gradient(to right, var(--brand-rose), var(--brand-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Brand gradient background */
+.bg-brand-gradient {
+  background: linear-gradient(to right, var(--brand-rose), var(--brand-teal));
+}
+
+/* Custom scrollbar with brand colors */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--brand-gray);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--brand-teal);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: var(--brand-rose);
+}
+
+/* Brand underline style (like in the logo) */
+.brand-underline {
+  position: relative;
+}
+
+.brand-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--brand-rose), var(--brand-teal));
 }
