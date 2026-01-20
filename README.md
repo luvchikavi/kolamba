@@ -103,5 +103,5 @@ All code, logic, design, and materials developed for this project are the exclus
 
 ---
 
-**Developed by:** Drishti Consulting
+**Developed by:** Drishti Consulting @ Avi Luvchik
 **Date:** January 2026
