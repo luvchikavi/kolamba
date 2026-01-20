@@ -1,5 +1,6 @@
 "use client";
 
+// Version: 2026-01-20 - Fixed bilingual display
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MapPin, DollarSign } from "lucide-react";
