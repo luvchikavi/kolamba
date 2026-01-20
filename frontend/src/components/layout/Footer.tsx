@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function DrishtiLogo({ className = "" }: { className?: string }) {
   return (
@@ -19,6 +22,8 @@ function DrishtiLogo({ className = "" }: { className?: string }) {
 }
 
 export default function Footer() {
+  const { t, language } = useLanguage();
+
   return (
     <footer className="bg-neutral-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -26,48 +31,48 @@ export default function Footer() {
           {/* Logo & Description */}
           <div className="md:col-span-2">
             <h3 className="text-2xl font-display font-bold text-brand-gradient mb-2">
-              KOLAMBA
+              {t.brand.name}
             </h3>
             <div className="h-0.5 w-24 bg-brand-gradient mb-4"></div>
             <p className="text-sm text-neutral-400 uppercase tracking-widest mb-4">
-              The Jewish Culture Club
+              {t.brand.subtitle}
             </p>
             <p className="text-neutral-400 text-sm max-w-xs">
-              מקשרים אמנים ישראלים לקהילות יהודיות ברחבי העולם
+              {t.brand.shortDescription}
             </p>
           </div>
 
           {/* Links */}
           <div>
-            <h4 className="font-semibold mb-4">קישורים</h4>
+            <h4 className="font-semibold mb-4">{t.footer.links}</h4>
             <nav className="flex flex-col gap-2 text-neutral-400 text-sm">
               <Link href="/about" className="hover:text-primary-400 transition-colors">
-                אודות
+                {t.footer.about}
               </Link>
               <Link href="/artists" className="hover:text-primary-400 transition-colors">
-                אמנים
+                {t.artists.title}
               </Link>
               <Link href="/categories" className="hover:text-primary-400 transition-colors">
-                קטגוריות
+                {t.categories.title}
               </Link>
               <Link href="/faq" className="hover:text-primary-400 transition-colors">
-                שאלות נפוצות
+                {t.footer.faq}
               </Link>
             </nav>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="font-semibold mb-4">משפטי</h4>
+            <h4 className="font-semibold mb-4">{t.footer.legal}</h4>
             <nav className="flex flex-col gap-2 text-neutral-400 text-sm">
               <Link href="/terms" className="hover:text-primary-400 transition-colors">
-                תנאי שימוש
+                {t.footer.terms}
               </Link>
               <Link href="/privacy" className="hover:text-primary-400 transition-colors">
-                מדיניות פרטיות
+                {t.footer.privacy}
               </Link>
               <Link href="/contact" className="hover:text-primary-400 transition-colors">
-                צור קשר
+                {t.footer.contact}
               </Link>
             </nav>
           </div>
@@ -76,7 +81,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-neutral-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-neutral-500 text-sm">
-            © 2026 Kolamba בע״מ. כל הזכויות שמורות.
+            {t.footer.copyright}
           </p>
           <a
             href="https://drishticonsulting.com"
@@ -84,7 +89,7 @@ export default function Footer() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-neutral-500 hover:text-neutral-300 transition-colors font-[var(--font-open-sans)]"
           >
-            <span className="text-sm">Developed by</span>
+            <span className="text-sm">{t.footer.developedBy}</span>
             <DrishtiLogo />
             <span className="text-sm font-medium">Drishti</span>
             <span className="text-neutral-600">|</span>

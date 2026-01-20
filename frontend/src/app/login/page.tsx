@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t, isRTL } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,7 +28,7 @@ export default function LoginPage() {
       formBody.append("password", formData.password);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/auth/login`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/login`,
         {
           method: "POST",
           headers: {
@@ -38,7 +40,7 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.detail || "Login failed");
+        throw new Error(data.detail || t.auth.loginError);
       }
 
       const data = await response.json();
@@ -49,7 +51,7 @@ export default function LoginPage() {
 
       // Get user info to determine redirect
       const meResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/auth/me`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`,
         {
           headers: {
             Authorization: `Bearer ${data.access_token}`,
@@ -72,7 +74,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "שגיאה בהתחברות. נסה שוב."
+        error instanceof Error ? error.message : t.auth.loginError
       );
     } finally {
       setIsLoading(false);
@@ -84,8 +86,8 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-lg max-w-md w-full overflow-hidden">
         {/* Header */}
         <div className="bg-brand-gradient p-6 text-white text-center">
-          <h1 className="text-2xl font-bold mb-2">התחברות</h1>
-          <p className="text-white/80">ברוכים השבים לקולמבה</p>
+          <h1 className="text-2xl font-bold mb-2">{t.auth.login}</h1>
+          <p className="text-white/80">{t.auth.welcomeBack}</p>
         </div>
 
         <div className="p-6 md:p-8">
@@ -93,8 +95,8 @@ export default function LoginPage() {
             {/* Email */}
             <div>
               <label className="block font-medium text-neutral-700 mb-2">
-                <Mail className="inline-block ml-2" size={18} />
-                אימייל
+                <Mail className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                {t.auth.email}
               </label>
               <input
                 type="email"
@@ -112,8 +114,8 @@ export default function LoginPage() {
             {/* Password */}
             <div>
               <label className="block font-medium text-neutral-700 mb-2">
-                <Lock className="inline-block ml-2" size={18} />
-                סיסמה
+                <Lock className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
+                {t.auth.password}
               </label>
               <div className="relative">
                 <input
@@ -138,12 +140,12 @@ export default function LoginPage() {
             </div>
 
             {/* Forgot password */}
-            <div className="text-left">
+            <div className={isRTL ? "text-left" : "text-right"}>
               <Link
                 href="/forgot-password"
                 className="text-sm text-primary-500 hover:underline"
               >
-                שכחת סיסמה?
+                {t.auth.forgotPassword}
               </Link>
             </div>
 
@@ -163,12 +165,12 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  מתחבר...
+                  {t.auth.loggingIn}
                 </>
               ) : (
                 <>
                   <LogIn size={20} />
-                  התחבר
+                  {t.auth.login}
                 </>
               )}
             </button>
@@ -180,27 +182,27 @@ export default function LoginPage() {
               <div className="w-full border-t border-neutral-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-neutral-500">או</span>
+              <span className="px-2 bg-white text-neutral-500">{t.auth.or}</span>
             </div>
           </div>
 
           {/* Register links */}
           <div className="space-y-3">
             <p className="text-center text-neutral-600 text-sm">
-              עדיין לא רשום?
+              {t.auth.notRegistered}
             </p>
             <div className="grid grid-cols-2 gap-3">
               <Link
                 href="/register/artist"
                 className="py-2 px-4 border border-primary-400 text-primary-600 rounded-lg text-center text-sm font-medium hover:bg-primary-50 transition-colors"
               >
-                הרשמה כאמן
+                {t.auth.registerAsArtist}
               </Link>
               <Link
                 href="/register/community"
                 className="py-2 px-4 border border-secondary-400 text-secondary-600 rounded-lg text-center text-sm font-medium hover:bg-secondary-50 transition-colors"
               >
-                הרשמה כקהילה
+                {t.auth.registerAsCommunity}
               </Link>
             </div>
           </div>

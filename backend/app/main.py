@@ -30,10 +30,11 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# CORS middleware
+# CORS middleware - allow Vercel preview URLs via regex
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
+    allow_origin_regex=r"https://kolamba(-[a-z0-9]+)?(-[a-z0-9-]+)?\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -39,7 +39,17 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",")]
+        """Get list of allowed CORS origins, including Vercel preview URLs."""
+        origins = [origin.strip() for origin in self.cors_origins.split(",")]
+
+        # Always allow Vercel preview URLs for the kolamba project
+        # These have format: kolamba-*.vercel.app
+        origins.extend([
+            "https://kolamba.vercel.app",
+            "https://kolamba-git-main-avi-luvchiks-projects.vercel.app",
+        ])
+
+        return list(set(origins))  # Remove duplicates
 
     class Config:
         env_file = ".env"

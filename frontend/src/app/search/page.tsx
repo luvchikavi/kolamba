@@ -4,52 +4,60 @@ import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, Filter, X, MapPin, DollarSign } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-// Placeholder data
+// Placeholder data with bilingual support
 const categories = [
-  { slug: "singing", nameHe: "שירה" },
-  { slug: "cantorial", nameHe: "חזנות" },
-  { slug: "lecture", nameHe: "הרצאה" },
-  { slug: "workshop", nameHe: "סדנה" },
-  { slug: "children", nameHe: "מופע לילדים" },
-  { slug: "comedy", nameHe: "קומדיה" },
-  { slug: "theater", nameHe: "תיאטרון" },
-  { slug: "music", nameHe: "מוסיקה" },
+  { slug: "singing", nameHe: "שירה", nameEn: "Singing" },
+  { slug: "cantorial", nameHe: "חזנות", nameEn: "Cantorial" },
+  { slug: "lecture", nameHe: "הרצאה", nameEn: "Lecture" },
+  { slug: "workshop", nameHe: "סדנה", nameEn: "Workshop" },
+  { slug: "children", nameHe: "מופע לילדים", nameEn: "Children's Show" },
+  { slug: "comedy", nameHe: "קומדיה", nameEn: "Comedy" },
+  { slug: "theater", nameHe: "תיאטרון", nameEn: "Theater" },
+  { slug: "music", nameHe: "מוסיקה", nameEn: "Music" },
 ];
 
 const languages = ["Hebrew", "English", "Yiddish", "French", "Spanish"];
 
-// Mock artists data
+// Mock artists data with bilingual support
 const mockArtists = [
   {
     id: 1,
     nameHe: "דוד כהן",
     nameEn: "David Cohen",
     priceSingle: 500,
-    city: "תל אביב",
-    categories: [{ nameHe: "שירה", slug: "singing" }, { nameHe: "חזנות", slug: "cantorial" }],
+    cityHe: "תל אביב",
+    cityEn: "Tel Aviv",
+    categories: [
+      { nameHe: "שירה", nameEn: "Singing", slug: "singing" },
+      { nameHe: "חזנות", nameEn: "Cantorial", slug: "cantorial" }
+    ],
   },
   {
     id: 2,
     nameHe: "שרה לוי",
     nameEn: "Sarah Levy",
     priceSingle: 400,
-    city: "ירושלים",
-    categories: [{ nameHe: "הרצאה", slug: "lecture" }],
+    cityHe: "ירושלים",
+    cityEn: "Jerusalem",
+    categories: [{ nameHe: "הרצאה", nameEn: "Lecture", slug: "lecture" }],
   },
   {
     id: 3,
     nameHe: "יוסי מזרחי",
     nameEn: "Yossi Mizrachi",
     priceSingle: 600,
-    city: "חיפה",
-    categories: [{ nameHe: "קומדיה", slug: "comedy" }],
+    cityHe: "חיפה",
+    cityEn: "Haifa",
+    categories: [{ nameHe: "קומדיה", nameEn: "Comedy", slug: "comedy" }],
   },
 ];
 
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t, language, isRTL } = useLanguage();
 
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
@@ -85,17 +93,17 @@ function SearchContent() {
       {/* Search Header */}
       <div className="bg-white border-b sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className={`flex flex-col sm:flex-row gap-4 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400" size={20} />
+              <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 text-neutral-400`} size={20} />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && updateSearch()}
-                placeholder="חיפוש אמנים..."
-                className="w-full pr-12 pl-4 py-3 rounded-lg border border-neutral-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none"
+                placeholder={t.search.placeholder}
+                className={`w-full py-3 rounded-lg border border-neutral-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'}`}
               />
             </div>
 
@@ -105,7 +113,7 @@ function SearchContent() {
               className="sm:hidden flex items-center justify-center gap-2 px-4 py-3 border border-neutral-300 rounded-lg"
             >
               <Filter size={20} />
-              <span>פילטרים</span>
+              <span>{t.search.filters}</span>
               {hasActiveFilters && (
                 <span className="w-5 h-5 bg-primary-500 text-white text-xs rounded-full flex items-center justify-center">
                   !
@@ -118,32 +126,32 @@ function SearchContent() {
               onClick={updateSearch}
               className="px-6 py-3 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
             >
-              חפש
+              {t.search.button}
             </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className={`flex flex-col lg:flex-row gap-8 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
           {/* Filters Sidebar */}
           <aside className={`lg:w-64 ${showFilters ? "block" : "hidden lg:block"}`}>
             <div className="bg-white rounded-xl p-6 shadow-sm sticky top-40">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg">פילטרים</h3>
+                <h3 className="font-bold text-lg">{t.search.filters}</h3>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
                     className="text-sm text-primary-500 hover:text-primary-600"
                   >
-                    נקה הכל
+                    {t.search.clearAll}
                   </button>
                 )}
               </div>
 
               {/* Category Filter */}
               <div className="mb-6">
-                <h4 className="font-medium mb-3">קטגוריה</h4>
+                <h4 className="font-medium mb-3">{t.search.category}</h4>
                 <div className="space-y-2">
                   {categories.map((cat) => (
                     <label key={cat.slug} className="flex items-center gap-2 cursor-pointer">
@@ -154,7 +162,7 @@ function SearchContent() {
                         onChange={() => setSelectedCategory(cat.slug)}
                         className="text-primary-500 focus:ring-primary-400"
                       />
-                      <span className="text-sm">{cat.nameHe}</span>
+                      <span className="text-sm">{language === 'he' ? cat.nameHe : cat.nameEn}</span>
                     </label>
                   ))}
                 </div>
@@ -162,34 +170,36 @@ function SearchContent() {
 
               {/* Price Filter */}
               <div className="mb-6">
-                <h4 className="font-medium mb-3">טווח מחיר (USD)</h4>
+                <h4 className="font-medium mb-3">{t.search.priceRange}</h4>
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    placeholder="מינימום"
+                    placeholder={t.search.minimum}
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
+                    dir="ltr"
                   />
                   <input
                     type="number"
-                    placeholder="מקסימום"
+                    placeholder={t.search.maximum}
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
+                    dir="ltr"
                   />
                 </div>
               </div>
 
               {/* Language Filter */}
               <div className="mb-6">
-                <h4 className="font-medium mb-3">שפה</h4>
+                <h4 className="font-medium mb-3">{t.search.language}</h4>
                 <select
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 >
-                  <option value="">כל השפות</option>
+                  <option value="">{t.search.allLanguages}</option>
                   {languages.map((lang) => (
                     <option key={lang} value={lang}>
                       {lang}
@@ -206,7 +216,7 @@ function SearchContent() {
                 }}
                 className="lg:hidden w-full py-3 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium"
               >
-                החל פילטרים
+                {t.search.applyFilters}
               </button>
             </div>
           </aside>
@@ -216,13 +226,12 @@ function SearchContent() {
             {/* Results Header */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-neutral-600">
-                נמצאו <span className="font-bold">{mockArtists.length}</span> תוצאות
-                {query && <span> עבור &quot;{query}&quot;</span>}
+                {t.search.resultsFound} <span className="font-bold">{mockArtists.length}</span> {query && <span>{t.search.resultsFor} &quot;{query}&quot;</span>}
               </p>
               <select className="px-3 py-2 border rounded-lg text-sm">
-                <option>מיון: רלוונטיות</option>
-                <option>מחיר: נמוך לגבוה</option>
-                <option>מחיר: גבוה לנמוך</option>
+                <option>{t.search.sortBy} {t.search.relevance}</option>
+                <option>{t.search.priceLowToHigh}</option>
+                <option>{t.search.priceHighToLow}</option>
               </select>
             </div>
 
@@ -231,7 +240,9 @@ function SearchContent() {
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedCategory && (
                   <span className="flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
-                    {categories.find((c) => c.slug === selectedCategory)?.nameHe}
+                    {language === 'he'
+                      ? categories.find((c) => c.slug === selectedCategory)?.nameHe
+                      : categories.find((c) => c.slug === selectedCategory)?.nameEn}
                     <button onClick={() => setSelectedCategory("")}>
                       <X size={14} />
                     </button>
@@ -267,15 +278,17 @@ function SearchContent() {
                   {/* Image placeholder */}
                   <div className="aspect-square bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
                     <span className="text-5xl font-display font-bold text-white/50">
-                      {artist.nameHe.charAt(0)}
+                      {language === 'he' ? artist.nameHe.charAt(0) : artist.nameEn.charAt(0)}
                     </span>
                   </div>
 
                   <div className="p-4">
                     <h3 className="font-bold text-neutral-800 group-hover:text-primary-600 transition-colors">
-                      {artist.nameHe}
+                      {language === 'he' ? artist.nameHe : artist.nameEn}
                     </h3>
-                    <p className="text-sm text-neutral-500 mb-2">{artist.nameEn}</p>
+                    <p className="text-sm text-neutral-500 mb-2">
+                      {language === 'he' ? artist.nameEn : artist.nameHe}
+                    </p>
 
                     <div className="flex flex-wrap gap-1 mb-3">
                       {artist.categories.map((cat) => (
@@ -283,7 +296,7 @@ function SearchContent() {
                           key={cat.slug}
                           className="px-2 py-0.5 text-xs bg-primary-50 text-primary-600 rounded-full"
                         >
-                          {cat.nameHe}
+                          {language === 'he' ? cat.nameHe : cat.nameEn}
                         </span>
                       ))}
                     </div>
@@ -291,11 +304,11 @@ function SearchContent() {
                     <div className="flex justify-between items-center text-sm text-neutral-600">
                       <div className="flex items-center gap-1">
                         <MapPin size={14} />
-                        <span>{artist.city}</span>
+                        <span>{language === 'he' ? artist.cityHe : artist.cityEn}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <DollarSign size={14} />
-                        <span>מ-${artist.priceSingle}</span>
+                        <span>{t.search.from}{artist.priceSingle}</span>
                       </div>
                     </div>
                   </div>
@@ -307,13 +320,13 @@ function SearchContent() {
             {mockArtists.length === 0 && (
               <div className="text-center py-16">
                 <p className="text-5xl mb-4">😕</p>
-                <h3 className="text-xl font-bold text-neutral-800 mb-2">לא נמצאו תוצאות</h3>
-                <p className="text-neutral-600 mb-6">נסה לשנות את הפילטרים או מילות החיפוש</p>
+                <h3 className="text-xl font-bold text-neutral-800 mb-2">{t.search.noResults}</h3>
+                <p className="text-neutral-600 mb-6">{t.search.noResultsHint}</p>
                 <button
                   onClick={clearFilters}
                   className="px-6 py-3 bg-primary-400 hover:bg-primary-600 text-white rounded-lg"
                 >
-                  נקה פילטרים
+                  {t.search.clearFilters}
                 </button>
               </div>
             )}
