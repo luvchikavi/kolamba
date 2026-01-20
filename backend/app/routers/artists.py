@@ -132,7 +132,7 @@ async def seed_artists(
             "price_tour": 3000,
             "languages": ["Hebrew", "English"],
             "city": "Tel Aviv",
-            "categories": ["music", "workshop"],
+            "categories": ["music-instrumental", "workshop"],
             "is_featured": True,
         },
         {
