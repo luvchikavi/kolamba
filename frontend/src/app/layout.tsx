@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Kolamba - מקשרים אמנים ישראלים לקהילות יהודיות",
+  title: "Kolamba - The Jewish Culture Club",
   description:
-    "פלטפורמת Marketplace לסיורי אמנים ישראלים בקהילות יהודיות ברחבי העולם",
+    "מקשרים אמנים ישראלים לקהילות יהודיות ברחבי העולם - פלטפורמת Marketplace לסיורי אמנים",
+  keywords: ["Jewish artists", "Jewish communities", "Israeli performers", "cultural events"],
 };
 
 export default function RootLayout({
@@ -17,8 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl">
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-neutral-100`}>
+        <Header />
         <main className="min-h-screen">{children}</main>
+        <Footer />
       </body>
     </html>
   );
