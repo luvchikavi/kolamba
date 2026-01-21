@@ -178,18 +178,19 @@ async def register_artist(
     db.add(user)
     await db.flush()
 
-    # Get categories by name (case-insensitive matching)
+    # Get categories by name (case-insensitive matching on name_en)
     all_category_names = [request.category] + request.other_categories
-    category_slugs = []
-    for name in all_category_names:
-        # Convert category name to slug format
-        slug = name.lower().replace(" ", "-")
-        category_slugs.append(slug)
 
-    categories_result = await db.execute(
-        select(Category).where(Category.slug.in_(category_slugs))
-    )
-    categories = list(categories_result.scalars().all())
+    # Fetch all categories and match by name (case-insensitive)
+    categories_result = await db.execute(select(Category))
+    all_categories = categories_result.scalars().all()
+
+    categories = []
+    for cat in all_categories:
+        for name in all_category_names:
+            if cat.name_en.lower() == name.lower() or cat.slug == name.lower().replace(" ", "-"):
+                categories.append(cat)
+                break
 
     # Create artist profile
     artist = Artist(
