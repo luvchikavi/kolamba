@@ -96,7 +96,12 @@ async def seed_communities():
 
     print(f"Connecting to database...")
 
-    engine = create_async_engine(database_url, echo=False)
+    # Create engine with SSL disabled for Railway proxy connection
+    connect_args = {}
+    if "proxy.rlwy.net" in database_url or "railway" in database_url.lower():
+        connect_args = {"ssl": "disable"}
+
+    engine = create_async_engine(database_url, echo=False, connect_args=connect_args)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
