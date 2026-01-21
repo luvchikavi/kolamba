@@ -2,21 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  Building2,
-  User,
-  Mail,
-  Globe,
-  CheckCircle,
-  Briefcase,
-  Calendar,
-  AlertCircle,
-} from "lucide-react";
-import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
-import TagInput from "@/components/ui/TagInput";
-import PhoneInput from "@/components/ui/PhoneInput";
-import MemberCountInput from "@/components/ui/MemberCountInput";
+import { CheckCircle, Search, ChevronDown, X } from "lucide-react";
 
 interface CommunityOptions {
   community_types: string[];
@@ -26,47 +12,46 @@ interface CommunityOptions {
 }
 
 interface FormData {
-  email: string;
-  name: string;
   communityName: string;
-  communityType: string;
   location: string;
   latitude: number | null;
   longitude: number | null;
   memberCountMin: number | null;
   memberCountMax: number | null;
-  eventTypes: string[];
-  contactRole: string;
-  phone: string;
   language: string;
+  eventTypes: string[];
+  name: string;
+  contactRole: string;
+  email: string;
+  phone: string;
+  phoneCountryCode: string;
 }
 
 export default function CommunityRegistrationPage() {
-  const router = useRouter();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [options, setOptions] = useState<CommunityOptions | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
-  const [isCheckingName, setIsCheckingName] = useState(false);
+  const [eventTypeSearch, setEventTypeSearch] = useState("");
+  const [showEventDropdown, setShowEventDropdown] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
-    email: "",
-    name: "",
     communityName: "",
-    communityType: "",
     location: "",
     latitude: null,
     longitude: null,
     memberCountMin: null,
     memberCountMax: null,
-    eventTypes: [],
-    contactRole: "",
-    phone: "",
     language: "English",
+    eventTypes: [],
+    name: "",
+    contactRole: "",
+    email: "",
+    phone: "",
+    phoneCountryCode: "+000",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Fetch community options on mount
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -78,58 +63,33 @@ export default function CommunityRegistrationPage() {
           setOptions(data);
         }
       } catch (error) {
-        // Use defaults if fetch fails
         setOptions({
-          community_types: [
-            "JCC",
-            "Synagogue",
-            "Temple",
-            "Jewish School",
-            "Summer Camp",
-            "Campus Organization",
-            "Federation",
-            "Cultural Center",
-            "Museum",
-            "Independent Community",
-          ],
+          community_types: [],
           event_types: [
+            "Holiday Celebrations",
+            "Shabbat Service",
             "Concerts",
             "Lectures",
             "Workshops",
             "Children Shows",
-            "Holiday Events",
-            "Shabbat Programs",
             "Educational Programs",
             "Cultural Festivals",
             "Family Events",
             "Youth Programs",
           ],
-          contact_roles: [
-            "Executive Director",
-            "Program Director",
-            "Rabbi",
-            "Cantor",
-            "Education Director",
-            "Events Coordinator",
-            "Administrator",
-            "Board Member",
-            "Other",
-          ],
-          languages: ["English", "Hebrew", "French", "Spanish", "Russian", "German", "Portuguese"],
+          contact_roles: [],
+          languages: ["English", "Hebrew", "French", "Spanish", "Russian"],
         });
       }
     };
     fetchOptions();
   }, []);
 
-  // Check for duplicate community name with debounce
   const checkDuplicateName = useCallback(async (name: string) => {
     if (name.length < 2) {
       setDuplicateWarning(null);
       return;
     }
-
-    setIsCheckingName(true);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/communities/check-name?name=${encodeURIComponent(name)}`
@@ -137,25 +97,16 @@ export default function CommunityRegistrationPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.exists) {
-          setDuplicateWarning(
-            "A community with this name already exists. Please use a different name."
-          );
-        } else if (data.similar_names?.length > 0) {
-          setDuplicateWarning(
-            `Similar communities exist: ${data.similar_names.join(", ")}. Is this a new community?`
-          );
+          setDuplicateWarning("This Name Is Already Taken");
         } else {
           setDuplicateWarning(null);
         }
       }
     } catch (error) {
-      // Ignore errors in name check
-    } finally {
-      setIsCheckingName(false);
+      // Ignore
     }
   }, []);
 
-  // Debounce name check
   useEffect(() => {
     const timer = setTimeout(() => {
       if (formData.communityName) {
@@ -165,29 +116,41 @@ export default function CommunityRegistrationPage() {
     return () => clearTimeout(timer);
   }, [formData.communityName, checkDuplicateName]);
 
+  const handleAddEventType = (eventType: string) => {
+    if (!formData.eventTypes.includes(eventType)) {
+      setFormData({ ...formData, eventTypes: [...formData.eventTypes, eventType] });
+    }
+    setEventTypeSearch("");
+    setShowEventDropdown(false);
+  };
+
+  const handleRemoveEventType = (eventType: string) => {
+    setFormData({
+      ...formData,
+      eventTypes: formData.eventTypes.filter((e) => e !== eventType),
+    });
+  };
+
+  const filteredEventTypes = (options?.event_types || []).filter(
+    (type) =>
+      type.toLowerCase().includes(eventTypeSearch.toLowerCase()) &&
+      !formData.eventTypes.includes(type)
+  );
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Valid email is required";
-    }
-    if (!formData.name || formData.name.length < 2) {
-      newErrors.name = "Contact name is required";
-    }
     if (!formData.communityName || formData.communityName.length < 2) {
       newErrors.communityName = "Community name is required";
     }
     if (!formData.location || formData.location.length < 3) {
       newErrors.location = "Location is required";
     }
-    if (
-      formData.memberCountMin !== null &&
-      formData.memberCountMax !== null &&
-      formData.memberCountMin > formData.memberCountMax
-    ) {
-      newErrors.memberCount = "Minimum must be less than maximum";
+    if (!formData.name || formData.name.length < 2) {
+      newErrors.name = "Full name is required";
     }
-
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Valid email is required";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -207,7 +170,6 @@ export default function CommunityRegistrationPage() {
             email: formData.email,
             name: formData.name,
             community_name: formData.communityName,
-            community_type: formData.communityType || null,
             location: formData.location,
             latitude: formData.latitude,
             longitude: formData.longitude,
@@ -215,7 +177,7 @@ export default function CommunityRegistrationPage() {
             member_count_max: formData.memberCountMax,
             event_types: formData.eventTypes.length > 0 ? formData.eventTypes : null,
             contact_role: formData.contactRole || null,
-            phone: formData.phone || null,
+            phone: formData.phone ? `${formData.phoneCountryCode} ${formData.phone}` : null,
             language: formData.language,
           }),
         }
@@ -238,26 +200,25 @@ export default function CommunityRegistrationPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 pt-20">
-        <div className="card max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="text-emerald-600" size={40} />
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="text-teal-600" size={40} />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
             Registration Successful!
           </h1>
           <p className="text-slate-600 mb-6">
-            Thank you for joining Kolamba. You can now sign in to your account
-            and start discovering artists.
+            Thank you for joining Kolamba. You can now sign in to your account.
           </p>
           <div className="flex flex-col gap-3">
-            <Link href="/login" className="btn-primary justify-center">
+            <Link
+              href="/login"
+              className="px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors"
+            >
               Sign In
             </Link>
-            <Link
-              href="/"
-              className="text-slate-600 hover:text-slate-800 transition-colors"
-            >
+            <Link href="/" className="text-slate-600 hover:text-slate-800 transition-colors">
               Back to Home
             </Link>
           </div>
@@ -267,190 +228,111 @@ export default function CommunityRegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 pt-24">
-      <div className="max-w-2xl mx-auto">
-        <div className="card overflow-hidden">
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white text-center">
-            <h1 className="text-2xl font-bold mb-2">Community Registration</h1>
-            <p className="text-slate-300">
-              Join Kolamba and connect with talented Israeli artists
-            </p>
-          </div>
+    <div className="min-h-screen bg-white pt-28 pb-16 px-4">
+      <div className="max-w-5xl mx-auto">
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-8">
+            {/* Left Column - Community Details */}
+            <div className="space-y-6">
+              {/* Community Name */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Community Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.communityName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, communityName: e.target.value })
+                  }
+                  placeholder="NY Community"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    duplicateWarning
+                      ? "border-slate-300"
+                      : errors.communityName
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-slate-400"
+                  }`}
+                />
+                {duplicateWarning && (
+                  <p className="mt-2 text-sm text-teal-600">{duplicateWarning}</p>
+                )}
+                {errors.communityName && !duplicateWarning && (
+                  <p className="mt-2 text-sm text-red-500">{errors.communityName}</p>
+                )}
+              </div>
 
-          <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Section: Contact Information */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2">
-                  Contact Information
-                </h2>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-2">
-                      <Mail className="inline-block mr-2" size={18} />
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      placeholder="contact@community.org"
-                      className={`input ${errors.email ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
-                    />
-                    {errors.email && (
-                      <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-2">
-                      <User className="inline-block mr-2" size={18} />
-                      Contact Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="Your full name"
-                      className={`input ${errors.name ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
-                    />
-                    {errors.name && (
-                      <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-2">
-                      <Briefcase className="inline-block mr-2" size={18} />
-                      Your Role
-                    </label>
-                    <select
-                      value={formData.contactRole}
-                      onChange={(e) =>
-                        setFormData({ ...formData, contactRole: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">Select your role...</option>
-                      {(options?.contact_roles || []).map((role) => (
-                        <option key={role} value={role}>
-                          {role}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <PhoneInput
-                    value={formData.phone}
-                    onChange={(phone) => setFormData({ ...formData, phone })}
-                    label="Phone Number"
+              {/* Location */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Location
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    placeholder="Search Adress"
+                    className={`w-full px-4 py-3.5 pr-12 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                      errors.location
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-slate-400"
+                    }`}
                   />
+                  <Search
+                    size={20}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-teal-500"
+                  />
+                </div>
+                {errors.location && (
+                  <p className="mt-2 text-sm text-red-500">{errors.location}</p>
+                )}
+              </div>
+
+              {/* How Many Members */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  How Many Members?
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    value={
+                      formData.memberCountMin && formData.memberCountMax
+                        ? `${formData.memberCountMin}-${formData.memberCountMax}`
+                        : formData.memberCountMin || ""
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val.includes("-")) {
+                        const [min, max] = val.split("-").map((v) => parseInt(v) || null);
+                        setFormData({ ...formData, memberCountMin: min, memberCountMax: max });
+                      } else {
+                        const num = parseInt(val) || null;
+                        setFormData({ ...formData, memberCountMin: num, memberCountMax: null });
+                      }
+                    }}
+                    placeholder="120-150"
+                    className="w-28 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 transition-colors"
+                  />
+                  <span className="text-slate-600 text-base">People</span>
                 </div>
               </div>
 
-              {/* Section: Community Details */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2">
-                  Community Details
-                </h2>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-2">
-                      <Building2 className="inline-block mr-2" size={18} />
-                      Community Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.communityName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, communityName: e.target.value })
-                      }
-                      placeholder="Beth Israel Synagogue"
-                      className={`input ${errors.communityName ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
-                    />
-                    {errors.communityName && (
-                      <p className="mt-1 text-sm text-red-500">
-                        {errors.communityName}
-                      </p>
-                    )}
-                    {duplicateWarning && (
-                      <div className="mt-2 flex items-start gap-2 text-sm text-amber-600">
-                        <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
-                        <span>{duplicateWarning}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block font-medium text-slate-700 mb-2">
-                      <Building2 className="inline-block mr-2" size={18} />
-                      Community Type
-                    </label>
-                    <select
-                      value={formData.communityType}
-                      onChange={(e) =>
-                        setFormData({ ...formData, communityType: e.target.value })
-                      }
-                      className="input"
-                    >
-                      <option value="">Select type...</option>
-                      {(options?.community_types || []).map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <AddressAutocomplete
-                  value={formData.location}
-                  onChange={(location, lat, lng) =>
-                    setFormData({
-                      ...formData,
-                      location,
-                      latitude: lat ?? null,
-                      longitude: lng ?? null,
-                    })
-                  }
-                  placeholder="Start typing your address..."
-                  error={errors.location}
-                  label="Location *"
-                />
-
-                <MemberCountInput
-                  minValue={formData.memberCountMin}
-                  maxValue={formData.memberCountMax}
-                  onChange={(min, max) =>
-                    setFormData({
-                      ...formData,
-                      memberCountMin: min,
-                      memberCountMax: max,
-                    })
-                  }
-                  error={errors.memberCount}
-                  label="Community Size"
-                />
-
-                <div>
-                  <label className="block font-medium text-slate-700 mb-2">
-                    <Globe className="inline-block mr-2" size={18} />
-                    Primary Language
-                  </label>
+              {/* Main Language */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Main Language
+                </label>
+                <div className="relative">
                   <select
                     value={formData.language}
                     onChange={(e) =>
                       setFormData({ ...formData, language: e.target.value })
                     }
-                    className="input"
+                    className="w-full px-4 py-3.5 border-2 border-teal-400 rounded-lg text-base focus:outline-none focus:border-teal-500 appearance-none bg-white transition-colors"
                   >
                     {(options?.languages || ["English"]).map((lang) => (
                       <option key={lang} value={lang}>
@@ -458,66 +340,187 @@ export default function CommunityRegistrationPage() {
                       </option>
                     ))}
                   </select>
-                </div>
-              </div>
-
-              {/* Section: Event Preferences */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2">
-                  Event Preferences
-                </h2>
-
-                <div>
-                  <label className="block font-medium text-slate-700 mb-2">
-                    <Calendar className="inline-block mr-2" size={18} />
-                    Types of Events You Host
-                  </label>
-                  <TagInput
-                    options={options?.event_types || []}
-                    selected={formData.eventTypes}
-                    onChange={(eventTypes) =>
-                      setFormData({ ...formData, eventTypes })
-                    }
-                    placeholder="Select event types..."
-                    maxTags={5}
+                  <ChevronDown
+                    size={20}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-teal-500 pointer-events-none"
                   />
                 </div>
               </div>
 
-              {errors.submit && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-2">
-                  <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
-                  <span>{errors.submit}</span>
+              {/* Types Of Community Events */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Types Of Community Events
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={eventTypeSearch}
+                    onChange={(e) => {
+                      setEventTypeSearch(e.target.value);
+                      setShowEventDropdown(true);
+                    }}
+                    onFocus={() => setShowEventDropdown(true)}
+                    placeholder="Holiday"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 transition-colors"
+                  />
+                  {showEventDropdown && filteredEventTypes.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                      {filteredEventTypes.map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => handleAddEventType(type)}
+                          className="w-full px-4 py-3 text-left text-base hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0"
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-primary w-full justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Registering...
-                  </>
-                ) : (
-                  "Register Community"
+                {/* Selected Tags */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {formData.eventTypes.map((type) => (
+                    <span
+                      key={type}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-teal-100 text-teal-800 rounded-full text-sm font-medium"
+                    >
+                      {type}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEventType(type)}
+                        className="hover:text-teal-600 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Contact Info */}
+            <div className="space-y-6">
+              {/* Full Name */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Israel Israeli"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.name
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-slate-400"
+                  }`}
+                />
+                {errors.name && (
+                  <p className="mt-2 text-sm text-red-500">{errors.name}</p>
                 )}
-              </button>
-            </form>
+              </div>
 
-            <p className="text-center text-slate-600 text-sm mt-6">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="text-primary-600 hover:text-primary-700 font-medium"
-              >
-                Sign In
-              </Link>
-            </p>
+              {/* Community Role */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Community Roll
+                </label>
+                <input
+                  type="text"
+                  value={formData.contactRole}
+                  onChange={(e) =>
+                    setFormData({ ...formData, contactRole: e.target.value })
+                  }
+                  placeholder="GCC Manager"
+                  className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 transition-colors"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="example@email.com"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.email
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-slate-400"
+                  }`}
+                />
+                {errors.email && (
+                  <p className="mt-2 text-sm text-red-500">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Phone Number */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Phone Number
+                </label>
+                <div className="flex gap-3">
+                  <div className="relative">
+                    <select
+                      value={formData.phoneCountryCode}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phoneCountryCode: e.target.value })
+                      }
+                      className="h-full px-3 py-3.5 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-slate-400 appearance-none bg-white pr-10 text-teal-600"
+                    >
+                      <option value="+000">(+000)</option>
+                      <option value="+1">(+1)</option>
+                      <option value="+972">(+972)</option>
+                      <option value="+44">(+44)</option>
+                      <option value="+33">(+33)</option>
+                    </select>
+                    <ChevronDown
+                      size={16}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-500 pointer-events-none"
+                    />
+                  </div>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    placeholder=""
+                    className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* Submit Button */}
+          <div className="mt-16 flex flex-col items-center">
+            {errors.submit && (
+              <p className="text-red-500 text-sm mb-4">{errors.submit}</p>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-16 py-4 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Registration"}
+            </button>
+          </div>
+        </form>
+
+        <p className="text-center text-slate-500 text-sm mt-8">
+          Already have an account?{" "}
+          <Link href="/login" className="text-teal-600 hover:text-teal-700 font-medium">
+            Sign In
+          </Link>
+        </p>
       </div>
     </div>
   );
