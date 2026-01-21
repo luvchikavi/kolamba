@@ -77,7 +77,7 @@ export default function ArtistSettingsPage() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       if (!token) {
         window.location.href = "/login";
         return;
@@ -132,7 +132,7 @@ export default function ArtistSettingsPage() {
     setSaveSuccess(false);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       if (!token) {
         window.location.href = "/login";
         return;

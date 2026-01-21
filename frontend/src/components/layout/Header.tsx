@@ -3,11 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Menu, X, Search, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
+
+interface UserInfo {
+  name: string | null;
+  role: string;
+  email: string;
+}
 
 export default function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [user, setUser] = useState<UserInfo | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +26,35 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    // Check for logged-in user
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) setUser(data);
+        })
+        .catch(() => setUser(null));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    setUser(null);
+    setShowUserMenu(false);
+    router.push("/");
+  };
+
+  const getDashboardLink = () => {
+    if (user?.role === "artist") return "/dashboard/artist";
+    if (user?.role === "community") return "/dashboard/community";
+    return "/";
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
@@ -49,14 +88,51 @@ export default function Header() {
             />
           </Link>
 
-          {/* Right: Sign In */}
-          <Link
-            href="/login"
-            className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
-          >
-            <User size={18} />
-            <span className="text-sm uppercase tracking-wide hidden sm:inline">Sign In</span>
-          </Link>
+          {/* Right: User Menu or Sign In */}
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+              >
+                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                  <span className="text-primary-600 font-semibold text-sm">
+                    {(user.name || user.email)[0].toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-sm hidden sm:inline">
+                  Hi, {user.name?.split(" ")[0] || "there"}
+                </span>
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 top-12 bg-white rounded-xl shadow-xl border border-slate-100 py-2 min-w-[180px] z-50">
+                  <Link
+                    href={getDashboardLink()}
+                    className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-slate-50"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    <LayoutDashboard size={16} />
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 w-full"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+            >
+              <User size={18} />
+              <span className="text-sm uppercase tracking-wide hidden sm:inline">Sign In</span>
+            </Link>
+          )}
         </div>
       </div>
 

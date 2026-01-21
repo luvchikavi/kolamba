@@ -220,7 +220,7 @@ export default function ArtistDashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       if (!token) {
         window.location.href = "/login";
         return;
@@ -274,7 +274,7 @@ export default function ArtistDashboardPage() {
     if (!suggestion || !artistId) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const response = await fetch(`${apiUrl}/api/tours`, {
