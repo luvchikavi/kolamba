@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Frank_Ruhl_Libre } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Providers from "@/lib/providers";
 import WelcomeModal from "@/components/modals/WelcomeModal";
 
+// Body font - using Inter as fallback until Almoni is added
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+// Headings/Logo font - Frank Ruhl Libre (free from Google Fonts)
+const frankRuhlLibre = Frank_Ruhl_Libre({
+  subsets: ["latin", "hebrew"],
+  weight: ["400", "500", "700", "900"],
+  variable: "--font-frank-ruhl",
   display: "swap",
 });
 
@@ -60,7 +69,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${frankRuhlLibre.variable}`}>
       <body className="font-sans">
         <Providers>
           <div className="flex flex-col min-h-screen">

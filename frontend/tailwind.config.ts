@@ -52,8 +52,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        display: ["Inter", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        serif: ["var(--font-frank-ruhl)", "Frank Ruhl Libre", "Georgia", "serif"],
+        // For when Almoni is added
+        almoni: ["Almoni", "var(--font-inter)", "system-ui", "sans-serif"],
+        // For when Primaries is added
+        primaries: ["Primaries", "var(--font-frank-ruhl)", "Georgia", "serif"],
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
