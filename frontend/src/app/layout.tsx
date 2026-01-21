@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Providers from "@/lib/providers";
+import WelcomeModal from "@/components/modals/WelcomeModal";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -67,6 +68,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <WelcomeModal />
         </Providers>
       </body>
     </html>
