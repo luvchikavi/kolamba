@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -13,66 +13,41 @@ import {
   Plus,
   ChevronRight,
   Settings,
+  Loader2,
 } from "lucide-react";
 
-// Mock data for tour suggestions
-const mockSuggestions = [
-  {
-    region: "New York Metro",
-    communities: [
-      { id: 1, name: "Beth Israel Synagogue", location: "Manhattan, NY" },
-      { id: 2, name: "Congregation Shearith Israel", location: "Brooklyn, NY" },
-      { id: 3, name: "Young Israel of Queens", location: "Queens, NY" },
-    ],
-    suggested_start: "2025-03-15",
-    suggested_end: "2025-03-22",
-    total_distance_km: 45.5,
-    estimated_budget: 3500,
-  },
-  {
-    region: "Los Angeles",
-    communities: [
-      { id: 4, name: "Sinai Temple", location: "Westwood, CA" },
-      { id: 5, name: "Adat Ari El", location: "Valley Village, CA" },
-    ],
-    suggested_start: "2025-04-01",
-    suggested_end: "2025-04-05",
-    total_distance_km: 28.3,
-    estimated_budget: 2000,
-  },
-];
+interface TourSuggestion {
+  region: string;
+  communities: { id: number; name: string; location: string }[];
+  suggested_start: string;
+  suggested_end: string;
+  total_distance_km: number;
+  estimated_budget: number;
+}
 
-// Mock tours
-const mockTours = [
-  {
-    id: 1,
-    name: "Northeast Tour Spring 2025",
-    region: "Northeast USA",
-    start_date: "2025-02-15",
-    end_date: "2025-02-28",
-    total_budget: 5000,
-    status: "confirmed",
-    bookings: 4,
-  },
-];
+interface Tour {
+  id: number;
+  name: string;
+  region: string;
+  start_date: string;
+  end_date: string;
+  total_budget: number;
+  status: string;
+  bookings: { id: number }[];
+}
 
-// Mock pending bookings
-const mockPendingBookings = [
-  {
-    id: 6,
-    location: "Chicago, IL",
-    requested_date: "2025-05-10",
-    budget: 800,
-    status: "pending",
-  },
-  {
-    id: 7,
-    location: "Detroit, MI",
-    requested_date: "2025-05-12",
-    budget: 750,
-    status: "pending",
-  },
-];
+interface Booking {
+  id: number;
+  location: string;
+  requested_date: string;
+  budget: number;
+  status: string;
+}
+
+interface ArtistProfile {
+  id: number;
+  name_en: string;
+}
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
@@ -108,7 +83,7 @@ function TourSuggestionCard({
   suggestion,
   onCreateTour,
 }: {
-  suggestion: typeof mockSuggestions[0];
+  suggestion: TourSuggestion;
   onCreateTour: () => void;
 }) {
   return (
@@ -172,7 +147,7 @@ function TourSuggestionCard({
   );
 }
 
-function TourCard({ tour }: { tour: typeof mockTours[0] }) {
+function TourCard({ tour }: { tour: Tour }) {
   return (
     <Link
       href={`/dashboard/artist/tours/${tour.id}`}
@@ -196,11 +171,11 @@ function TourCard({ tour }: { tour: typeof mockTours[0] }) {
         </div>
         <div className="flex items-center gap-1">
           <DollarSign size={14} className="text-slate-400" />
-          <span>${tour.total_budget.toLocaleString()}</span>
+          <span>${tour.total_budget?.toLocaleString() || 0}</span>
         </div>
         <div className="flex items-center gap-1">
           <Users size={14} className="text-slate-400" />
-          <span>{tour.bookings} performances</span>
+          <span>{tour.bookings?.length || 0} performances</span>
         </div>
       </div>
 
@@ -212,47 +187,132 @@ function TourCard({ tour }: { tour: typeof mockTours[0] }) {
   );
 }
 
-function BookingCard({ booking }: { booking: typeof mockPendingBookings[0] }) {
+function BookingCard({ booking }: { booking: Booking }) {
   return (
     <div className="card p-4">
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-medium text-slate-900">{booking.location}</p>
+          <p className="font-medium text-slate-900">{booking.location || "Location TBD"}</p>
           <p className="text-sm text-slate-500">
-            {new Date(booking.requested_date).toLocaleDateString()}
+            {booking.requested_date
+              ? new Date(booking.requested_date).toLocaleDateString()
+              : "Date TBD"}
           </p>
         </div>
         <StatusBadge status={booking.status} />
       </div>
-      <p className="text-sm text-slate-600 mt-2">Budget: ${booking.budget}</p>
+      <p className="text-sm text-slate-600 mt-2">Budget: ${booking.budget || 0}</p>
     </div>
   );
 }
 
 export default function ArtistDashboardPage() {
-  const [suggestions, setSuggestions] = useState(mockSuggestions);
-  const [tours, setTours] = useState(mockTours);
-  const [pendingBookings] = useState(mockPendingBookings);
+  const [isLoading, setIsLoading] = useState(true);
+  const [artistId, setArtistId] = useState<number | null>(null);
+  const [suggestions, setSuggestions] = useState<TourSuggestion[]>([]);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
   const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings">("suggestions");
 
-  const handleCreateTour = (region: string) => {
-    const suggestion = suggestions.find((s) => s.region === region);
-    if (!suggestion) return;
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-    const newTour = {
-      id: Date.now(),
-      name: `${suggestion.region} Tour`,
-      region: suggestion.region,
-      start_date: suggestion.suggested_start,
-      end_date: suggestion.suggested_end,
-      total_budget: suggestion.estimated_budget,
-      status: "draft",
-      bookings: suggestion.communities.length,
-    };
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
 
-    setTours([newTour, ...tours]);
-    setSuggestions(suggestions.filter((s) => s.region !== region));
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Get artist profile first
+      const profileRes = await fetch(`${apiUrl}/api/artists/me`, { headers });
+      if (profileRes.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      if (!profileRes.ok) {
+        throw new Error("Failed to fetch artist profile");
+      }
+      const profile: ArtistProfile = await profileRes.json();
+      setArtistId(profile.id);
+
+      // Fetch bookings, tours, and suggestions in parallel
+      const [bookingsRes, toursRes, suggestionsRes] = await Promise.all([
+        fetch(`${apiUrl}/api/bookings?artist_id=${profile.id}`, { headers }),
+        fetch(`${apiUrl}/api/tours?artist_id=${profile.id}`, { headers }),
+        fetch(`${apiUrl}/api/tours/suggestions?artist_id=${profile.id}`, { headers }),
+      ]);
+
+      if (bookingsRes.ok) {
+        const bookingsData: Booking[] = await bookingsRes.json();
+        setPendingBookings(bookingsData.filter((b) => b.status === "pending"));
+      }
+
+      if (toursRes.ok) {
+        const toursData: Tour[] = await toursRes.json();
+        setTours(toursData);
+      }
+
+      if (suggestionsRes.ok) {
+        const suggestionsData: TourSuggestion[] = await suggestionsRes.json();
+        setSuggestions(suggestionsData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleCreateTour = async (region: string) => {
+    const suggestion = suggestions.find((s) => s.region === region);
+    if (!suggestion || !artistId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      const response = await fetch(`${apiUrl}/api/tours`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          artist_id: artistId,
+          name: `${suggestion.region} Tour`,
+          region: suggestion.region,
+          start_date: suggestion.suggested_start,
+          end_date: suggestion.suggested_end,
+          total_budget: suggestion.estimated_budget,
+        }),
+      });
+
+      if (response.ok) {
+        const newTour = await response.json();
+        setTours([newTour, ...tours]);
+        setSuggestions(suggestions.filter((s) => s.region !== region));
+      }
+    } catch (error) {
+      console.error("Failed to create tour:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={40} className="animate-spin text-primary-500 mx-auto mb-4" />
+          <p className="text-slate-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20">

@@ -13,8 +13,9 @@ from app.models.category import Category
 from app.models.user import User
 from app.models.community import Community
 from app.models.booking import Booking
-from app.schemas.artist import ArtistResponse, ArtistListResponse
+from app.schemas.artist import ArtistResponse, ArtistListResponse, ArtistUpdate
 from app.utils.security import get_password_hash
+from app.routers.auth import get_current_active_user
 from app.config import get_settings
 
 settings = get_settings()
@@ -71,6 +72,71 @@ async def get_featured_artists(
     )
     artists = result.scalars().unique().all()
     return artists
+
+
+@router.get("/me", response_model=ArtistResponse)
+async def get_my_artist_profile(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get current user's artist profile."""
+    if current_user.role != "artist":
+        raise HTTPException(status_code=403, detail="Not an artist account")
+
+    result = await db.execute(
+        select(Artist)
+        .options(selectinload(Artist.categories))
+        .where(Artist.user_id == current_user.id)
+    )
+    artist = result.scalar_one_or_none()
+
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist profile not found")
+
+    return artist
+
+
+@router.put("/me", response_model=ArtistResponse)
+async def update_my_artist_profile(
+    update_data: ArtistUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update current user's artist profile."""
+    if current_user.role != "artist":
+        raise HTTPException(status_code=403, detail="Not an artist account")
+
+    result = await db.execute(
+        select(Artist)
+        .options(selectinload(Artist.categories))
+        .where(Artist.user_id == current_user.id)
+    )
+    artist = result.scalar_one_or_none()
+
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist profile not found")
+
+    # Update fields
+    update_dict = update_data.model_dump(exclude_unset=True)
+
+    # Handle category updates separately
+    if "category_ids" in update_dict:
+        category_ids = update_dict.pop("category_ids")
+        if category_ids is not None:
+            categories_result = await db.execute(
+                select(Category).where(Category.id.in_(category_ids))
+            )
+            artist.categories = list(categories_result.scalars().all())
+
+    # Update other fields
+    for field, value in update_dict.items():
+        if hasattr(artist, field):
+            setattr(artist, field, value)
+
+    await db.commit()
+    await db.refresh(artist)
+
+    return artist
 
 
 @router.get("/{artist_id}", response_model=ArtistResponse)

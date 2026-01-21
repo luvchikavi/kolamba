@@ -19,6 +19,11 @@ class ArtistBase(BaseModel):
     languages: list[str] = []
     city: Optional[str] = None
     country: str = "Israel"
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    youtube: Optional[str] = None
+    performance_types: list[str] = []
 
 
 class ArtistCreate(ArtistBase):
@@ -39,6 +44,11 @@ class ArtistUpdate(BaseModel):
     languages: Optional[list[str]] = None
     city: Optional[str] = None
     country: Optional[str] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    youtube: Optional[str] = None
+    performance_types: Optional[list[str]] = None
     category_ids: Optional[list[int]] = None
     availability: Optional[dict] = None
 

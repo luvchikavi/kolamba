@@ -10,6 +10,8 @@ from typing import Optional
 
 from app.database import get_db
 from app.models.user import User
+from app.models.artist import Artist
+from app.models.category import Category
 from app.schemas.user import UserCreate, UserResponse, Token, TokenData
 from app.utils.security import (
     verify_password,
@@ -30,6 +32,25 @@ class RegisterRequest(BaseModel):
     password: str
     name: str
     role: str  # 'artist' or 'community'
+
+
+class ArtistRegisterRequest(BaseModel):
+    """Request body for artist registration."""
+    email: str
+    name: str  # Full legal name
+    artist_name: str  # Stage name
+    category: str  # Primary category name
+    other_categories: list[str] = []  # Additional category names
+    bio: Optional[str] = None
+    city: Optional[str] = None
+    languages: list[str] = ["English"]
+    performance_types: list[str] = []
+    price_range_min: Optional[int] = None
+    price_range_max: Optional[int] = None
+    phone: Optional[str] = None
+    website: Optional[str] = None
+    instagram: Optional[str] = None
+    youtube: Optional[str] = None
 
 
 async def get_current_user_optional(
@@ -111,6 +132,88 @@ async def register(
         is_active=True,
     )
     db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    # Create tokens
+    access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
+    refresh_token = create_refresh_token(data={"sub": user.id})
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+    )
+
+
+@router.post("/register/artist", response_model=Token)
+async def register_artist(
+    request: ArtistRegisterRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Register new artist with profile."""
+    # Check if email already exists
+    existing_user = await db.execute(
+        select(User).where(User.email == request.email)
+    )
+    if existing_user.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
+
+    # Generate a temporary password (artist will need to set it on first login)
+    import secrets
+    temp_password = secrets.token_urlsafe(16)
+
+    # Create user with artist role
+    user = User(
+        email=request.email,
+        password_hash=get_password_hash(temp_password),
+        name=request.name,
+        role="artist",
+        status="pending",  # Artists need approval
+        is_active=True,
+    )
+    db.add(user)
+    await db.flush()
+
+    # Get categories by name (case-insensitive matching)
+    all_category_names = [request.category] + request.other_categories
+    category_slugs = []
+    for name in all_category_names:
+        # Convert category name to slug format
+        slug = name.lower().replace(" ", "-")
+        category_slugs.append(slug)
+
+    categories_result = await db.execute(
+        select(Category).where(Category.slug.in_(category_slugs))
+    )
+    categories = list(categories_result.scalars().all())
+
+    # Create artist profile
+    artist = Artist(
+        user_id=user.id,
+        name_he=request.artist_name,  # Using artist_name for name_he (primary)
+        name_en=request.artist_name,  # Also set English name
+        bio_en=request.bio,
+        city=request.city,
+        languages=request.languages,
+        performance_types=request.performance_types,
+        price_single=request.price_range_min,
+        price_tour=request.price_range_max,
+        phone=request.phone,
+        website=request.website,
+        instagram=request.instagram,
+        youtube=request.youtube,
+        status="pending",
+    )
+
+    # Link categories
+    for cat in categories:
+        artist.categories.append(cat)
+
+    db.add(artist)
     await db.commit()
     await db.refresh(user)
 

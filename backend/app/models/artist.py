@@ -48,6 +48,15 @@ class Artist(Base):
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     country: Mapped[str] = mapped_column(String(100), default="Israel")
 
+    # Contact and social media
+    phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    website: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    instagram: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    youtube: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Performance types (array of strings)
+    performance_types: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)
+
     # Status and visibility
     status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, active, inactive
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
