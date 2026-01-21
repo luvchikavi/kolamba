@@ -2,37 +2,117 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Mail, Lock, User, Music, MapPin, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { CheckCircle, ChevronDown, X, Search } from "lucide-react";
 
 const categories = [
-  { value: "music", label: "Music" },
-  { value: "dance", label: "Dance" },
-  { value: "theater", label: "Theater" },
-  { value: "lectures", label: "Lectures" },
-  { value: "workshops", label: "Workshops" },
-  { value: "comedy", label: "Comedy" },
-  { value: "other", label: "Other" },
+  "Music",
+  "Dance",
+  "Theater",
+  "Literature",
+  "Comedy",
+  "Lectures",
+  "Workshops",
+  "Journalism",
+  "Inspiration",
+  "Visual Arts",
+];
+
+const languages = ["English", "Hebrew", "French", "Spanish", "Russian", "German"];
+
+const performanceTypes = [
+  "Solo Performance",
+  "Band/Group",
+  "Workshop Leader",
+  "Lecturer/Speaker",
+  "Interactive Show",
+  "Children's Entertainment",
 ];
 
 export default function ArtistRegistrationPage() {
-  const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: "",
+    artistName: "",
+    realName: "",
     email: "",
-    password: "",
+    phone: "",
+    phoneCountryCode: "+972",
     category: "",
-    city: "",
+    otherCategories: [] as string[],
+    bio: "",
+    location: "",
+    languages: ["English"],
+    performanceTypes: [] as string[],
+    priceRangeMin: "",
+    priceRangeMax: "",
+    website: "",
+    instagram: "",
+    youtube: "",
   });
-  const [error, setError] = useState<string | null>(null);
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleAddCategory = (cat: string) => {
+    if (!formData.otherCategories.includes(cat) && cat !== formData.category) {
+      setFormData({ ...formData, otherCategories: [...formData.otherCategories, cat] });
+    }
+    setCategorySearch("");
+    setShowCategoryDropdown(false);
+  };
+
+  const handleRemoveCategory = (cat: string) => {
+    setFormData({
+      ...formData,
+      otherCategories: formData.otherCategories.filter((c) => c !== cat),
+    });
+  };
+
+  const handleTogglePerformanceType = (type: string) => {
+    if (formData.performanceTypes.includes(type)) {
+      setFormData({
+        ...formData,
+        performanceTypes: formData.performanceTypes.filter((t) => t !== type),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        performanceTypes: [...formData.performanceTypes, type],
+      });
+    }
+  };
+
+  const filteredCategories = categories.filter(
+    (cat) =>
+      cat.toLowerCase().includes(categorySearch.toLowerCase()) &&
+      cat !== formData.category &&
+      !formData.otherCategories.includes(cat)
+  );
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.artistName || formData.artistName.length < 2) {
+      newErrors.artistName = "Artist/Stage name is required";
+    }
+    if (!formData.realName || formData.realName.length < 2) {
+      newErrors.realName = "Full name is required";
+    }
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Valid email is required";
+    }
+    if (!formData.category) {
+      newErrors.category = "Primary category is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
+    if (!validateForm()) return;
+    setIsSubmitting(true);
 
     try {
       const response = await fetch(
@@ -42,10 +122,20 @@ export default function ArtistRegistrationPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: formData.email,
-            password: formData.password,
-            name: formData.name,
+            name: formData.realName,
+            artist_name: formData.artistName,
             category: formData.category,
-            city: formData.city,
+            other_categories: formData.otherCategories,
+            bio: formData.bio,
+            city: formData.location,
+            languages: formData.languages,
+            performance_types: formData.performanceTypes,
+            price_range_min: formData.priceRangeMin ? parseInt(formData.priceRangeMin) : null,
+            price_range_max: formData.priceRangeMax ? parseInt(formData.priceRangeMax) : null,
+            phone: formData.phone ? `${formData.phoneCountryCode} ${formData.phone}` : null,
+            website: formData.website || null,
+            instagram: formData.instagram || null,
+            youtube: formData.youtube || null,
           }),
         }
       );
@@ -55,177 +145,420 @@ export default function ArtistRegistrationPage() {
         throw new Error(data.detail || "Registration failed");
       }
 
-      setIsSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      setIsSubmitted(true);
+    } catch (error) {
+      setErrors({
+        submit: error instanceof Error ? error.message : "Registration failed",
+      });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (isSuccess) {
+  if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 pt-20">
-        <div className="card max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="text-emerald-600" size={40} />
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="text-teal-600" size={40} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+          <h1 className="text-3xl font-serif font-bold text-slate-900 mb-2">
             Welcome to Kolamba!
           </h1>
           <p className="text-slate-600 mb-6">
-            Your account has been created successfully. You can now sign in and start building your profile.
+            Your artist profile has been created. We&apos;ll review your application and get back to you soon.
           </p>
-          <Link href="/login" className="btn-primary inline-flex justify-center">
-            Sign In
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/login"
+              className="px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link href="/" className="text-slate-600 hover:text-slate-800 transition-colors">
+              Back to Home
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 pt-24">
-      <div className="max-w-lg mx-auto">
-        <div className="card overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white text-center">
-            <h1 className="text-2xl font-bold mb-2">Register as Artist</h1>
-            <p className="text-slate-300">
-              Join Kolamba and reach Jewish communities worldwide
-            </p>
-          </div>
+    <div className="min-h-screen bg-white pt-28 pb-16 px-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Page Header */}
+        <div className="flex items-center gap-8 mb-12">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-wide">KOLAMBA</h1>
+          <span className="text-xl text-slate-600">ARTIST SIGN UP</span>
+        </div>
 
-          <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Name */}
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-8">
+            {/* Left Column - Artist Details */}
+            <div className="space-y-6">
+              {/* Section Header */}
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">
+                1 | Artist Info
+              </h2>
+
+              {/* Artist/Stage Name */}
               <div>
-                <label className="block font-medium text-slate-700 mb-2">
-                  <User className="inline-block mr-2" size={18} />
-                  Full Name
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Artist / Stage Name
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Your full name"
-                  required
-                  className="input"
+                  value={formData.artistName}
+                  onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
+                  placeholder="Tuna"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.artistName
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-teal-400"
+                  }`}
                 />
+                {errors.artistName && (
+                  <p className="mt-2 text-sm text-red-500">{errors.artistName}</p>
+                )}
+              </div>
+
+              {/* Primary Category */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Primary Category
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none appearance-none bg-white transition-colors ${
+                      errors.category
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-teal-400"
+                    }`}
+                  >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={20}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                </div>
+                {errors.category && (
+                  <p className="mt-2 text-sm text-red-500">{errors.category}</p>
+                )}
+              </div>
+
+              {/* Additional Categories */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Additional Categories
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={categorySearch}
+                    onChange={(e) => {
+                      setCategorySearch(e.target.value);
+                      setShowCategoryDropdown(true);
+                    }}
+                    onFocus={() => setShowCategoryDropdown(true)}
+                    placeholder="Search categories..."
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  {showCategoryDropdown && filteredCategories.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                      {filteredCategories.map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => handleAddCategory(cat)}
+                          className="w-full px-4 py-3 text-left text-base hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0"
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* Selected Tags */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {formData.otherCategories.map((cat) => (
+                    <span
+                      key={cat}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-teal-100 text-teal-800 rounded-full text-sm font-medium"
+                    >
+                      {cat}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCategory(cat)}
+                        className="hover:text-teal-600 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Based In
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="Tel Aviv, Israel"
+                    className="w-full px-4 py-3.5 pr-12 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <Search
+                    size={20}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-teal-500"
+                  />
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Short Bio
+                </label>
+                <textarea
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Tell us about yourself and your work..."
+                  rows={4}
+                  className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors resize-none"
+                />
+              </div>
+
+              {/* Performance Types */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Performance Types
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {performanceTypes.map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => handleTogglePerformanceType(type)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        formData.performanceTypes.includes(type)
+                          ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                          : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Contact Info */}
+            <div className="space-y-6">
+              {/* Section Header */}
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">
+                2 | Contact Info
+              </h2>
+
+              {/* Full Name */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Full Name (Legal)
+                </label>
+                <input
+                  type="text"
+                  value={formData.realName}
+                  onChange={(e) => setFormData({ ...formData, realName: e.target.value })}
+                  placeholder="Israel Israeli"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.realName
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-teal-400"
+                  }`}
+                />
+                {errors.realName && (
+                  <p className="mt-2 text-sm text-red-500">{errors.realName}</p>
+                )}
               </div>
 
               {/* Email */}
               <div>
-                <label className="block font-medium text-slate-700 mb-2">
-                  <Mail className="inline-block mr-2" size={18} />
+                <label className="block text-base font-medium text-slate-800 mb-2">
                   Email
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="your@email.com"
-                  required
-                  className="input"
+                  placeholder="artist@email.com"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.email
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-teal-400"
+                  }`}
                 />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block font-medium text-slate-700 mb-2">
-                  <Lock className="inline-block mr-2" size={18} />
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
-                    className="input pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block font-medium text-slate-700 mb-2">
-                  <Music className="inline-block mr-2" size={18} />
-                  Category
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  required
-                  className="input"
-                >
-                  <option value="">Select category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* City */}
-              <div>
-                <label className="block font-medium text-slate-700 mb-2">
-                  <MapPin className="inline-block mr-2" size={18} />
-                  City
-                </label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  placeholder="Tel Aviv"
-                  required
-                  className="input"
-                />
-              </div>
-
-              {/* Error */}
-              {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                  {error}
-                </div>
-              )}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="btn-primary w-full justify-center"
-              >
-                {isLoading ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Registering...
-                  </>
-                ) : (
-                  "Create Account"
+                {errors.email && (
+                  <p className="mt-2 text-sm text-red-500">{errors.email}</p>
                 )}
-              </button>
-            </form>
+              </div>
 
-            {/* Login link */}
-            <p className="text-center text-slate-600 text-sm mt-6">
-              Already have an account?{" "}
-              <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                Sign In
-              </Link>
-            </p>
+              {/* Phone */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Phone Number
+                </label>
+                <div className="flex gap-3">
+                  <div className="relative">
+                    <select
+                      value={formData.phoneCountryCode}
+                      onChange={(e) => setFormData({ ...formData, phoneCountryCode: e.target.value })}
+                      className="h-full px-3 py-3.5 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white pr-10 text-teal-600"
+                    >
+                      <option value="+972">(+972)</option>
+                      <option value="+1">(+1)</option>
+                      <option value="+44">(+44)</option>
+                      <option value="+33">(+33)</option>
+                    </select>
+                    <ChevronDown
+                      size={16}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-teal-500 pointer-events-none"
+                    />
+                  </div>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="50-123-4567"
+                    className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Price Range (USD per show)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    value={formData.priceRangeMin}
+                    onChange={(e) => setFormData({ ...formData, priceRangeMin: e.target.value })}
+                    placeholder="500"
+                    className="w-28 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <span className="text-slate-600">to</span>
+                  <input
+                    type="number"
+                    value={formData.priceRangeMax}
+                    onChange={(e) => setFormData({ ...formData, priceRangeMax: e.target.value })}
+                    placeholder="2000"
+                    className="w-28 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <span className="text-slate-600">USD</span>
+                </div>
+              </div>
+
+              {/* Languages */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Languages
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => {
+                        if (formData.languages.includes(lang)) {
+                          setFormData({
+                            ...formData,
+                            languages: formData.languages.filter((l) => l !== lang),
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            languages: [...formData.languages, lang],
+                          });
+                        }
+                      }}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        formData.languages.includes(lang)
+                          ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                          : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Website / Social Links
+                </label>
+                <div className="space-y-3">
+                  <input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    placeholder="https://yourwebsite.com"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <input
+                    type="text"
+                    value={formData.instagram}
+                    onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                    placeholder="@instagram"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <input
+                    type="url"
+                    value={formData.youtube}
+                    onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
+                    placeholder="YouTube channel URL"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+
+          {/* Submit Button */}
+          <div className="mt-16 flex flex-col items-center">
+            {errors.submit && (
+              <p className="text-red-500 text-sm mb-4">{errors.submit}</p>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-16 py-4 bg-slate-900 text-white rounded-full font-semibold text-base hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "Submitting..." : "Submit Application"}
+            </button>
+          </div>
+        </form>
+
+        <p className="text-center text-slate-500 text-sm mt-8">
+          Already have an account?{" "}
+          <Link href="/login" className="text-teal-600 hover:text-teal-700 font-medium">
+            Sign In
+          </Link>
+        </p>
       </div>
     </div>
   );
