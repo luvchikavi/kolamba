@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Star } from "lucide-react";
 
 interface Category {
@@ -34,10 +35,12 @@ export default function ArtistCard({ artist }: ArtistCardProps) {
       {/* Image / Avatar */}
       <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
         {artist.image ? (
-          <img
+          <Image
             src={artist.image}
             alt={artist.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
           <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">

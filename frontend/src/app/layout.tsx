@@ -12,13 +12,44 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kolamba - The Jewish Culture Club",
-  description: "Connecting Israeli artists with Jewish communities worldwide. Book performances, workshops, and cultural events.",
-  keywords: ["Jewish artists", "Jewish communities", "Israeli performers", "cultural events", "Jewish culture", "performances"],
+  metadataBase: new URL("https://kolamba.vercel.app"),
+  title: {
+    default: "Kolamba - The Jewish Culture Club",
+    template: "%s | Kolamba",
+  },
+  description: "All the world's a stage. Connecting Israeli artists with Jewish communities worldwide. Book performances, workshops, lectures, and cultural events.",
+  keywords: [
+    "Jewish artists",
+    "Jewish communities",
+    "Israeli performers",
+    "cultural events",
+    "Jewish culture",
+    "performances",
+    "workshops",
+    "lectures",
+    "music",
+    "theater",
+    "dance",
+  ],
+  authors: [{ name: "Kolamba" }],
+  creator: "Kolamba",
+  publisher: "Kolamba",
   openGraph: {
     title: "Kolamba - The Jewish Culture Club",
-    description: "Connecting Israeli artists with Jewish communities worldwide",
+    description: "All the world's a stage. Connecting Israeli artists with Jewish communities worldwide.",
+    url: "https://kolamba.vercel.app",
+    siteName: "Kolamba",
+    locale: "en_US",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kolamba - The Jewish Culture Club",
+    description: "Connecting Israeli artists with Jewish communities worldwide",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
