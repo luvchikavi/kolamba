@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -12,13 +12,19 @@ import {
   MapPin,
   Music,
   Star,
+  Plane,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
+import TourOpportunityCard from "@/components/tours/TourOpportunityCard";
 
 // Mock community data (will be replaced with auth)
 const mockCommunity = {
   id: 1,
   name: "Beth Israel Synagogue",
   location: "New York, NY",
+  latitude: 40.7128,
+  longitude: -74.006,
 };
 
 // Mock bookings
@@ -70,6 +76,31 @@ const mockRecommendedArtists = [
   },
 ];
 
+interface TourOpportunity {
+  tour_id: number;
+  tour_name: string;
+  artist: {
+    id: number;
+    name_en: string | null;
+    name_he: string | null;
+    profile_image: string | null;
+    category: string | null;
+  };
+  region: string;
+  start_date: string | null;
+  end_date: string | null;
+  nearest_booking: {
+    id: number;
+    location: string;
+    requested_date: string | null;
+    distance_km: number | null;
+  } | null;
+  distance_to_nearest_km: number | null;
+  total_stops: number;
+  status: string;
+  estimated_savings: number | null;
+}
+
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
@@ -88,13 +119,15 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status] || styles.pending}`}>
+    <span
+      className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status] || styles.pending}`}
+    >
       {labels[status] || status}
     </span>
   );
 }
 
-function BookingCard({ booking }: { booking: typeof mockBookings[0] }) {
+function BookingCard({ booking }: { booking: (typeof mockBookings)[0] }) {
   return (
     <div className="card p-5">
       <div className="flex justify-between items-start mb-3">
@@ -134,12 +167,13 @@ function BookingCard({ booking }: { booking: typeof mockBookings[0] }) {
   );
 }
 
-function ArtistRecommendationCard({ artist }: { artist: typeof mockRecommendedArtists[0] }) {
+function ArtistRecommendationCard({
+  artist,
+}: {
+  artist: (typeof mockRecommendedArtists)[0];
+}) {
   return (
-    <Link
-      href={`/artists/${artist.id}`}
-      className="block card card-hover p-4"
-    >
+    <Link href={`/artists/${artist.id}`} className="block card card-hover p-4">
       <div className="flex gap-4">
         <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center flex-shrink-0">
           <span className="text-xl font-bold text-primary-600/50">
@@ -151,7 +185,7 @@ function ArtistRecommendationCard({ artist }: { artist: typeof mockRecommendedAr
           <div className="flex items-center gap-2 mt-1 text-sm text-slate-600">
             <Music size={12} className="text-slate-400" />
             <span>{artist.category}</span>
-            <span className="text-slate-300">•</span>
+            <span className="text-slate-300">|</span>
             <span>From ${artist.price}</span>
           </div>
           <div className="flex items-center gap-1 mt-1">
@@ -168,6 +202,29 @@ export default function CommunityDashboardPage() {
   const [bookings] = useState(mockBookings);
   const [recommendedArtists] = useState(mockRecommendedArtists);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [nearbyTours, setNearbyTours] = useState<TourOpportunity[]>([]);
+  const [isLoadingTours, setIsLoadingTours] = useState(true);
+
+  // Fetch nearby tours
+  useEffect(() => {
+    const fetchNearbyTours = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/communities/${mockCommunity.id}/tour-opportunities?radius_km=500`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setNearbyTours(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch nearby tours:", error);
+      } finally {
+        setIsLoadingTours(false);
+      }
+    };
+
+    fetchNearbyTours();
+  }, []);
 
   const filteredBookings = activeFilter
     ? bookings.filter((b) => b.status === activeFilter)
@@ -178,6 +235,11 @@ export default function CommunityDashboardPage() {
     pending: bookings.filter((b) => b.status === "pending").length,
     approved: bookings.filter((b) => b.status === "approved").length,
     completed: bookings.filter((b) => b.status === "completed").length,
+  };
+
+  const handleTourJoinRequest = (tourId: number) => {
+    // Could refresh the list or show a notification
+    console.log("Join request sent for tour:", tourId);
   };
 
   return (
@@ -252,6 +314,77 @@ export default function CommunityDashboardPage() {
           </div>
         </div>
 
+        {/* Artists Coming to Your Area - NEW SECTION */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                <Plane size={20} className="text-primary-600" />
+              </div>
+              <div>
+                <h2 className="font-bold text-lg text-slate-900">
+                  Artists Coming to Your Area
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Join existing tours to save on costs
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/tours/nearby"
+              className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1"
+            >
+              View All
+              <ChevronRight size={16} />
+            </Link>
+          </div>
+
+          {isLoadingTours ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 size={24} className="animate-spin text-primary-500" />
+            </div>
+          ) : nearbyTours.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {nearbyTours.slice(0, 3).map((tour) => (
+                <TourOpportunityCard
+                  key={tour.tour_id}
+                  tour={tour}
+                  communityId={mockCommunity.id}
+                  onJoinRequest={handleTourJoinRequest}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="card p-8 text-center">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plane size={32} className="text-slate-400" />
+              </div>
+              <h3 className="font-bold text-lg text-slate-900 mb-2">
+                No tours in your area right now
+              </h3>
+              <p className="text-slate-500 mb-4">
+                We&apos;ll notify you when artists plan tours near{" "}
+                {mockCommunity.location}.
+              </p>
+              <Link href="/artists" className="btn-primary inline-flex">
+                <Search size={18} />
+                Browse All Artists
+              </Link>
+            </div>
+          )}
+
+          {nearbyTours.length > 0 && (
+            <div className="mt-4 p-4 bg-emerald-50 rounded-xl flex items-center gap-3">
+              <Sparkles size={20} className="text-emerald-600 flex-shrink-0" />
+              <p className="text-sm text-emerald-800">
+                <strong>Save up to 30%</strong> by joining existing tours! When
+                artists are already traveling to nearby communities, you can share
+                travel costs.
+              </p>
+            </div>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Bookings */}
           <div className="lg:col-span-2">
@@ -295,7 +428,9 @@ export default function CommunityDashboardPage() {
               <div className="card p-8 text-center">
                 <Calendar size={48} className="text-slate-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-slate-900 mb-2">
-                  {activeFilter ? "No bookings with this status" : "No bookings yet"}
+                  {activeFilter
+                    ? "No bookings with this status"
+                    : "No bookings yet"}
                 </h3>
                 <p className="text-slate-500 mb-4">
                   Start by searching for artists and sending booking requests.
@@ -336,6 +471,13 @@ export default function CommunityDashboardPage() {
             <div className="mt-8 card p-5">
               <h3 className="font-bold text-slate-900 mb-4">Quick Actions</h3>
               <div className="space-y-2">
+                <Link
+                  href="/tours/nearby"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  <Plane size={18} className="text-primary-600" />
+                  <span className="text-slate-700">Find Nearby Tours</span>
+                </Link>
                 <Link
                   href="/search"
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors"

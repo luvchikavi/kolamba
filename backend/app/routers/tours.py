@@ -7,16 +7,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.tour import Tour
+from app.models.tour import Tour, TourJoinRequest
 from app.models.booking import Booking
 from app.models.artist import Artist
+from app.models.community import Community
 from app.schemas.tour import (
     TourCreate,
     TourUpdate,
     TourResponse,
     TourSuggestion,
+    NearbyTourResponse,
+    JoinTourRequest,
+    TourJoinRequestResponse,
 )
-from app.services.tour_grouping import suggest_tours
+from app.services.tour_grouping import suggest_tours, find_nearby_tours
 
 router = APIRouter()
 
@@ -50,6 +54,206 @@ async def get_tour_suggestions(
     )
 
     return suggestions
+
+
+@router.get("/nearby", response_model=list[NearbyTourResponse])
+async def get_nearby_tours(
+    community_id: int = Query(..., description="Community ID to find nearby tours for"),
+    radius_km: float = Query(500, description="Search radius in kilometers"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Find tours with confirmed bookings near a community.
+
+    This is the core feature for tour discovery - allows communities to see
+    which artists are coming to their area and potentially join their tours.
+    """
+    # Verify community exists
+    community_result = await db.execute(
+        select(Community).where(Community.id == community_id)
+    )
+    community = community_result.scalar_one_or_none()
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    if community.latitude is None or community.longitude is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Community location not set. Please update your profile with your address."
+        )
+
+    nearby = await find_nearby_tours(
+        db=db,
+        community_id=community_id,
+        radius_km=radius_km,
+    )
+
+    return nearby
+
+
+@router.post("/{tour_id}/join-request", response_model=TourJoinRequestResponse)
+async def request_to_join_tour(
+    tour_id: int,
+    request: JoinTourRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Submit a request to join an existing tour.
+
+    Communities can request to be added to an artist's tour. The artist/admin
+    will review and approve/reject the request.
+    """
+    # Verify tour exists and is open for joining
+    tour_result = await db.execute(
+        select(Tour).where(Tour.id == tour_id)
+    )
+    tour = tour_result.scalar_one_or_none()
+    if not tour:
+        raise HTTPException(status_code=404, detail="Tour not found")
+
+    if tour.status not in ["proposed", "confirmed"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot join tour with status '{tour.status}'. Tour must be 'proposed' or 'confirmed'."
+        )
+
+    # Verify community exists
+    community_result = await db.execute(
+        select(Community).where(Community.id == request.community_id)
+    )
+    community = community_result.scalar_one_or_none()
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    # Check if there's already a pending request
+    existing_request = await db.execute(
+        select(TourJoinRequest).where(
+            TourJoinRequest.tour_id == tour_id,
+            TourJoinRequest.community_id == request.community_id,
+            TourJoinRequest.status == "pending",
+        )
+    )
+    if existing_request.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail="You already have a pending request to join this tour."
+        )
+
+    # Create the join request
+    join_request = TourJoinRequest(
+        tour_id=tour_id,
+        community_id=request.community_id,
+        preferred_date=request.preferred_date,
+        budget=request.budget,
+        notes=request.notes,
+        status="pending",
+    )
+    db.add(join_request)
+    await db.commit()
+    await db.refresh(join_request)
+
+    return TourJoinRequestResponse(
+        id=join_request.id,
+        tour_id=join_request.tour_id,
+        community_id=join_request.community_id,
+        status=join_request.status,
+        preferred_date=join_request.preferred_date,
+        budget=join_request.budget,
+        notes=join_request.notes,
+        created_at=join_request.created_at,
+    )
+
+
+@router.get("/{tour_id}/join-requests", response_model=list[TourJoinRequestResponse])
+async def get_tour_join_requests(
+    tour_id: int,
+    status: Optional[str] = Query(None, description="Filter by status"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get all join requests for a tour (for artists/admins)."""
+    # Verify tour exists
+    tour_result = await db.execute(
+        select(Tour).where(Tour.id == tour_id)
+    )
+    tour = tour_result.scalar_one_or_none()
+    if not tour:
+        raise HTTPException(status_code=404, detail="Tour not found")
+
+    query = select(TourJoinRequest).where(TourJoinRequest.tour_id == tour_id)
+    if status:
+        query = query.where(TourJoinRequest.status == status)
+
+    result = await db.execute(query.order_by(TourJoinRequest.created_at.desc()))
+    requests = result.scalars().all()
+
+    return [
+        TourJoinRequestResponse(
+            id=r.id,
+            tour_id=r.tour_id,
+            community_id=r.community_id,
+            status=r.status,
+            preferred_date=r.preferred_date,
+            budget=r.budget,
+            notes=r.notes,
+            created_at=r.created_at,
+        )
+        for r in requests
+    ]
+
+
+@router.put("/{tour_id}/join-requests/{request_id}")
+async def update_join_request_status(
+    tour_id: int,
+    request_id: int,
+    new_status: str = Query(..., pattern="^(approved|rejected)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Approve or reject a tour join request."""
+    # Get the request
+    request_result = await db.execute(
+        select(TourJoinRequest).where(
+            TourJoinRequest.id == request_id,
+            TourJoinRequest.tour_id == tour_id,
+        )
+    )
+    join_request = request_result.scalar_one_or_none()
+    if not join_request:
+        raise HTTPException(status_code=404, detail="Join request not found")
+
+    if join_request.status != "pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Request already {join_request.status}"
+        )
+
+    join_request.status = new_status
+    await db.commit()
+
+    # If approved, create a booking for this community
+    if new_status == "approved":
+        tour_result = await db.execute(
+            select(Tour).where(Tour.id == tour_id)
+        )
+        tour = tour_result.scalar_one()
+
+        booking = Booking(
+            artist_id=tour.artist_id,
+            community_id=join_request.community_id,
+            tour_id=tour_id,
+            requested_date=join_request.preferred_date,
+            budget=join_request.budget,
+            notes=f"Joined tour via request. {join_request.notes or ''}".strip(),
+            status="approved",
+        )
+        db.add(booking)
+        await db.commit()
+
+        return {
+            "message": "Join request approved. A booking has been created.",
+            "booking_id": booking.id,
+        }
+
+    return {"message": f"Join request {new_status}"}
 
 
 @router.post("", response_model=TourResponse)

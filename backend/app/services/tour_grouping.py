@@ -11,7 +11,9 @@ from sqlalchemy.orm import selectinload
 
 from app.models.booking import Booking
 from app.models.community import Community
-from app.schemas.tour import TourSuggestion
+from app.models.tour import Tour
+from app.models.artist import Artist
+from app.schemas.tour import TourSuggestion, NearbyTourResponse, NearbyTourArtist, NearbyTourBooking
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -469,3 +471,145 @@ async def suggest_tours(
     all_suggestions.sort(key=lambda x: x.score or 0, reverse=True)
 
     return all_suggestions
+
+
+async def find_nearby_tours(
+    db: AsyncSession,
+    community_id: int,
+    radius_km: float = 500,
+    status_filter: list[str] | None = None,
+) -> list[NearbyTourResponse]:
+    """
+    Find tours with confirmed bookings near a community's location.
+
+    This is the core feature for tour discovery - allows communities to see
+    which artists are coming to their area and potentially join their tours.
+
+    Args:
+        db: Database session
+        community_id: The community looking for nearby tours
+        radius_km: Maximum distance to search (default 500km)
+        status_filter: Filter by tour status (default: proposed, confirmed)
+
+    Returns:
+        List of nearby tour opportunities sorted by distance
+    """
+    if status_filter is None:
+        status_filter = ["proposed", "confirmed", "in_progress"]
+
+    # Get the community's location
+    community_result = await db.execute(
+        select(Community).where(Community.id == community_id)
+    )
+    community = community_result.scalar_one_or_none()
+
+    if not community or community.latitude is None or community.longitude is None:
+        return []
+
+    community_lat = float(community.latitude)
+    community_lng = float(community.longitude)
+
+    # Get active tours with their bookings and artist info
+    tours_result = await db.execute(
+        select(Tour)
+        .options(
+            selectinload(Tour.bookings).selectinload(Booking.community),
+            selectinload(Tour.artist),
+        )
+        .where(Tour.status.in_(status_filter))
+    )
+    tours = tours_result.scalars().all()
+
+    nearby_tours = []
+
+    for tour in tours:
+        if not tour.bookings:
+            continue
+
+        # Find the nearest booking to the community
+        nearest_booking = None
+        min_distance = float("inf")
+
+        for booking in tour.bookings:
+            bc = booking.community
+            if bc and bc.latitude and bc.longitude:
+                dist = haversine_distance(
+                    community_lat, community_lng,
+                    float(bc.latitude), float(bc.longitude)
+                )
+                if dist < min_distance:
+                    min_distance = dist
+                    nearest_booking = booking
+
+        # Only include tours within the radius
+        if min_distance <= radius_km and nearest_booking:
+            # Get artist category if available
+            artist = tour.artist
+            category_name = None
+            if artist and hasattr(artist, 'categories') and artist.categories:
+                category_name = artist.categories[0].name_en if artist.categories else None
+
+            # Calculate estimated savings (simplified: ~30% of typical booking cost)
+            avg_booking_budget = sum(
+                b.budget or 0 for b in tour.bookings if b.budget
+            ) / max(len(tour.bookings), 1)
+            estimated_savings = int(avg_booking_budget * 0.3) if avg_booking_budget > 0 else None
+
+            nearby_tours.append(NearbyTourResponse(
+                tour_id=tour.id,
+                tour_name=tour.name,
+                artist=NearbyTourArtist(
+                    id=artist.id,
+                    name_en=artist.name_en,
+                    name_he=artist.name_he,
+                    profile_image=artist.profile_image,
+                    category=category_name,
+                ),
+                region=tour.region or "Various Locations",
+                start_date=tour.start_date,
+                end_date=tour.end_date,
+                nearest_booking=NearbyTourBooking(
+                    id=nearest_booking.id,
+                    location=nearest_booking.location or (
+                        nearest_booking.community.location
+                        if nearest_booking.community else "Unknown"
+                    ),
+                    requested_date=nearest_booking.requested_date,
+                    distance_km=round(min_distance, 1),
+                ),
+                distance_to_nearest_km=round(min_distance, 1),
+                total_stops=len(tour.bookings),
+                status=tour.status,
+                estimated_savings=estimated_savings,
+            ))
+
+    # Sort by distance (nearest first)
+    nearby_tours.sort(key=lambda x: x.distance_to_nearest_km or float("inf"))
+
+    return nearby_tours
+
+
+async def get_community_tour_opportunities(
+    db: AsyncSession,
+    community_id: int,
+    radius_km: float = 500,
+) -> list[NearbyTourResponse]:
+    """
+    Get all tour opportunities for a community.
+
+    This is a convenience wrapper that returns nearby tours a community
+    could potentially join.
+
+    Args:
+        db: Database session
+        community_id: The community's ID
+        radius_km: Search radius in km
+
+    Returns:
+        List of nearby tour opportunities
+    """
+    return await find_nearby_tours(
+        db=db,
+        community_id=community_id,
+        radius_km=radius_km,
+    )

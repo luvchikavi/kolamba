@@ -74,3 +74,35 @@ class TourBooking(Base):
 
     # Notes specific to this stop
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class TourJoinRequest(Base):
+    """Request from a community to join an existing tour."""
+
+    __tablename__ = "tour_join_requests"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    tour_id: Mapped[int] = mapped_column(
+        ForeignKey("tours.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    community_id: Mapped[int] = mapped_column(
+        ForeignKey("communities.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Request details
+    preferred_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    budget: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Status: pending, approved, rejected
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
