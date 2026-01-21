@@ -339,14 +339,18 @@ async def get_me(
     db: AsyncSession = Depends(get_db),
 ):
     """Get current authenticated user."""
-    # Get artist or community ID if exists
+    # Get artist or community ID if exists (query separately to avoid lazy loading issues)
     artist_id = None
     community_id = None
 
-    if current_user.role == "artist" and current_user.artist:
-        artist_id = current_user.artist.id
-    elif current_user.role == "community" and current_user.community:
-        community_id = current_user.community.id
+    if current_user.role == "artist":
+        from app.models.artist import Artist
+        result = await db.execute(select(Artist.id).where(Artist.user_id == current_user.id))
+        artist_id = result.scalar_one_or_none()
+    elif current_user.role == "community":
+        from app.models.community import Community
+        result = await db.execute(select(Community.id).where(Community.user_id == current_user.id))
+        community_id = result.scalar_one_or_none()
 
     return UserMeResponse(
         id=current_user.id,
