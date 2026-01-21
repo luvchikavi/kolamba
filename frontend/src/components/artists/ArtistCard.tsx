@@ -76,13 +76,21 @@ export default function ArtistCard({
     <Link href={`/artists/${id}`} className="block group">
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
         {/* Image Container */}
-        <div className="relative aspect-[4/5] overflow-hidden">
-          <Image
-            src={image || "/placeholder-artist.jpg"}
-            alt={name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+        <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-teal-50">
+          {image && !image.includes("placeholder") ? (
+            <Image
+              src={image}
+              alt={name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-6xl font-serif font-bold text-pink-300/60">
+                {name.charAt(0)}
+              </span>
+            </div>
+          )}
           {/* Favorite Button */}
           <button
             onClick={handleFavorite}
