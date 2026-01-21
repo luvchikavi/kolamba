@@ -1,144 +1,115 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { MapPin, Star, ArrowRight } from "lucide-react";
+import { useRef } from "react";
+import ArtistCard from "@/components/artists/ArtistCard";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface Artist {
-  id: number;
-  name: string;
-  image?: string;
-  price: number;
-  city: string;
-  country: string;
-  rating: number;
-  categories: string[];
-  isFeatured: boolean;
-}
-
-// Sample data with realistic artists
-const sampleArtists: Artist[] = [
+// Sample data matching Figma design
+const sampleArtists = [
   {
     id: 1,
-    name: "David Cohen",
-    price: 800,
-    city: "Tel Aviv",
-    country: "Israel",
-    rating: 4.9,
-    categories: ["Music", "Cantorial"],
-    isFeatured: true,
+    name: "Tuna",
+    category: "Music",
+    description: "Itay Zvulun, known professionally by his stage name Tuna Is an Israeli rapper, singer, songwriter...",
+    image: "/artists/tuna.jpg",
+    rating: 4,
   },
   {
     id: 2,
-    name: "Sarah Levy",
-    price: 600,
-    city: "Jerusalem",
-    country: "Israel",
-    rating: 4.8,
-    categories: ["Theater", "Drama"],
-    isFeatured: true,
+    name: "Noga Erez",
+    category: "Music",
+    description: "Noga Erez is a visionary musician and producer with an innate talent for blending genres and pushing c...",
+    image: "/artists/noga-erez.jpg",
+    rating: 5,
   },
   {
     id: 3,
-    name: "Yossi Mizrachi",
-    price: 500,
-    city: "Haifa",
-    country: "Israel",
-    rating: 4.7,
-    categories: ["Comedy", "Stand-up"],
-    isFeatured: true,
+    name: "Jasmin Moallem",
+    category: "Music",
+    description: "Short description about the artist, recent work and notable awards. Up to 3 lines max",
+    image: "/artists/jasmin-moallem.jpg",
+    rating: 4,
   },
   {
     id: 4,
-    name: "Miri Golan",
-    price: 700,
-    city: "Tel Aviv",
-    country: "Israel",
-    rating: 4.9,
-    categories: ["Dance", "Contemporary"],
-    isFeatured: true,
+    name: "Rotem Bar",
+    category: "Music",
+    description: "Short description about the artist, recent work and notable awards. Up to 3 lines max",
+    image: "/artists/rotem-bar.jpg",
+    rating: 4.5,
+  },
+  {
+    id: 5,
+    name: "Eden Ben Zaken",
+    category: "Music",
+    description: "One of Israel's most beloved pop stars with numerous hit songs and sold-out performances worldwide.",
+    image: "/artists/eden-ben-zaken.jpg",
+    rating: 5,
   },
 ];
 
 export default function FeaturedArtists() {
-  const [artists, setArtists] = useState<Artist[]>(sampleArtists);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const scrollAmount = 320;
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
-    <section className="section bg-white">
-      <div className="container-default">
-        {/* Section header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
-              Featured Artists
-            </h2>
-            <p className="text-slate-600">
-              Discover our most popular and highly-rated performers
-            </p>
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        {/* Section Title with decorative elements */}
+        <div className="text-center mb-12 relative">
+          {/* Decorative flourishes */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 -mt-4 flex items-center gap-2 text-teal-400 opacity-60">
+            <span className="text-2xl">~</span>
+            <span className="text-lg">,</span>
           </div>
-          <Link
-            href="/artists"
-            className="group flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
-          >
-            View all artists
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight">
+            NEW ARTISTS
+          </h2>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-2 flex items-center gap-2 text-pink-400 opacity-60">
+            <span className="text-lg">~</span>
+          </div>
         </div>
 
-        {/* Artists grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {artists.map((artist) => (
-            <Link
-              key={artist.id}
-              href={`/artists/${artist.id}`}
-              className="group card card-hover overflow-hidden"
-            >
-              {/* Image / Avatar */}
-              <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
-                <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
-                  {artist.name.charAt(0)}
-                </span>
-                {artist.isFeatured && (
-                  <div className="absolute top-3 left-3">
-                    <span className="badge-accent text-xs">Featured</span>
-                  </div>
-                )}
+        {/* Artists Carousel */}
+        <div className="relative">
+          {/* Navigation Buttons */}
+          <button
+            onClick={() => scroll("left")}
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors hidden md:flex"
+          >
+            <ChevronLeft size={24} className="text-slate-600" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors hidden md:flex"
+          >
+            <ChevronRight size={24} className="text-slate-600" />
+          </button>
+
+          {/* Scrollable Container */}
+          <div
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {sampleArtists.map((artist) => (
+              <div
+                key={artist.id}
+                className="flex-shrink-0 w-72 snap-start"
+              >
+                <ArtistCard {...artist} />
               </div>
-
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
-                    {artist.name}
-                  </h3>
-                  <div className="flex items-center gap-1 text-amber-500">
-                    <Star size={14} fill="currentColor" />
-                    <span className="text-sm font-medium text-slate-700">{artist.rating}</span>
-                  </div>
-                </div>
-
-                {/* Categories */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {artist.categories.slice(0, 2).map((cat) => (
-                    <span key={cat} className="badge-primary text-xs">
-                      {cat}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Location & Price */}
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-slate-500">
-                    <MapPin size={14} />
-                    <span>{artist.city}</span>
-                  </div>
-                  <div className="font-semibold text-slate-900">
-                    From ${artist.price}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

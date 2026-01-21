@@ -1,80 +1,70 @@
 "use client";
 
-import { Search, MessageSquare, Calendar, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-const steps = [
+const faqs = [
   {
-    icon: Search,
-    title: "Find Artists",
-    description: "Browse our curated selection of Israeli artists by category, location, or availability.",
-    color: "from-blue-500 to-indigo-500",
+    question: "HOW DOES THE TOUR WORK?",
+    answer:
+      "A tour is launched when an artist opens a tour on Kolamba by setting their availability, regions, and base fee. The tour becomes confirmed once a minimum number of bookings is reached, making it financially viable. From that point on, additional communities can join the route and book the artist as part of the same tour. Kolamba continuously optimizes the schedule and routing to maximize impact, efficiency, and earnings for everyone.",
   },
   {
-    icon: MessageSquare,
-    title: "Connect",
-    description: "Send a booking request with your event details and requirements directly to the artist.",
-    color: "from-violet-500 to-purple-500",
+    question: "WHO IS PAYING FOR THE ARTIST'S FLIGHT?",
+    answer:
+      "Travel costs are typically shared among all participating communities on a tour. The more communities that join, the lower the cost per community. Kolamba helps coordinate this cost-sharing to ensure fair distribution based on distance and tour logistics.",
   },
   {
-    icon: Calendar,
-    title: "Book & Coordinate",
-    description: "Confirm the date, finalize details, and prepare for an unforgettable cultural experience.",
-    color: "from-primary-500 to-teal-500",
+    question: "WHAT HAPPENS IF THE ARTIST CANCELS?",
+    answer:
+      "In the rare event of a cancellation, Kolamba will work to find a suitable replacement artist or offer a full refund. Our booking agreements include clear cancellation policies to protect both communities and artists.",
   },
   {
-    icon: CheckCircle,
-    title: "Host Your Event",
-    description: "Welcome your artist and create lasting memories for your community.",
-    color: "from-accent-500 to-rose-500",
+    question: "CAN WE GET SPONSORS FOR THE SHOWS/TOURS",
+    answer:
+      "Yes! Kolamba can help connect you with potential sponsors for cultural events. Many Jewish organizations, foundations, and businesses are interested in supporting Israeli cultural programming in diaspora communities.",
   },
 ];
 
 export default function HowItWorks() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
   return (
-    <section className="section bg-slate-50">
-      <div className="container-default">
-        {/* Section header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            How It Works
-          </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
-            Booking an artist for your community event is simple and straightforward
-          </p>
-        </div>
+    <section className="py-20 bg-slate-50">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Section Title */}
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight mb-12">
+          COMMON Q&A
+        </h2>
 
-        {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <div key={index} className="relative text-center">
-                {/* Connector line (desktop only) */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-slate-200">
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-slate-300" />
-                  </div>
-                )}
-
-                {/* Step number */}
-                <div className="relative inline-flex mb-6">
-                  <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-soft-lg`}>
-                    <Icon className="text-white" size={32} />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-white shadow-soft flex items-center justify-center">
-                    <span className="text-sm font-bold text-slate-700">{index + 1}</span>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                  {step.title}
+        {/* FAQ Accordion */}
+        <div className="space-y-4">
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl overflow-hidden shadow-sm"
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 transition-colors"
+              >
+                <h3 className="text-lg md:text-xl font-bold text-slate-900">
+                  {faq.question}
                 </h3>
-                <p className="text-slate-600 text-sm leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
-            );
-          })}
+                <ChevronDown
+                  size={24}
+                  className={`text-slate-400 transition-transform ${
+                    openIndex === index ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              {openIndex === index && (
+                <div className="px-6 pb-5">
+                  <p className="text-slate-600 leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>

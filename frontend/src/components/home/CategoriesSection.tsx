@@ -1,71 +1,107 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Music,
-  BookOpen,
-  Users,
-  Sparkles,
-  Theater,
-  Palette,
-  Film,
-  Mic,
-} from "lucide-react";
+import { Music, BookOpen, Mic2, Theater, Palette, GraduationCap } from "lucide-react";
 
 const categories = [
-  { slug: "music", name: "Music", icon: Music, color: "from-violet-500 to-purple-500" },
-  { slug: "dance", name: "Dance", icon: Sparkles, color: "from-pink-500 to-rose-500" },
-  { slug: "theater", name: "Theater", icon: Theater, color: "from-amber-500 to-orange-500" },
-  { slug: "visual-arts", name: "Visual Arts", icon: Palette, color: "from-emerald-500 to-teal-500" },
-  { slug: "workshops", name: "Workshops", icon: Users, color: "from-blue-500 to-indigo-500" },
-  { slug: "lectures", name: "Lectures", icon: BookOpen, color: "from-cyan-500 to-blue-500" },
-  { slug: "film", name: "Film", icon: Film, color: "from-red-500 to-pink-500" },
-  { slug: "comedy", name: "Comedy", icon: Mic, color: "from-yellow-500 to-amber-500" },
+  {
+    slug: "music",
+    name: "MUSIC",
+    icon: Music,
+    iconColor: "text-teal-400",
+    bgColor: "bg-teal-50",
+    accentColor: "text-pink-300",
+  },
+  {
+    slug: "literature",
+    name: "LITERATURE",
+    icon: BookOpen,
+    iconColor: "text-pink-400",
+    bgColor: "bg-pink-50",
+    accentColor: "text-teal-300",
+  },
+  {
+    slug: "comedy",
+    name: "COMEDY",
+    icon: Mic2,
+    iconColor: "text-amber-400",
+    bgColor: "bg-amber-50",
+    accentColor: "text-teal-300",
+  },
+  {
+    slug: "theater",
+    name: "THEATER",
+    icon: Theater,
+    iconColor: "text-purple-400",
+    bgColor: "bg-purple-50",
+    accentColor: "text-pink-300",
+  },
+  {
+    slug: "visual-arts",
+    name: "VISUAL ARTS",
+    icon: Palette,
+    iconColor: "text-emerald-400",
+    bgColor: "bg-emerald-50",
+    accentColor: "text-pink-300",
+  },
+  {
+    slug: "lectures",
+    name: "LECTURES",
+    icon: GraduationCap,
+    iconColor: "text-blue-400",
+    bgColor: "bg-blue-50",
+    accentColor: "text-teal-300",
+  },
 ];
 
 export default function CategoriesSection() {
   return (
-    <section className="section bg-slate-50">
-      <div className="container-default">
-        {/* Section header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Explore by Category
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        {/* Section Title */}
+        <div className="text-center mb-12 relative">
+          {/* Decorative flourishes */}
+          <div className="absolute left-1/3 top-0 text-teal-400 opacity-40 text-xl hidden md:block">
+            ~
+          </div>
+          <div className="absolute right-1/3 top-0 text-pink-400 opacity-40 text-xl hidden md:block">
+            ,~
+          </div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight">
+            SEARCH BY CATEGORY
           </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto">
-            Find the perfect artist for your event, from traditional music to contemporary theater
-          </p>
         </div>
 
-        {/* Categories grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
+        {/* Categories Grid - Large Tiles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {categories.map((category) => {
             const Icon = category.icon;
             return (
               <Link
                 key={category.slug}
                 href={`/search?category=${category.slug}`}
-                className="group card card-hover p-6 text-center"
+                className={`group relative ${category.bgColor} rounded-3xl p-12 md:p-16 overflow-hidden hover:shadow-lg transition-all duration-300`}
               >
-                <div className={`w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-soft group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="text-white" size={26} />
+                {/* Background Icon - Large and faded */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                  <Icon size={200} className={category.iconColor} strokeWidth={1} />
                 </div>
-                <h3 className="font-semibold text-slate-800 group-hover:text-primary-600 transition-colors">
+
+                {/* Decorative accent */}
+                <div className={`absolute top-6 right-6 ${category.accentColor} opacity-40 text-3xl`}>
+                  ~
+                </div>
+                <div className={`absolute bottom-6 left-6 ${category.accentColor} opacity-40 text-3xl`}>
+                  ,
+                </div>
+
+                {/* Category Name */}
+                <h3 className="relative z-10 text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-slate-900 text-center">
                   {category.name}
                 </h3>
               </Link>
             );
           })}
-        </div>
-
-        {/* View all link */}
-        <div className="text-center mt-10">
-          <Link
-            href="/categories"
-            className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium link-underline"
-          >
-            View all categories
-          </Link>
         </div>
       </div>
     </section>

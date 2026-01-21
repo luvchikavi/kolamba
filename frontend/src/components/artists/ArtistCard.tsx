@@ -1,98 +1,129 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import Image from "next/image";
-import { MapPin, Star } from "lucide-react";
-
-interface Category {
-  id?: number;
-  name: string;
-  slug: string;
-}
-
-interface Artist {
-  id: number;
-  name: string;
-  image?: string;
-  price?: number;
-  city?: string;
-  country?: string;
-  rating?: number;
-  categories: Category[];
-  isFeatured?: boolean;
-}
+import Link from "next/link";
+import { Heart, CheckCircle2, Star } from "lucide-react";
 
 interface ArtistCardProps {
-  artist: Artist;
+  id: number;
+  name: string;
+  category: string;
+  description: string;
+  image: string;
+  rating: number;
+  isVerified?: boolean;
+  isFavorited?: boolean;
+  onFavoriteToggle?: (id: number) => void;
 }
 
-export default function ArtistCard({ artist }: ArtistCardProps) {
-  return (
-    <Link
-      href={`/artists/${artist.id}`}
-      className="group card card-hover overflow-hidden"
-    >
-      {/* Image / Avatar */}
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
-        {artist.image ? (
-          <Image
-            src={artist.image}
-            alt={artist.name}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+export default function ArtistCard({
+  id,
+  name,
+  category,
+  description,
+  image,
+  rating,
+  isVerified = true,
+  isFavorited = false,
+  onFavoriteToggle,
+}: ArtistCardProps) {
+  const [favorited, setFavorited] = useState(isFavorited);
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavorited(!favorited);
+    onFavoriteToggle?.(id);
+  };
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(
+          <Star
+            key={i}
+            size={16}
+            className="text-black fill-black"
           />
-        ) : (
-          <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
-            {artist.name.charAt(0)}
+        );
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(
+          <Star
+            key={i}
+            size={16}
+            className="text-black fill-black/50"
+          />
+        );
+      } else {
+        stars.push(
+          <Star
+            key={i}
+            size={16}
+            className="text-gray-300"
+          />
+        );
+      }
+    }
+    return stars;
+  };
+
+  return (
+    <Link href={`/artists/${id}`} className="block group">
+      <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+        {/* Image Container */}
+        <div className="relative aspect-[4/5] overflow-hidden">
+          <Image
+            src={image || "/placeholder-artist.jpg"}
+            alt={name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          {/* Favorite Button */}
+          <button
+            onClick={handleFavorite}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+          >
+            <Heart
+              size={20}
+              className={favorited ? "text-pink-500 fill-pink-500" : "text-pink-400"}
+            />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-5">
+          {/* Name with Verified Badge */}
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">
+              {name}
+            </h3>
+            {isVerified && (
+              <CheckCircle2 size={20} className="text-teal-500 fill-teal-100" />
+            )}
+          </div>
+
+          {/* Category Tag */}
+          <span className="inline-block px-4 py-1.5 border border-slate-300 rounded-full text-sm font-medium text-slate-700 mb-3">
+            {category}
           </span>
-        )}
-        {artist.isFeatured && (
-          <div className="absolute top-3 left-3">
-            <span className="badge-accent text-xs">Featured</span>
-          </div>
-        )}
-      </div>
 
-      {/* Content */}
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
-            {artist.name}
-          </h3>
-          {artist.rating && (
-            <div className="flex items-center gap-1 text-amber-500">
-              <Star size={14} fill="currentColor" />
-              <span className="text-sm font-medium text-slate-700">{artist.rating}</span>
+          {/* Description */}
+          <p className="text-slate-600 text-sm leading-relaxed line-clamp-3 mb-4">
+            {description}
+          </p>
+
+          {/* Rating */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-500">Reviews</span>
+            <div className="flex items-center gap-0.5">
+              {renderStars(rating)}
             </div>
-          )}
-        </div>
-
-        {/* Categories */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {artist.categories.slice(0, 2).map((cat) => (
-            <span key={cat.slug} className="badge-primary text-xs">
-              {cat.name}
-            </span>
-          ))}
-          {artist.categories.length > 2 && (
-            <span className="badge-slate text-xs">
-              +{artist.categories.length - 2}
-            </span>
-          )}
-        </div>
-
-        {/* Location & Price */}
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-1 text-slate-500">
-            <MapPin size={14} />
-            <span>{artist.city || artist.country}</span>
           </div>
-          {artist.price && (
-            <div className="font-semibold text-slate-900">
-              From ${artist.price}
-            </div>
-          )}
         </div>
       </div>
     </Link>

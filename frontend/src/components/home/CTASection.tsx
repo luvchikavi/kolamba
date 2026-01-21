@@ -1,69 +1,84 @@
 "use client";
 
-import Link from "next/link";
-import { Mic2, Building2, ArrowRight } from "lucide-react";
+import { useState } from "react";
 
 export default function CTASection() {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    // TODO: Implement contact form submission
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsSubmitting(false);
+    setFormData({ fullName: "", email: "", message: "" });
+    alert("Message sent! We'll get back to you soon.");
+  };
+
   return (
-    <section className="section bg-white">
-      <div className="container-default">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* For Artists */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 md:p-12">
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent-500/10 rounded-full blur-3xl" />
-
-            <div className="relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center mb-6">
-                <Mic2 className="text-white" size={28} />
-              </div>
-
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                Are You an Artist?
-              </h3>
-              <p className="text-slate-300 mb-8 leading-relaxed">
-                Join our platform and connect with Jewish communities worldwide.
-                Showcase your talent, manage bookings, and grow your audience.
-              </p>
-
-              <Link
-                href="/register/artist"
-                className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 rounded-xl font-semibold hover:bg-slate-100 transition-all duration-200"
-              >
-                Join as Artist
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
+    <section className="py-20 bg-pink-50">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+          {/* Left - Title */}
+          <div>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-slate-900 tracking-tight">
+              CONTACT US
+            </h2>
           </div>
 
-          {/* For Communities */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 p-8 md:p-12">
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
-
-            <div className="relative z-10">
-              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6">
-                <Building2 className="text-white" size={28} />
+          {/* Right - Form */}
+          <div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <input
+                  type="text"
+                  placeholder="FULL NAME*"
+                  required
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
+                  className="w-full px-4 py-4 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
               </div>
-
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                Looking for Artists?
-              </h3>
-              <p className="text-primary-100 mb-8 leading-relaxed">
-                Register your community and discover talented Israeli artists.
-                Book performances, workshops, and lectures for your events.
-              </p>
-
-              <Link
-                href="/register/community"
-                className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-700 rounded-xl font-semibold hover:bg-primary-50 transition-all duration-200"
-              >
-                Register Community
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
+              <div>
+                <input
+                  type="email"
+                  placeholder="EMAIL*"
+                  required
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-4 py-4 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <textarea
+                  placeholder="WHAT'S ON YOUR MIND?"
+                  rows={4}
+                  value={formData.message}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
+                  className="w-full px-4 py-4 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                />
+              </div>
+              <div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-3 bg-slate-900 text-white font-semibold rounded-full hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? "SENDING..." : "SEND"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>

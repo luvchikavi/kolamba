@@ -230,10 +230,20 @@ export default function CommunityRegistrationPage() {
   return (
     <div className="min-h-screen bg-white pt-28 pb-16 px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Page Header */}
+        <div className="flex items-center gap-8 mb-12">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-wide">KOLAMBA</h1>
+          <span className="text-xl text-slate-600">COMMUNITY SIGN UP</span>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-8">
             {/* Left Column - Community Details */}
             <div className="space-y-6">
+              {/* Section Header */}
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">
+                1 | Community Info
+              </h2>
               {/* Community Name */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
@@ -403,6 +413,10 @@ export default function CommunityRegistrationPage() {
 
             {/* Right Column - Contact Info */}
             <div className="space-y-6">
+              {/* Section Header */}
+              <h2 className="text-xl font-semibold text-slate-900 mb-6">
+                2 | Contact Info
+              </h2>
               {/* Full Name */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
