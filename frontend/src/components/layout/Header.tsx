@@ -2,84 +2,111 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { Menu, X, Search, Globe } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useState, useEffect } from "react";
+import { Menu, X, Search, ChevronDown } from "lucide-react";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { t, language, setLanguage, isRTL } = useLanguage();
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'he' ? 'en' : 'he');
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-lg shadow-soft"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="container-default">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/">
+          <Link href="/" className="flex items-center">
             <Image
               src="/kolamba_logo.png"
-              alt="KOLAMBA - The Jewish Culture Club"
-              width={180}
-              height={60}
+              alt="Kolamba"
+              width={160}
+              height={50}
               priority
-              className="h-12 w-auto"
+              className={`h-10 w-auto transition-all duration-300 ${
+                isScrolled ? "" : "brightness-0 invert"
+              }`}
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-1">
             <Link
-              href="/search"
-              className="flex items-center gap-1 text-neutral-700 hover:text-primary-500 transition-colors"
+              href="/artists"
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isScrolled
+                  ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  : "text-white/90 hover:text-white hover:bg-white/10"
+              }`}
             >
-              <Search size={18} />
-              <span>{t.nav.search}</span>
+              Artists
             </Link>
             <Link
               href="/categories"
-              className="text-neutral-700 hover:text-primary-500 transition-colors"
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isScrolled
+                  ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  : "text-white/90 hover:text-white hover:bg-white/10"
+              }`}
             >
-              {t.nav.categories}
+              Categories
             </Link>
             <Link
-              href="/artists"
-              className="text-neutral-700 hover:text-primary-500 transition-colors"
+              href="/search"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                isScrolled
+                  ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  : "text-white/90 hover:text-white hover:bg-white/10"
+              }`}
             >
-              {t.nav.artists}
+              <Search size={18} />
+              Search
             </Link>
           </nav>
 
-          {/* Right side */}
-          <div className="hidden md:flex items-center gap-4">
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1 text-neutral-600 hover:text-primary-500 transition-colors"
-              aria-label={language === 'he' ? 'Switch to English' : 'החלף לעברית'}
-            >
-              <Globe size={18} />
-              <span className="text-sm">{language === 'he' ? 'EN' : 'עב'}</span>
-            </button>
+          {/* Right side actions */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
-              className="px-4 py-2 text-primary-500 hover:text-primary-600 transition-colors"
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isScrolled
+                  ? "text-slate-600 hover:text-slate-900"
+                  : "text-white/90 hover:text-white"
+              }`}
             >
-              {t.nav.login}
+              Log in
             </Link>
             <Link
               href="/register/community"
-              className="px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded transition-colors"
+              className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+                isScrolled
+                  ? "bg-primary-500 hover:bg-primary-600 text-white shadow-soft hover:shadow-soft-lg"
+                  : "bg-white text-slate-900 hover:bg-white/90 shadow-soft"
+              }`}
             >
-              {t.nav.register}
+              Get Started
             </Link>
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className={`md:hidden p-2 rounded-lg transition-colors ${
+              isScrolled
+                ? "text-slate-600 hover:bg-slate-100"
+                : "text-white hover:bg-white/10"
+            }`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -89,52 +116,45 @@ export default function Header() {
 
         {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <nav className="flex flex-col gap-4">
+          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 shadow-soft-lg animate-fade-in-down">
+            <nav className="container-default py-4 flex flex-col gap-1">
               <Link
-                href="/search"
-                className="flex items-center gap-2 text-neutral-700 hover:text-primary-500"
+                href="/artists"
+                className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Search size={18} />
-                {t.nav.search}
+                Artists
               </Link>
               <Link
                 href="/categories"
-                className="text-neutral-700 hover:text-primary-500"
+                className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.categories}
+                Categories
               </Link>
               <Link
-                href="/artists"
-                className="text-neutral-700 hover:text-primary-500"
+                href="/search"
+                className="flex items-center gap-2 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.artists}
+                <Search size={18} />
+                Search
               </Link>
-              <hr className="my-2" />
+              <hr className="my-2 border-slate-100" />
               <Link
                 href="/login"
-                className="text-primary-500 hover:text-primary-600"
+                className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.login}
+                Log in
               </Link>
               <Link
                 href="/register/community"
-                className="text-center px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded"
+                className="mx-4 mt-2 px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium text-center transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t.nav.register}
+                Get Started
               </Link>
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center gap-2 text-neutral-600"
-              >
-                <Globe size={18} />
-                {language === 'he' ? 'English' : 'עברית'}
-              </button>
             </nav>
           </div>
         )}

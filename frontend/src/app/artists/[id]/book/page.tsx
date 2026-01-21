@@ -3,10 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Calendar, MapPin, DollarSign, MessageSquare, CheckCircle } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function BookingPage({ params }: { params: { id: string } }) {
-  const { language, isRTL } = useLanguage();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,42 +15,18 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const texts = {
-    title: language === 'he' ? 'שליחת בקשת הזמנה' : 'Send Booking Request',
-    subtitle: language === 'he' ? 'מלא את הפרטים ונחזור אליך בהקדם' : 'Fill in the details and we\'ll get back to you soon',
-    date: language === 'he' ? 'תאריך מבוקש' : 'Requested Date',
-    location: language === 'he' ? 'מיקום ההופעה' : 'Performance Location',
-    budget: language === 'he' ? 'תקציב משוער (USD)' : 'Estimated Budget (USD)',
-    notes: language === 'he' ? 'פרטים נוספים' : 'Additional Details',
-    submit: language === 'he' ? 'שלח בקשה' : 'Send Request',
-    submitting: language === 'he' ? 'שולח...' : 'Sending...',
-    successTitle: language === 'he' ? 'הבקשה נשלחה בהצלחה!' : 'Request Sent Successfully!',
-    successMessage: language === 'he' ? 'האמן יקבל את בקשתך ויחזור אליך בהקדם.' : 'The artist will receive your request and get back to you soon.',
-    requestNumber: language === 'he' ? 'מספר בקשה' : 'Request Number',
-    backToArtists: language === 'he' ? 'חזור לרשימת האמנים' : 'Back to Artists',
-    backToHome: language === 'he' ? 'חזור לדף הבית' : 'Back to Home',
-    dateRequired: language === 'he' ? 'נא לבחור תאריך' : 'Please select a date',
-    dateFuture: language === 'he' ? 'נא לבחור תאריך עתידי' : 'Please select a future date',
-    locationRequired: language === 'he' ? 'נא להזין מיקום' : 'Please enter location',
-    locationPlaceholder: language === 'he' ? 'עיר, מדינה' : 'City, Country',
-    budgetPlaceholder: language === 'he' ? 'הזן סכום' : 'Enter amount',
-    notesPlaceholder: language === 'he' ? 'ספר על הקהילה שלך, סוג האירוע...' : 'Tell us about your community, event type...',
-    termsPrefix: language === 'he' ? 'בלחיצה על "שלח בקשה" אתה מסכים ל' : 'By clicking "Send Request" you agree to the',
-    termsLink: language === 'he' ? 'תנאי השימוש' : 'Terms of Service',
-  };
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.requestedDate) {
-      newErrors.requestedDate = texts.dateRequired;
+      newErrors.requestedDate = "Please select a date";
     } else {
       const selectedDate = new Date(formData.requestedDate);
       if (selectedDate <= new Date()) {
-        newErrors.requestedDate = texts.dateFuture;
+        newErrors.requestedDate = "Please select a future date";
       }
     }
     if (!formData.location || formData.location.length < 3) {
-      newErrors.location = texts.locationRequired;
+      newErrors.location = "Please enter a location";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -65,7 +39,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://kolamba-production.up.railway.app"}/api/bookings`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/bookings`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -81,7 +55,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
       if (!response.ok) throw new Error("Booking request failed");
       setIsSubmitted(true);
     } catch {
-      setErrors({ submit: language === 'he' ? 'שגיאה בשליחה' : 'Error sending request' });
+      setErrors({ submit: "Error sending request. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -89,22 +63,24 @@ export default function BookingPage({ params }: { params: { id: string } }) {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="text-green-600" size={40} />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 pt-20">
+        <div className="card max-w-md w-full p-8 text-center">
+          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="text-emerald-600" size={40} />
           </div>
-          <h1 className="text-2xl font-bold text-neutral-800 mb-2">{texts.successTitle}</h1>
-          <p className="text-neutral-600 mb-6">{texts.successMessage}</p>
-          <p className="text-sm text-neutral-500 mb-8">
-            {texts.requestNumber} #{Math.random().toString(36).substring(2, 8).toUpperCase()}
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Request Sent Successfully!</h1>
+          <p className="text-slate-600 mb-6">
+            The artist will receive your request and get back to you soon.
+          </p>
+          <p className="text-sm text-slate-500 mb-8">
+            Request #{Math.random().toString(36).substring(2, 8).toUpperCase()}
           </p>
           <div className="flex flex-col gap-3">
-            <Link href="/artists" className="px-6 py-3 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors">
-              {texts.backToArtists}
+            <Link href="/artists" className="btn-primary justify-center">
+              Browse More Artists
             </Link>
-            <Link href="/" className="px-6 py-3 text-neutral-600 hover:text-neutral-800 transition-colors">
-              {texts.backToHome}
+            <Link href="/" className="text-slate-600 hover:text-slate-800 transition-colors">
+              Back to Home
             </Link>
           </div>
         </div>
@@ -113,77 +89,77 @@ export default function BookingPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12 px-4">
+    <div className="min-h-screen bg-slate-50 py-12 px-4 pt-24">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-brand-gradient p-6 text-white">
-            <h1 className="text-2xl font-bold mb-2">{texts.title}</h1>
-            <p className="text-white/80">{texts.subtitle}</p>
+        <div className="card overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 text-white">
+            <h1 className="text-2xl font-bold mb-2">Send Booking Request</h1>
+            <p className="text-slate-300">Fill in the details and we&apos;ll get back to you soon</p>
           </div>
 
-          <div className="p-6 md:p-8">
+          <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block font-medium text-neutral-700 mb-2">
-                  <Calendar className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
-                  {texts.date} *
+                <label className="block font-medium text-slate-700 mb-2">
+                  <Calendar className="inline-block mr-2" size={18} />
+                  Requested Date *
                 </label>
                 <input
                   type="date"
                   value={formData.requestedDate}
                   onChange={(e) => setFormData({ ...formData, requestedDate: e.target.value })}
                   min={new Date().toISOString().split("T")[0]}
-                  className={`w-full px-4 py-3 rounded-lg border ${errors.requestedDate ? 'border-red-400' : 'border-neutral-300'} focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none transition-all`}
+                  className={`input ${errors.requestedDate ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
                 />
                 {errors.requestedDate && <p className="mt-1 text-sm text-red-500">{errors.requestedDate}</p>}
               </div>
 
               <div>
-                <label className="block font-medium text-neutral-700 mb-2">
-                  <MapPin className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
-                  {texts.location} *
+                <label className="block font-medium text-slate-700 mb-2">
+                  <MapPin className="inline-block mr-2" size={18} />
+                  Performance Location *
                 </label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder={texts.locationPlaceholder}
-                  className={`w-full px-4 py-3 rounded-lg border ${errors.location ? 'border-red-400' : 'border-neutral-300'} focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none transition-all`}
+                  placeholder="City, Country"
+                  className={`input ${errors.location ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
                 />
                 {errors.location && <p className="mt-1 text-sm text-red-500">{errors.location}</p>}
               </div>
 
               <div>
-                <label className="block font-medium text-neutral-700 mb-2">
-                  <DollarSign className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
-                  {texts.budget}
+                <label className="block font-medium text-slate-700 mb-2">
+                  <DollarSign className="inline-block mr-2" size={18} />
+                  Estimated Budget (USD)
                 </label>
                 <input
                   type="number"
                   value={formData.budget}
                   onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                  placeholder={texts.budgetPlaceholder}
+                  placeholder="Enter amount"
                   min="0"
-                  className="w-full px-4 py-3 rounded-lg border border-neutral-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none transition-all"
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-neutral-700 mb-2">
-                  <MessageSquare className={`inline-block ${isRTL ? 'ml-2' : 'mr-2'}`} size={18} />
-                  {texts.notes}
+                <label className="block font-medium text-slate-700 mb-2">
+                  <MessageSquare className="inline-block mr-2" size={18} />
+                  Additional Details
                 </label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder={texts.notesPlaceholder}
+                  placeholder="Tell us about your community, event type, any special requirements..."
                   rows={4}
-                  className="w-full px-4 py-3 rounded-lg border border-neutral-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 outline-none transition-all resize-none"
+                  className="input resize-none"
                 />
               </div>
 
               {errors.submit && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
                   {errors.submit}
                 </div>
               )}
@@ -191,19 +167,23 @@ export default function BookingPage({ params }: { params: { id: string } }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-primary-400 hover:bg-primary-600 disabled:bg-primary-300 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                className="btn-primary w-full justify-center py-4"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    {texts.submitting}
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Sending...
                   </>
-                ) : texts.submit}
+                ) : (
+                  "Send Request"
+                )}
               </button>
 
-              <p className="text-sm text-neutral-500 text-center">
-                {texts.termsPrefix}{' '}
-                <Link href="/terms" className="text-primary-500 hover:underline">{texts.termsLink}</Link>
+              <p className="text-sm text-slate-500 text-center">
+                By clicking &quot;Send Request&quot; you agree to the{" "}
+                <Link href="/terms" className="text-primary-600 hover:text-primary-700">
+                  Terms of Service
+                </Link>
               </p>
             </form>
           </div>

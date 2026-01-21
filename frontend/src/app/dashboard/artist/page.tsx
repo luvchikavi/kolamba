@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   MapPin,
@@ -10,25 +10,19 @@ import {
   Route,
   CheckCircle,
   Clock,
-  X,
   Plus,
   ChevronRight,
+  Settings,
 } from "lucide-react";
-import type { TourSuggestion, Tour, Booking } from "@/lib/api";
-import { useLanguage } from "@/contexts/LanguageContext";
-
-// Mock artist ID (will be replaced with auth)
-const MOCK_ARTIST_ID = 1;
 
 // Mock data for tour suggestions
-const mockSuggestions: TourSuggestion[] = [
+const mockSuggestions = [
   {
-    region: "New York, NY",
-    booking_ids: [1, 2, 3],
+    region: "New York Metro",
     communities: [
-      { id: 1, name: "Beth Israel Synagogue", location: "Manhattan, NY", latitude: 40.7128, longitude: -74.006 },
-      { id: 2, name: "Congregation Shearith Israel", location: "Brooklyn, NY", latitude: 40.6782, longitude: -73.9442 },
-      { id: 3, name: "Young Israel of Queens", location: "Queens, NY", latitude: 40.7282, longitude: -73.7949 },
+      { id: 1, name: "Beth Israel Synagogue", location: "Manhattan, NY" },
+      { id: 2, name: "Congregation Shearith Israel", location: "Brooklyn, NY" },
+      { id: 3, name: "Young Israel of Queens", location: "Queens, NY" },
     ],
     suggested_start: "2025-03-15",
     suggested_end: "2025-03-22",
@@ -36,11 +30,10 @@ const mockSuggestions: TourSuggestion[] = [
     estimated_budget: 3500,
   },
   {
-    region: "Los Angeles, CA",
-    booking_ids: [4, 5],
+    region: "Los Angeles",
     communities: [
-      { id: 4, name: "Sinai Temple", location: "Westwood, CA", latitude: 34.0522, longitude: -118.2437 },
-      { id: 5, name: "Adat Ari El", location: "Valley Village, CA", latitude: 34.1699, longitude: -118.3962 },
+      { id: 4, name: "Sinai Temple", location: "Westwood, CA" },
+      { id: 5, name: "Adat Ari El", location: "Valley Village, CA" },
     ],
     suggested_start: "2025-04-01",
     suggested_end: "2025-04-05",
@@ -50,67 +43,63 @@ const mockSuggestions: TourSuggestion[] = [
 ];
 
 // Mock tours
-const mockTours: Tour[] = [
+const mockTours = [
   {
     id: 1,
-    artist_id: 1,
     name: "Northeast Tour Spring 2025",
     region: "Northeast USA",
     start_date: "2025-02-15",
     end_date: "2025-02-28",
     total_budget: 5000,
     status: "confirmed",
-    created_at: "2025-01-01",
-    updated_at: "2025-01-15",
-    bookings: [],
+    bookings: 4,
   },
 ];
 
 // Mock pending bookings
-const mockPendingBookings: Booking[] = [
+const mockPendingBookings = [
   {
     id: 6,
-    artist_id: 1,
-    community_id: 6,
-    requested_date: "2025-05-10",
     location: "Chicago, IL",
+    requested_date: "2025-05-10",
     budget: 800,
     status: "pending",
-    created_at: "2025-01-10",
-    updated_at: "2025-01-10",
   },
   {
     id: 7,
-    artist_id: 1,
-    community_id: 7,
-    requested_date: "2025-05-12",
     location: "Detroit, MI",
+    requested_date: "2025-05-12",
     budget: 750,
     status: "pending",
-    created_at: "2025-01-11",
-    updated_at: "2025-01-11",
   },
 ];
 
-function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLanguage>['t'] }) {
+function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    draft: "bg-neutral-100 text-neutral-600",
-    proposed: "bg-yellow-100 text-yellow-700",
-    confirmed: "bg-green-100 text-green-700",
+    draft: "bg-slate-100 text-slate-600",
+    proposed: "bg-amber-100 text-amber-700",
+    confirmed: "bg-emerald-100 text-emerald-700",
     in_progress: "bg-blue-100 text-blue-700",
-    completed: "bg-purple-100 text-purple-700",
+    completed: "bg-violet-100 text-violet-700",
     cancelled: "bg-red-100 text-red-700",
-    pending: "bg-yellow-100 text-yellow-700",
-    approved: "bg-green-100 text-green-700",
-    rejected: "bg-red-100 text-red-700",
+    pending: "bg-amber-100 text-amber-700",
+    approved: "bg-emerald-100 text-emerald-700",
   };
 
-  const statusKey = status as keyof typeof t.status;
-  const label = t.status[statusKey] || status;
+  const labels: Record<string, string> = {
+    draft: "Draft",
+    proposed: "Proposed",
+    confirmed: "Confirmed",
+    in_progress: "In Progress",
+    completed: "Completed",
+    cancelled: "Cancelled",
+    pending: "Pending",
+    approved: "Approved",
+  };
 
   return (
-    <span className={`px-2 py-0.5 text-xs rounded-full ${styles[status] || styles.pending}`}>
-      {label}
+    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status] || styles.pending}`}>
+      {labels[status] || status}
     </span>
   );
 }
@@ -118,245 +107,222 @@ function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLa
 function TourSuggestionCard({
   suggestion,
   onCreateTour,
-  t,
-  language,
 }: {
-  suggestion: TourSuggestion;
-  onCreateTour: (suggestion: TourSuggestion) => void;
-  t: ReturnType<typeof useLanguage>['t'];
-  language: string;
+  suggestion: typeof mockSuggestions[0];
+  onCreateTour: () => void;
 }) {
-  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
-
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-6">
+    <div className="card p-6">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="font-bold text-lg text-neutral-800">{suggestion.region}</h3>
-          <p className="text-sm text-neutral-500">
-            {suggestion.communities.length} {t.dashboard.tourSuggestions.communities} • {suggestion.booking_ids.length} {t.dashboard.tourSuggestions.bookings}
+          <h3 className="font-bold text-lg text-slate-900">{suggestion.region}</h3>
+          <p className="text-sm text-slate-500">
+            {suggestion.communities.length} communities
           </p>
         </div>
-        <div className="flex items-center gap-2 text-primary-500">
+        <div className="flex items-center gap-2 text-primary-600">
           <Route size={20} />
-          <span className="text-sm font-medium">{suggestion.total_distance_km} {t.dashboard.tourSuggestions.km}</span>
+          <span className="text-sm font-medium">{suggestion.total_distance_km} km</span>
         </div>
       </div>
 
       {/* Communities list */}
       <div className="space-y-2 mb-4">
         {suggestion.communities.map((community, idx) => (
-          <div key={community.id} className="flex items-center gap-2 text-sm text-neutral-600">
-            <span className="w-5 h-5 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs">
+          <div key={community.id} className="flex items-center gap-2 text-sm text-slate-600">
+            <span className="w-5 h-5 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-medium">
               {idx + 1}
             </span>
             <span>{community.name}</span>
-            <span className="text-neutral-400">•</span>
-            <span className="text-neutral-500">{community.location}</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500">{community.location}</span>
           </div>
         ))}
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 p-4 bg-neutral-50 rounded-lg mb-4">
-        {suggestion.suggested_start && suggestion.suggested_end && (
-          <div className="flex items-center gap-2">
-            <Calendar size={16} className="text-neutral-400" />
-            <div>
-              <p className="text-xs text-neutral-500">{t.dashboard.tourSuggestions.suggestedDates}</p>
-              <p className="text-sm font-medium">
-                {new Date(suggestion.suggested_start).toLocaleDateString(dateLocale)} -{" "}
-                {new Date(suggestion.suggested_end).toLocaleDateString(dateLocale)}
-              </p>
-            </div>
+      <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl mb-4">
+        <div className="flex items-center gap-2">
+          <Calendar size={16} className="text-slate-400" />
+          <div>
+            <p className="text-xs text-slate-500">Suggested Dates</p>
+            <p className="text-sm font-medium">
+              {new Date(suggestion.suggested_start).toLocaleDateString()} -{" "}
+              {new Date(suggestion.suggested_end).toLocaleDateString()}
+            </p>
           </div>
-        )}
-        {suggestion.estimated_budget && (
-          <div className="flex items-center gap-2">
-            <DollarSign size={16} className="text-neutral-400" />
-            <div>
-              <p className="text-xs text-neutral-500">{t.dashboard.tourSuggestions.estimatedBudget}</p>
-              <p className="text-sm font-medium">${suggestion.estimated_budget.toLocaleString()}</p>
-            </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <DollarSign size={16} className="text-slate-400" />
+          <div>
+            <p className="text-xs text-slate-500">Est. Budget</p>
+            <p className="text-sm font-medium">${suggestion.estimated_budget.toLocaleString()}</p>
           </div>
-        )}
+        </div>
       </div>
 
       <button
-        onClick={() => onCreateTour(suggestion)}
-        className="w-full py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+        onClick={onCreateTour}
+        className="btn-primary w-full justify-center"
       >
         <Plus size={18} />
-        {t.dashboard.tourSuggestions.createTour}
+        Create Tour
       </button>
     </div>
   );
 }
 
-function TourCard({ tour, t, language, isRTL }: { tour: Tour; t: ReturnType<typeof useLanguage>['t']; language: string; isRTL: boolean }) {
-  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
-
+function TourCard({ tour }: { tour: typeof mockTours[0] }) {
   return (
     <Link
       href={`/dashboard/artist/tours/${tour.id}`}
-      className="block bg-white rounded-xl shadow-sm border border-neutral-100 p-6 hover:shadow-md transition-shadow"
+      className="block card card-hover p-6"
     >
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-bold text-lg text-neutral-800">{tour.name}</h3>
-          {tour.region && <p className="text-sm text-neutral-500">{tour.region}</p>}
+          <h3 className="font-bold text-lg text-slate-900">{tour.name}</h3>
+          <p className="text-sm text-slate-500">{tour.region}</p>
         </div>
-        <StatusBadge status={tour.status} t={t} />
+        <StatusBadge status={tour.status} />
       </div>
 
-      <div className="flex flex-wrap gap-4 text-sm text-neutral-600">
-        {tour.start_date && tour.end_date && (
-          <div className="flex items-center gap-1">
-            <Calendar size={14} className="text-neutral-400" />
-            <span>
-              {new Date(tour.start_date).toLocaleDateString(dateLocale)} -{" "}
-              {new Date(tour.end_date).toLocaleDateString(dateLocale)}
-            </span>
-          </div>
-        )}
-        {tour.total_budget && (
-          <div className="flex items-center gap-1">
-            <DollarSign size={14} className="text-neutral-400" />
-            <span>${tour.total_budget.toLocaleString()}</span>
-          </div>
-        )}
+      <div className="flex flex-wrap gap-4 text-sm text-slate-600">
         <div className="flex items-center gap-1">
-          <Users size={14} className="text-neutral-400" />
-          <span>{tour.bookings.length} {t.dashboard.stats.performances}</span>
+          <Calendar size={14} className="text-slate-400" />
+          <span>
+            {new Date(tour.start_date).toLocaleDateString()} -{" "}
+            {new Date(tour.end_date).toLocaleDateString()}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <DollarSign size={14} className="text-slate-400" />
+          <span>${tour.total_budget.toLocaleString()}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Users size={14} className="text-slate-400" />
+          <span>{tour.bookings} performances</span>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center text-primary-500 text-sm font-medium">
-        {t.dashboard.moreDetails}
-        <ChevronRight size={16} className={isRTL ? 'mr-1' : 'ml-1'} />
+      <div className="mt-4 flex items-center text-primary-600 text-sm font-medium">
+        View Details
+        <ChevronRight size={16} className="ml-1" />
       </div>
     </Link>
   );
 }
 
-function BookingCard({ booking, t, language }: { booking: Booking; t: ReturnType<typeof useLanguage>['t']; language: string }) {
-  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
-
+function BookingCard({ booking }: { booking: typeof mockPendingBookings[0] }) {
   return (
-    <div className="bg-white rounded-lg border border-neutral-100 p-4">
+    <div className="card p-4">
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-medium text-neutral-800">{booking.location}</p>
-          {booking.requested_date && (
-            <p className="text-sm text-neutral-500">
-              {new Date(booking.requested_date).toLocaleDateString(dateLocale)}
-            </p>
-          )}
+          <p className="font-medium text-slate-900">{booking.location}</p>
+          <p className="text-sm text-slate-500">
+            {new Date(booking.requested_date).toLocaleDateString()}
+          </p>
         </div>
-        <StatusBadge status={booking.status} t={t} />
+        <StatusBadge status={booking.status} />
       </div>
-      {booking.budget && (
-        <p className="text-sm text-neutral-600 mt-2">{t.dashboard.stats.budget}: ${booking.budget}</p>
-      )}
+      <p className="text-sm text-slate-600 mt-2">Budget: ${booking.budget}</p>
     </div>
   );
 }
 
 export default function ArtistDashboardPage() {
-  const { t, language, isRTL } = useLanguage();
-  const [suggestions, setSuggestions] = useState<TourSuggestion[]>(mockSuggestions);
-  const [tours, setTours] = useState<Tour[]>(mockTours);
-  const [pendingBookings, setPendingBookings] = useState<Booking[]>(mockPendingBookings);
+  const [suggestions, setSuggestions] = useState(mockSuggestions);
+  const [tours, setTours] = useState(mockTours);
+  const [pendingBookings] = useState(mockPendingBookings);
   const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings">("suggestions");
 
-  const handleCreateTour = (suggestion: TourSuggestion) => {
-    // In real implementation, this would call the API
-    const tourName = language === 'he' ? `סבב ${suggestion.region}` : `${suggestion.region} Tour`;
-    const newTour: Tour = {
+  const handleCreateTour = (region: string) => {
+    const suggestion = suggestions.find((s) => s.region === region);
+    if (!suggestion) return;
+
+    const newTour = {
       id: Date.now(),
-      artist_id: MOCK_ARTIST_ID,
-      name: tourName,
+      name: `${suggestion.region} Tour`,
       region: suggestion.region,
       start_date: suggestion.suggested_start,
       end_date: suggestion.suggested_end,
       total_budget: suggestion.estimated_budget,
       status: "draft",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      bookings: [],
+      bookings: suggestion.communities.length,
     };
+
     setTours([newTour, ...tours]);
-    setSuggestions(suggestions.filter((s) => s.region !== suggestion.region));
+    setSuggestions(suggestions.filter((s) => s.region !== region));
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white border-b border-slate-100">
+        <div className="container-default py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-800">{t.dashboard.artistTitle}</h1>
-              <p className="text-neutral-500">{t.dashboard.artistSubtitle}</p>
+              <h1 className="text-2xl font-bold text-slate-900">Artist Dashboard</h1>
+              <p className="text-slate-500">Manage your tours and bookings</p>
             </div>
             <Link
               href="/dashboard/artist/settings"
-              className="px-4 py-2 text-neutral-600 hover:text-neutral-800 border border-neutral-200 rounded-lg transition-colors"
+              className="btn-secondary"
             >
-              {t.dashboard.settings}
+              <Settings size={18} />
+              Settings
             </Link>
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container-default py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock size={20} className="text-yellow-600" />
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Clock size={20} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">{pendingBookings.length}</p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.pendingBookings}</p>
+                <p className="text-2xl font-bold text-slate-900">{pendingBookings.length}</p>
+                <p className="text-sm text-slate-500">Pending Requests</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
                 <Route size={20} className="text-primary-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">{suggestions.length}</p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.suggestedTours}</p>
+                <p className="text-2xl font-bold text-slate-900">{suggestions.length}</p>
+                <p className="text-sm text-slate-500">Tour Suggestions</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle size={20} className="text-green-600" />
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <CheckCircle size={20} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">
+                <p className="text-2xl font-bold text-slate-900">
                   {tours.filter((t) => t.status === "confirmed").length}
                 </p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.confirmedTours}</p>
+                <p className="text-sm text-slate-500">Confirmed Tours</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-secondary-100 rounded-lg flex items-center justify-center">
-                <DollarSign size={20} className="text-secondary-600" />
+              <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center">
+                <DollarSign size={20} className="text-accent-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">
+                <p className="text-2xl font-bold text-slate-900">
                   ${tours.reduce((sum, t) => sum + (t.total_budget || 0), 0).toLocaleString()}
                 </p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.expectedRevenue}</p>
+                <p className="text-sm text-slate-500">Expected Revenue</p>
               </div>
             </div>
           </div>
@@ -366,33 +332,33 @@ export default function ArtistDashboardPage() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab("suggestions")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
               activeTab === "suggestions"
-                ? "bg-primary-400 text-white"
-                : "bg-white text-neutral-600 hover:bg-neutral-100"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
-            {t.dashboard.tabs.suggestions} ({suggestions.length})
+            Suggestions ({suggestions.length})
           </button>
           <button
             onClick={() => setActiveTab("tours")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
               activeTab === "tours"
-                ? "bg-primary-400 text-white"
-                : "bg-white text-neutral-600 hover:bg-neutral-100"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
-            {t.dashboard.tabs.myTours} ({tours.length})
+            My Tours ({tours.length})
           </button>
           <button
             onClick={() => setActiveTab("bookings")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
               activeTab === "bookings"
-                ? "bg-primary-400 text-white"
-                : "bg-white text-neutral-600 hover:bg-neutral-100"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
-            {t.dashboard.tabs.bookings} ({pendingBookings.length})
+            Requests ({pendingBookings.length})
           </button>
         </div>
 
@@ -400,24 +366,22 @@ export default function ArtistDashboardPage() {
         {activeTab === "suggestions" && (
           <div className="space-y-6">
             {suggestions.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 text-center">
-                <Route size={48} className="text-neutral-300 mx-auto mb-4" />
-                <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  {t.dashboard.empty.noSuggestions}
+              <div className="card p-8 text-center">
+                <Route size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  No Tour Suggestions
                 </h3>
-                <p className="text-neutral-500">
-                  {t.dashboard.empty.noSuggestionsDesc}
+                <p className="text-slate-500">
+                  When communities in nearby areas show interest, we&apos;ll suggest tour routes for you.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {suggestions.map((suggestion, idx) => (
+                {suggestions.map((suggestion) => (
                   <TourSuggestionCard
-                    key={idx}
+                    key={suggestion.region}
                     suggestion={suggestion}
-                    onCreateTour={handleCreateTour}
-                    t={t}
-                    language={language}
+                    onCreateTour={() => handleCreateTour(suggestion.region)}
                   />
                 ))}
               </div>
@@ -428,17 +392,17 @@ export default function ArtistDashboardPage() {
         {activeTab === "tours" && (
           <div className="space-y-4">
             {tours.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 text-center">
-                <Route size={48} className="text-neutral-300 mx-auto mb-4" />
-                <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  {t.dashboard.empty.noTours}
+              <div className="card p-8 text-center">
+                <Route size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  No Tours Yet
                 </h3>
-                <p className="text-neutral-500">
-                  {t.dashboard.empty.noToursDesc}
+                <p className="text-slate-500">
+                  Create your first tour from a suggestion above.
                 </p>
               </div>
             ) : (
-              tours.map((tour) => <TourCard key={tour.id} tour={tour} t={t} language={language} isRTL={isRTL} />)
+              tours.map((tour) => <TourCard key={tour.id} tour={tour} />)
             )}
           </div>
         )}
@@ -446,19 +410,19 @@ export default function ArtistDashboardPage() {
         {activeTab === "bookings" && (
           <div className="space-y-4">
             {pendingBookings.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 text-center">
-                <Users size={48} className="text-neutral-300 mx-auto mb-4" />
-                <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  {t.dashboard.empty.noBookings}
+              <div className="card p-8 text-center">
+                <Users size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  No Pending Requests
                 </h3>
-                <p className="text-neutral-500">
-                  {t.dashboard.empty.noBookingsDesc}
+                <p className="text-slate-500">
+                  When communities send you booking requests, they&apos;ll appear here.
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pendingBookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} t={t} language={language} />
+                  <BookingCard key={booking.id} booking={booking} />
                 ))}
               </div>
             )}

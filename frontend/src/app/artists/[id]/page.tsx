@@ -1,161 +1,178 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Globe, DollarSign, Calendar, MessageSquare } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  MapPin,
+  Globe,
+  Calendar,
+  MessageSquare,
+  Star,
+  Clock,
+  Users,
+  CheckCircle,
+  ArrowLeft,
+} from "lucide-react";
 
-// Mock artist data (will be replaced with API call)
+// Sample artist data
 const artist = {
   id: 1,
-  nameHe: "דוד כהן",
-  nameEn: "David Cohen",
-  bioHe: "זמר וחזן עם 20 שנות ניסיון בהופעות בקהילות יהודיות ברחבי העולם. מתמחה בשירה ליטורגית, פיוטים מזרחיים ומופעים משפחתיים. הופיע במאות קהילות בארה״ב, אירופה ואוסטרליה.",
-  bioEn: "Singer and cantor with 20 years of experience performing at Jewish communities worldwide. Specializes in liturgical singing, Mizrahi piyyutim, and family performances. Has performed at hundreds of communities in the US, Europe, and Australia.",
-  profileImage: null,
-  priceSingle: 500,
-  priceTour: 2000,
+  name: "David Cohen",
+  bio: "Singer and cantor with 20 years of experience performing at Jewish communities worldwide. Specializes in liturgical singing, Mizrahi piyyutim, and family performances. Has performed at hundreds of communities in the US, Europe, and Australia.",
+  image: null,
+  priceSingle: 800,
+  priceTour: 2500,
   languages: ["Hebrew", "English", "Yiddish"],
-  cityHe: "תל אביב",
-  cityEn: "Tel Aviv",
+  city: "Tel Aviv",
   country: "Israel",
+  rating: 4.9,
+  reviewCount: 127,
   isFeatured: true,
   categories: [
-    { nameHe: "שירה", nameEn: "Singing", slug: "singing" },
-    { nameHe: "חזנות", nameEn: "Cantorial", slug: "cantorial" },
+    { name: "Music", slug: "music" },
+    { name: "Cantorial", slug: "cantorial" },
   ],
-  performanceTypesHe: [
-    "הופעות שירה וחזנות",
-    "הרצאות על מסורת יהודית",
-    "סדנאות פיוט",
-    "מופעים משפחתיים",
-  ],
-  performanceTypesEn: [
+  performanceTypes: [
     "Singing and cantorial performances",
-    "Lectures on Jewish tradition",
+    "Lectures on Jewish musical traditions",
     "Piyyut workshops",
-    "Family shows",
+    "Family shows and holiday celebrations",
   ],
-  availability: {
-    "2026-03": true,
-    "2026-04": true,
-    "2026-06": true,
-    "2026-07": true,
-  },
+  availability: [
+    { period: "March - April 2026", available: true },
+    { period: "June - July 2026", available: true },
+    { period: "September 2026", available: false },
+  ],
 };
 
-export default function ArtistProfilePage({ params }: { params: { id: string } }) {
-  const { t, language, isRTL } = useLanguage();
-
-  const name = language === 'he' ? artist.nameHe : artist.nameEn;
-  const altName = language === 'he' ? artist.nameEn : artist.nameHe;
-  const bio = language === 'he' ? artist.bioHe : artist.bioEn;
-  const altBio = language === 'he' ? artist.bioEn : artist.bioHe;
-  const city = language === 'he' ? artist.cityHe : artist.cityEn;
-  const performanceTypes = language === 'he' ? artist.performanceTypesHe : artist.performanceTypesEn;
-
+export default function ArtistDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-slate-50 pt-20">
       {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="text-sm text-neutral-500">
-            <Link href="/" className="hover:text-primary-500">{t.pages.home}</Link>
-            <span className="mx-2">/</span>
-            <Link href="/artists" className="hover:text-primary-500">{t.artists.title}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-neutral-800">{name}</span>
+      <div className="bg-white border-b border-slate-100">
+        <div className="container-default py-4">
+          <nav className="flex items-center gap-2 text-sm text-slate-500">
+            <Link
+              href="/"
+              className="hover:text-primary-600 transition-colors"
+            >
+              Home
+            </Link>
+            <span>/</span>
+            <Link
+              href="/artists"
+              className="hover:text-primary-600 transition-colors"
+            >
+              Artists
+            </Link>
+            <span>/</span>
+            <span className="text-slate-900 font-medium">{artist.name}</span>
           </nav>
         </div>
       </div>
 
       {/* Artist Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className={`flex flex-col md:flex-row gap-8 ${isRTL ? '' : 'md:flex-row-reverse'}`}>
+      <div className="bg-white border-b border-slate-100">
+        <div className="container-default py-10">
+          <div className="flex flex-col lg:flex-row gap-8">
             {/* Profile Image */}
-            <div className="md:w-72 flex-shrink-0">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center shadow-lg">
-                <span className="text-8xl font-display font-bold text-white/50">
-                  {name.charAt(0)}
+            <div className="lg:w-72 flex-shrink-0">
+              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center shadow-soft-lg">
+                <span className="text-8xl font-bold text-white/50">
+                  {artist.name.charAt(0)}
                 </span>
               </div>
             </div>
 
             {/* Profile Info */}
             <div className="flex-1">
-              <div className="flex justify-between items-start">
-                <div>
-                  {artist.isFeatured && (
-                    <span className="inline-block px-3 py-1 bg-secondary-400 text-white text-sm rounded-full mb-3">
-                      {t.artistProfile.featuredArtist}
-                    </span>
-                  )}
-                  <h1 className="text-3xl md:text-4xl font-bold text-neutral-800 mb-1">
-                    {name}
-                  </h1>
-                  <p className="text-xl text-neutral-500 mb-4">{altName}</p>
-
-                  {/* Categories */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {artist.categories.map((cat) => (
-                      <Link
-                        key={cat.slug}
-                        href={`/search?category=${cat.slug}`}
-                        className="px-3 py-1 bg-primary-100 text-primary-700 hover:bg-primary-200 rounded-full text-sm transition-colors"
-                      >
-                        {language === 'he' ? cat.nameHe : cat.nameEn}
-                      </Link>
-                    ))}
-                  </div>
-
-                  {/* Location & Languages */}
-                  <div className="flex flex-wrap gap-4 text-neutral-600">
-                    <div className="flex items-center gap-1">
-                      <MapPin size={18} />
-                      <span>{city}, {artist.country}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Globe size={18} />
-                      <span>{artist.languages.join(", ")}</span>
-                    </div>
-                  </div>
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                {artist.isFeatured && (
+                  <span className="badge-accent">Featured Artist</span>
+                )}
+                <div className="flex items-center gap-1.5 text-amber-500">
+                  <Star size={18} fill="currentColor" />
+                  <span className="font-semibold text-slate-900">
+                    {artist.rating}
+                  </span>
+                  <span className="text-slate-500 text-sm">
+                    ({artist.reviewCount} reviews)
+                  </span>
                 </div>
-
-                {/* CTA Button (Desktop) */}
-                <Link
-                  href={`/artists/${artist.id}/book`}
-                  className="hidden md:flex items-center gap-2 px-6 py-3 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-semibold transition-colors"
-                >
-                  <MessageSquare size={20} />
-                  {t.artistProfile.contactArtist}
-                </Link>
               </div>
+
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                {artist.name}
+              </h1>
+
+              {/* Categories */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {artist.categories.map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    href={`/search?category=${cat.slug}`}
+                    className="badge-primary hover:bg-primary-200 transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Location & Languages */}
+              <div className="flex flex-wrap gap-6 text-slate-600 mb-6">
+                <div className="flex items-center gap-2">
+                  <MapPin size={18} className="text-slate-400" />
+                  <span>
+                    {artist.city}, {artist.country}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe size={18} className="text-slate-400" />
+                  <span>{artist.languages.join(", ")}</span>
+                </div>
+              </div>
+
+              {/* CTA (Desktop) */}
+              <Link
+                href={`/artists/${artist.id}/book`}
+                className="hidden lg:inline-flex btn-primary gap-2"
+              >
+                <MessageSquare size={20} />
+                Send Booking Request
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className={`grid grid-cols-1 lg:grid-cols-3 gap-8 ${isRTL ? '' : 'lg:flex-row-reverse'}`}>
+      <div className="container-default py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Bio */}
-            <section className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-neutral-800 mb-4">{t.artistProfile.about}</h2>
-              <div className="h-0.5 w-16 bg-brand-gradient mb-4"></div>
-              <p className="text-neutral-700 leading-relaxed mb-4">{bio}</p>
-              <p className="text-neutral-600 text-sm leading-relaxed">{altBio}</p>
+            {/* About */}
+            <section className="card p-6 md:p-8">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">About</h2>
+              <div className="divider-gradient mb-6" />
+              <p className="text-slate-600 leading-relaxed">{artist.bio}</p>
             </section>
 
             {/* Performance Types */}
-            <section className="bg-white rounded-xl p-6 shadow-sm">
-              <h2 className="text-xl font-bold text-neutral-800 mb-4">{t.artistProfile.performanceTypes}</h2>
-              <div className="h-0.5 w-16 bg-brand-gradient mb-4"></div>
-              <ul className="space-y-2 text-neutral-700">
-                {performanceTypes.map((type, idx) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-primary-400 rounded-full"></span>
+            <section className="card p-6 md:p-8">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">
+                Performance Types
+              </h2>
+              <div className="divider-gradient mb-6" />
+              <ul className="space-y-3">
+                {artist.performanceTypes.map((type, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-slate-600">
+                    <CheckCircle
+                      size={20}
+                      className="text-primary-500 flex-shrink-0 mt-0.5"
+                    />
                     {type}
                   </li>
                 ))}
@@ -166,57 +183,78 @@ export default function ArtistProfilePage({ params }: { params: { id: string } }
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Pricing */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="font-bold text-neutral-800 mb-4">{t.artistProfile.pricing}</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-neutral-600">{t.artistProfile.singlePerformance}</span>
-                  <span className="font-bold text-lg">${artist.priceSingle}</span>
+            <div className="card p-6">
+              <h3 className="font-bold text-slate-900 mb-4">Pricing</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Users size={18} className="text-slate-400" />
+                    Single Performance
+                  </div>
+                  <span className="text-xl font-bold text-slate-900">
+                    ${artist.priceSingle}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-neutral-600">{t.artistProfile.tourPackage}</span>
-                  <span className="font-bold text-lg">${artist.priceTour}</span>
+                <div className="flex justify-between items-center py-3">
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Calendar size={18} className="text-slate-400" />
+                    Tour Package
+                  </div>
+                  <span className="text-xl font-bold text-slate-900">
+                    ${artist.priceTour}
+                  </span>
                 </div>
               </div>
-              <p className="text-sm text-neutral-500 mt-4">
-                {t.artistProfile.priceNote}
+              <p className="text-sm text-slate-500 mt-4">
+                Prices are estimates and may vary based on event requirements.
               </p>
             </div>
 
             {/* Availability */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <h3 className="font-bold text-neutral-800 mb-4">{t.artistProfile.availability}</h3>
-              <div className="flex items-center gap-2 text-green-600 mb-4">
-                <Calendar size={18} />
-                <span className="font-medium">{t.artistProfile.availableForTours}</span>
-              </div>
-              <div className="text-sm text-neutral-600">
-                <p className="mb-1">{t.artistProfile.availablePeriods}</p>
-                <ul className="space-y-1">
-                  <li>• {language === 'he' ? 'מרץ-אפריל 2026' : 'March-April 2026'}</li>
-                  <li>• {language === 'he' ? 'יוני-יולי 2026' : 'June-July 2026'}</li>
-                </ul>
+            <div className="card p-6">
+              <h3 className="font-bold text-slate-900 mb-4">Availability</h3>
+              <div className="space-y-3">
+                {artist.availability.map((slot, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center justify-between py-2 px-3 rounded-lg ${
+                      slot.available
+                        ? "bg-green-50 text-green-700"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock size={16} />
+                      <span className="text-sm font-medium">{slot.period}</span>
+                    </div>
+                    <span className="text-xs font-medium">
+                      {slot.available ? "Available" : "Booked"}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* CTA */}
             <Link
               href={`/artists/${artist.id}/book`}
-              className="block w-full text-center px-6 py-4 bg-primary-400 hover:bg-primary-600 text-white rounded-xl font-semibold transition-colors shadow-lg"
+              className="btn-primary w-full justify-center gap-2 py-4"
             >
-              {t.artistProfile.sendBookingRequest}
+              <MessageSquare size={20} />
+              Send Booking Request
             </Link>
           </div>
         </div>
       </div>
 
       {/* Mobile CTA */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t shadow-lg">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-soft-lg">
         <Link
           href={`/artists/${artist.id}/book`}
-          className="block w-full text-center px-6 py-4 bg-primary-400 hover:bg-primary-600 text-white rounded-xl font-semibold"
+          className="btn-primary w-full justify-center gap-2 py-4"
         >
-          {t.artistProfile.sendBookingRequest}
+          <MessageSquare size={20} />
+          Send Booking Request
         </Link>
       </div>
     </div>

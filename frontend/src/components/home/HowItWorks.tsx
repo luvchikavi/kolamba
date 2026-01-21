@@ -1,65 +1,77 @@
 "use client";
 
-import { Search, MessageSquare, Calendar } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Search, MessageSquare, Calendar, CheckCircle } from "lucide-react";
+
+const steps = [
+  {
+    icon: Search,
+    title: "Find Artists",
+    description: "Browse our curated selection of Israeli artists by category, location, or availability.",
+    color: "from-blue-500 to-indigo-500",
+  },
+  {
+    icon: MessageSquare,
+    title: "Connect",
+    description: "Send a booking request with your event details and requirements directly to the artist.",
+    color: "from-violet-500 to-purple-500",
+  },
+  {
+    icon: Calendar,
+    title: "Book & Coordinate",
+    description: "Confirm the date, finalize details, and prepare for an unforgettable cultural experience.",
+    color: "from-primary-500 to-teal-500",
+  },
+  {
+    icon: CheckCircle,
+    title: "Host Your Event",
+    description: "Welcome your artist and create lasting memories for your community.",
+    color: "from-accent-500 to-rose-500",
+  },
+];
 
 export default function HowItWorks() {
-  const { t, isRTL } = useLanguage();
-
-  const steps = [
-    {
-      icon: Search,
-      title: t.howItWorks.searchTitle,
-      description: t.howItWorks.searchDescription,
-    },
-    {
-      icon: MessageSquare,
-      title: t.howItWorks.contactTitle,
-      description: t.howItWorks.contactDescription,
-    },
-    {
-      icon: Calendar,
-      title: t.howItWorks.performanceTitle,
-      description: t.howItWorks.performanceDescription,
-    },
-  ];
-
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2">
-            {t.howItWorks.title}
+    <section className="section bg-slate-50">
+      <div className="container-default">
+        {/* Section header */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            How It Works
           </h2>
-          <div className="h-0.5 w-32 bg-brand-gradient mx-auto"></div>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Booking an artist for your community event is simple and straightforward
+          </p>
         </div>
 
-        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
+        {/* Steps */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
               <div key={index} className="relative text-center">
                 {/* Connector line (desktop only) */}
                 {index < steps.length - 1 && (
-                  <div className={`hidden md:block absolute top-12 w-full h-0.5 bg-neutral-200 z-0 ${isRTL ? 'right-0 translate-x-1/2' : 'left-0 -translate-x-1/2'}`}></div>
+                  <div className="hidden lg:block absolute top-10 left-[60%] w-[80%] h-[2px] bg-slate-200">
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-slate-300" />
+                  </div>
                 )}
 
-                <div className="relative z-10">
-                  {/* Step number */}
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <Icon className="text-primary-600" size={40} />
+                {/* Step number */}
+                <div className="relative inline-flex mb-6">
+                  <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-soft-lg`}>
+                    <Icon className="text-white" size={32} />
                   </div>
-
-                  {/* Step indicator */}
-                  <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center mx-auto mb-4 font-bold">
-                    {index + 1}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-white shadow-soft flex items-center justify-center">
+                    <span className="text-sm font-bold text-slate-700">{index + 1}</span>
                   </div>
-
-                  <h3 className="text-xl font-bold text-neutral-800 mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-neutral-600">{step.description}</p>
                 </div>
+
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  {step.description}
+                </p>
               </div>
             );
           })}

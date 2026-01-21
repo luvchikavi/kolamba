@@ -1,78 +1,87 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Globe, Users, Music } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { ArrowLeft, Globe, Users, Music, Heart, Star } from "lucide-react";
 
 export default function AboutPage() {
-  const { t, language, isRTL } = useLanguage();
-
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <div className="bg-brand-gradient text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-4xl font-bold mb-4">{t.footer.about}</h1>
-          <p className="text-xl text-white/80">{t.brand.tagline}</p>
+    <div className="min-h-screen bg-slate-50 pt-20">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+        <div className="container-default py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Kolamba</h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+            The Jewish Culture Club - Connecting Israeli artists with Jewish communities worldwide
+          </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container-default py-12">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-primary-500 hover:text-primary-600 mb-8"
+          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-8"
         >
-          {isRTL ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
-          {t.common.back}
+          <ArrowLeft size={20} />
+          Back to Home
         </Link>
 
-        <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
+        <div className="card p-8 md:p-12 space-y-12">
+          {/* Mission */}
           <section>
-            <h2 className="text-2xl font-bold text-neutral-800 mb-4">
-              {language === 'he' ? 'מי אנחנו' : 'Who We Are'}
-            </h2>
-            <p className="text-neutral-600 leading-relaxed">
-              {t.brand.description}
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">Our Mission</h2>
+            <div className="divider-gradient mb-6" />
+            <p className="text-slate-600 leading-relaxed text-lg">
+              Kolamba is dedicated to bridging the gap between talented Israeli artists and Jewish
+              communities around the world. We believe that cultural exchange strengthens community
+              bonds and creates lasting memories through shared experiences of music, theater,
+              lectures, and artistic performances.
             </p>
           </section>
 
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-neutral-50 rounded-lg">
-              <Globe className="mx-auto text-primary-500 mb-3" size={40} />
-              <h3 className="font-bold text-neutral-800">
-                {language === 'he' ? 'קהילות ברחבי העולם' : 'Communities Worldwide'}
-              </h3>
-              <p className="text-sm text-neutral-500 mt-2">
-                {language === 'he' ? 'מחברים קהילות יהודיות בכל רחבי העולם' : 'Connecting Jewish communities globally'}
+          {/* Features */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-6 bg-slate-50 rounded-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                <Globe className="text-white" size={28} />
+              </div>
+              <h3 className="font-bold text-slate-900 mb-2">Global Reach</h3>
+              <p className="text-sm text-slate-600">
+                Connecting Jewish communities across North America, Europe, and beyond
               </p>
             </div>
-            <div className="text-center p-6 bg-neutral-50 rounded-lg">
-              <Music className="mx-auto text-secondary-500 mb-3" size={40} />
-              <h3 className="font-bold text-neutral-800">
-                {language === 'he' ? 'אמנים מוכשרים' : 'Talented Artists'}
-              </h3>
-              <p className="text-sm text-neutral-500 mt-2">
-                {language === 'he' ? 'מאות אמנים ישראלים ויהודים' : 'Hundreds of Israeli and Jewish artists'}
+            <div className="text-center p-6 bg-slate-50 rounded-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+                <Music className="text-white" size={28} />
+              </div>
+              <h3 className="font-bold text-slate-900 mb-2">Talented Artists</h3>
+              <p className="text-sm text-slate-600">
+                Curated selection of musicians, speakers, performers, and educators
               </p>
             </div>
-            <div className="text-center p-6 bg-neutral-50 rounded-lg">
-              <Users className="mx-auto text-primary-500 mb-3" size={40} />
-              <h3 className="font-bold text-neutral-800">
-                {language === 'he' ? 'חיבורים' : 'Connections'}
-              </h3>
-              <p className="text-sm text-neutral-500 mt-2">
-                {language === 'he' ? 'יצירת קשרים בין תרבויות' : 'Creating cultural bridges'}
+            <div className="text-center p-6 bg-slate-50 rounded-2xl">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <Heart className="text-white" size={28} />
+              </div>
+              <h3 className="font-bold text-slate-900 mb-2">Cultural Connection</h3>
+              <p className="text-sm text-slate-600">
+                Creating meaningful experiences that celebrate Jewish heritage
               </p>
             </div>
           </section>
 
+          {/* Contact */}
           <section>
-            <h2 className="text-2xl font-bold text-neutral-800 mb-4">
-              {language === 'he' ? 'צור קשר' : 'Contact Us'}
-            </h2>
-            <p className="text-neutral-600">
-              {t.footer.email}
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">Get in Touch</h2>
+            <div className="divider-gradient mb-6" />
+            <p className="text-slate-600 mb-4">
+              Have questions? We&apos;d love to hear from you.
             </p>
+            <a
+              href="mailto:info@kolamba.org"
+              className="btn-primary inline-flex"
+            >
+              Contact Us
+            </a>
           </section>
         </div>
       </div>

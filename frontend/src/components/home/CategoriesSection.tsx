@@ -5,66 +5,66 @@ import {
   Music,
   BookOpen,
   Users,
-  Baby,
   Sparkles,
   Theater,
-  Mic,
   Palette,
   Film,
-  Newspaper
+  Mic,
 } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 const categories = [
-  { slug: "music", nameHe: "מוזיקה", nameEn: "Music", icon: Music },
-  { slug: "dance", nameHe: "ריקוד", nameEn: "Dance", icon: Sparkles },
-  { slug: "theater", nameHe: "תיאטרון", nameEn: "Theater", icon: Theater },
-  { slug: "visual-arts", nameHe: "אמנות חזותית", nameEn: "Visual Arts", icon: Palette },
-  { slug: "workshops", nameHe: "סדנאות", nameEn: "Workshops", icon: Users },
-  { slug: "lectures", nameHe: "הרצאות", nameEn: "Lectures", icon: BookOpen },
-  { slug: "film", nameHe: "קולנוע", nameEn: "Film", icon: Film },
-  { slug: "journalism", nameHe: "עיתונות", nameEn: "Journalism", icon: Newspaper },
+  { slug: "music", name: "Music", icon: Music, color: "from-violet-500 to-purple-500" },
+  { slug: "dance", name: "Dance", icon: Sparkles, color: "from-pink-500 to-rose-500" },
+  { slug: "theater", name: "Theater", icon: Theater, color: "from-amber-500 to-orange-500" },
+  { slug: "visual-arts", name: "Visual Arts", icon: Palette, color: "from-emerald-500 to-teal-500" },
+  { slug: "workshops", name: "Workshops", icon: Users, color: "from-blue-500 to-indigo-500" },
+  { slug: "lectures", name: "Lectures", icon: BookOpen, color: "from-cyan-500 to-blue-500" },
+  { slug: "film", name: "Film", icon: Film, color: "from-red-500 to-pink-500" },
+  { slug: "comedy", name: "Comedy", icon: Mic, color: "from-yellow-500 to-amber-500" },
 ];
 
 export default function CategoriesSection() {
-  const { t, language, isRTL } = useLanguage();
-
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2">
-            {t.categories.title}
+    <section className="section bg-slate-50">
+      <div className="container-default">
+        {/* Section header */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            Explore by Category
           </h2>
-          <div className="h-0.5 w-32 bg-brand-gradient mx-auto"></div>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Find the perfect artist for your event, from traditional music to contemporary theater
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+        {/* Categories grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
           {categories.map((category) => {
             const Icon = category.icon;
             return (
               <Link
                 key={category.slug}
                 href={`/search?category=${category.slug}`}
-                className="group flex flex-col items-center p-4 rounded-xl bg-neutral-50 hover:bg-primary-50 border border-neutral-100 hover:border-primary-200 transition-all"
+                className="group card card-hover p-6 text-center"
               >
-                <div className="w-12 h-12 rounded-full bg-white group-hover:bg-primary-100 flex items-center justify-center mb-3 transition-colors shadow-sm">
-                  <Icon className="text-primary-500 group-hover:text-primary-600" size={24} />
+                <div className={`w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-soft group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon className="text-white" size={26} />
                 </div>
-                <span className="text-sm font-medium text-neutral-700 group-hover:text-primary-600 text-center">
-                  {language === 'he' ? category.nameHe : category.nameEn}
-                </span>
+                <h3 className="font-semibold text-slate-800 group-hover:text-primary-600 transition-colors">
+                  {category.name}
+                </h3>
               </Link>
             );
           })}
         </div>
 
-        <div className="text-center mt-8">
+        {/* View all link */}
+        <div className="text-center mt-10">
           <Link
             href="/categories"
-            className="text-primary-500 hover:text-primary-600 font-medium"
+            className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium link-underline"
           >
-            {t.categories.viewAll} {isRTL ? '←' : '→'}
+            View all categories
           </Link>
         </div>
       </div>

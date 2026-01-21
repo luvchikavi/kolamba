@@ -1,143 +1,227 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { MapPin, DollarSign } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { MapPin, Star, Search, Filter, ChevronDown } from "lucide-react";
 
-// Mock artists data (will be replaced with API call)
-const artists = [
+interface Artist {
+  id: number;
+  name: string;
+  price: number;
+  city: string;
+  country: string;
+  rating: number;
+  isFeatured: boolean;
+  categories: { name: string; slug: string }[];
+}
+
+// Sample artists data
+const artists: Artist[] = [
   {
     id: 1,
-    nameHe: "דוד כהן",
-    nameEn: "David Cohen",
-    priceSingle: 500,
-    cityHe: "תל אביב",
-    cityEn: "Tel Aviv",
+    name: "David Cohen",
+    price: 800,
+    city: "Tel Aviv",
+    country: "Israel",
+    rating: 4.9,
     isFeatured: true,
     categories: [
-      { nameHe: "שירה", nameEn: "Singing", slug: "singing" },
-      { nameHe: "חזנות", nameEn: "Cantorial", slug: "cantorial" }
+      { name: "Music", slug: "music" },
+      { name: "Cantorial", slug: "cantorial" },
     ],
   },
   {
     id: 2,
-    nameHe: "שרה לוי",
-    nameEn: "Sarah Levy",
-    priceSingle: 400,
-    cityHe: "ירושלים",
-    cityEn: "Jerusalem",
+    name: "Sarah Levy",
+    price: 600,
+    city: "Jerusalem",
+    country: "Israel",
+    rating: 4.8,
     isFeatured: true,
-    categories: [{ nameHe: "הרצאה", nameEn: "Lecture", slug: "lecture" }],
+    categories: [{ name: "Theater", slug: "theater" }],
   },
   {
     id: 3,
-    nameHe: "יוסי מזרחי",
-    nameEn: "Yossi Mizrachi",
-    priceSingle: 600,
-    cityHe: "חיפה",
-    cityEn: "Haifa",
+    name: "Yossi Mizrachi",
+    price: 500,
+    city: "Haifa",
+    country: "Israel",
+    rating: 4.7,
     isFeatured: false,
     categories: [
-      { nameHe: "קומדיה", nameEn: "Comedy", slug: "comedy" },
-      { nameHe: "תיאטרון", nameEn: "Theater", slug: "theater" }
+      { name: "Comedy", slug: "comedy" },
+      { name: "Stand-up", slug: "standup" },
     ],
   },
   {
     id: 4,
-    nameHe: "מירי גולן",
-    nameEn: "Miri Golan",
-    priceSingle: 350,
-    cityHe: "תל אביב",
-    cityEn: "Tel Aviv",
+    name: "Miri Golan",
+    price: 700,
+    city: "Tel Aviv",
+    country: "Israel",
+    rating: 4.9,
+    isFeatured: true,
+    categories: [{ name: "Dance", slug: "dance" }],
+  },
+  {
+    id: 5,
+    name: "Avi Ben-David",
+    price: 450,
+    city: "Be'er Sheva",
+    country: "Israel",
+    rating: 4.6,
     isFeatured: false,
-    categories: [{ nameHe: "מוסיקה", nameEn: "Music", slug: "music" }],
+    categories: [{ name: "Lectures", slug: "lectures" }],
+  },
+  {
+    id: 6,
+    name: "Rachel Singer",
+    price: 550,
+    city: "Netanya",
+    country: "Israel",
+    rating: 4.8,
+    isFeatured: false,
+    categories: [
+      { name: "Music", slug: "music" },
+      { name: "Workshops", slug: "workshops" },
+    ],
+  },
+  {
+    id: 7,
+    name: "Michael Stern",
+    price: 900,
+    city: "Tel Aviv",
+    country: "Israel",
+    rating: 5.0,
+    isFeatured: true,
+    categories: [{ name: "Film", slug: "film" }],
+  },
+  {
+    id: 8,
+    name: "Noa Shapiro",
+    price: 400,
+    city: "Eilat",
+    country: "Israel",
+    rating: 4.5,
+    isFeatured: false,
+    categories: [{ name: "Visual Arts", slug: "visual-arts" }],
   },
 ];
 
 export default function ArtistsPage() {
-  const { t, language, isRTL } = useLanguage();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredArtists = artists.filter((artist) =>
+    artist.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <nav className="text-sm text-neutral-500 mb-4">
-            <Link href="/" className="hover:text-primary-500">{t.pages.home}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-neutral-800">{t.artists.title}</span>
-          </nav>
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-800 mb-2">{t.artists.title}</h1>
-              <div className="h-0.5 w-24 bg-brand-gradient"></div>
-            </div>
-            <Link
-              href="/search"
-              className="px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg transition-colors"
-            >
-              {t.search.advancedSearch}
+      <div className="bg-white border-b border-slate-100">
+        <div className="container-default py-10">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+            <Link href="/" className="hover:text-primary-600 transition-colors">
+              Home
             </Link>
+            <span>/</span>
+            <span className="text-slate-900 font-medium">Artists</span>
+          </nav>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+                Browse Artists
+              </h1>
+              <p className="text-slate-600">
+                Discover talented Israeli artists for your community events
+              </p>
+            </div>
+
+            {/* Search */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Search artists..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input pl-11 w-64"
+                />
+              </div>
+              <Link
+                href="/search"
+                className="btn-secondary flex items-center gap-2"
+              >
+                <Filter size={18} />
+                Filters
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Artists Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <p className="text-neutral-600 mb-6">
-          {t.pages.found} <span className="font-bold">{artists.length}</span> {t.artists.title.toLowerCase()}
+      <div className="container-default py-10">
+        <p className="text-slate-600 mb-6">
+          Found <span className="font-semibold text-slate-900">{filteredArtists.length}</span> artists
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {artists.map((artist) => (
+          {filteredArtists.map((artist) => (
             <Link
               key={artist.id}
               href={`/artists/${artist.id}`}
-              className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-neutral-100 relative"
+              className="group card card-hover overflow-hidden"
             >
-              {/* Featured badge */}
-              {artist.isFeatured && (
-                <div className={`absolute top-3 ${isRTL ? 'right-3' : 'left-3'} z-10`}>
-                  <span className="px-2 py-1 bg-secondary-400 text-white text-xs rounded-full">
-                    {t.pages.featured}
-                  </span>
-                </div>
-              )}
-
-              {/* Image placeholder */}
-              <div className="relative aspect-square bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                <span className="text-5xl font-display font-bold text-white/50">
-                  {language === 'he' ? artist.nameHe.charAt(0) : artist.nameEn.charAt(0)}
+              {/* Image / Avatar */}
+              <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
+                <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
+                  {artist.name.charAt(0)}
                 </span>
+                {artist.isFeatured && (
+                  <div className="absolute top-3 left-3">
+                    <span className="badge-accent text-xs">Featured</span>
+                  </div>
+                )}
               </div>
 
-              <div className="p-4">
-                <h3 className="font-bold text-neutral-800 group-hover:text-primary-600 transition-colors">
-                  {language === 'he' ? artist.nameHe : artist.nameEn}
-                </h3>
-                <p className="text-sm text-neutral-500 mb-2">
-                  {language === 'he' ? artist.nameEn : artist.nameHe}
-                </p>
+              {/* Content */}
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+                    {artist.name}
+                  </h3>
+                  <div className="flex items-center gap-1 text-amber-500">
+                    <Star size={14} fill="currentColor" />
+                    <span className="text-sm font-medium text-slate-700">
+                      {artist.rating}
+                    </span>
+                  </div>
+                </div>
 
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {artist.categories.map((cat) => (
-                    <span
-                      key={cat.slug}
-                      className="px-2 py-0.5 text-xs bg-primary-50 text-primary-600 rounded-full"
-                    >
-                      {language === 'he' ? cat.nameHe : cat.nameEn}
+                {/* Categories */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {artist.categories.slice(0, 2).map((cat) => (
+                    <span key={cat.slug} className="badge-primary text-xs">
+                      {cat.name}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex justify-between items-center text-sm text-neutral-600">
-                  <div className="flex items-center gap-1">
+                {/* Location & Price */}
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-1 text-slate-500">
                     <MapPin size={14} />
-                    <span>{language === 'he' ? artist.cityHe : artist.cityEn}</span>
+                    <span>{artist.city}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <DollarSign size={14} />
-                    <span>{t.search.from}{artist.priceSingle}</span>
+                  <div className="font-semibold text-slate-900">
+                    From ${artist.price}
                   </div>
                 </div>
               </div>

@@ -9,73 +9,110 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Kolamba Brand Colors - from kolamba.org
-        // Primary - Teal/Cyan (brand identity)
+        // Modern Kolamba Brand Colors
         primary: {
-          50: "#e8f7fa",
-          100: "#d1eff5",
-          200: "#a3dfeb",
-          300: "#75cfe1",
-          400: "#53B9CC", // Main brand teal (kolamba.org)
-          500: "#53B9CC",
-          600: "#368A9D", // Deeper teal (kolamba.org)
-          700: "#2d7385",
-          800: "#214a52",
-          900: "#112529",
+          50: "#f0fdfa",
+          100: "#ccfbf1",
+          200: "#99f6e4",
+          300: "#5eead4",
+          400: "#2dd4bf",
+          500: "#14b8a6",
+          600: "#0d9488",
+          700: "#0f766e",
+          800: "#115e59",
+          900: "#134e4a",
+          950: "#042f2e",
         },
-        // Secondary - Rose/Pink (warm accent)
-        secondary: {
-          50: "#fdf2f4",
-          100: "#fbe5e9",
-          200: "#f7ccd3",
-          300: "#e9a5b0",
-          400: "#CA7383", // Main brand rose (kolamba.org)
-          500: "#CA7383",
-          600: "#B35F6F", // Dusty rose (kolamba.org)
-          700: "#8f4c59",
-          800: "#512d34",
-          900: "#28171a",
+        // Warm accent color
+        accent: {
+          50: "#fff1f2",
+          100: "#ffe4e6",
+          200: "#fecdd3",
+          300: "#fda4af",
+          400: "#fb7185",
+          500: "#f43f5e",
+          600: "#e11d48",
+          700: "#be123c",
+          800: "#9f1239",
+          900: "#881337",
         },
-        // Neutral - Light Gray (backgrounds)
-        neutral: {
-          50: "#f8f9f9",
-          100: "#e1e1e1", // kolamba.org light gray
-          200: "#d1d3d5",
-          300: "#babdc0",
-          400: "#a3a7ab",
-          500: "#8c9196",
-          600: "#6e7378",
-          700: "#53575a",
-          800: "#373a3c",
-          900: "#1c1d1e",
-        },
-        // Brand colors for direct use
-        brand: {
-          teal: "#53B9CC",
-          "teal-dark": "#368A9D",
-          rose: "#CA7383",
-          "rose-dark": "#B35F6F",
-          gray: "#e1e1e1",
-          black: "#000000",
+        // Neutral grays with slight warmth
+        slate: {
+          50: "#f8fafc",
+          100: "#f1f5f9",
+          200: "#e2e8f0",
+          300: "#cbd5e1",
+          400: "#94a3b8",
+          500: "#64748b",
+          600: "#475569",
+          700: "#334155",
+          800: "#1e293b",
+          900: "#0f172a",
+          950: "#020617",
         },
       },
       fontFamily: {
-        sans: ["Inter", "Open Sans", "sans-serif"],
-        hebrew: ["Open Sans Hebrew", "Rubik", "sans-serif"],
-        display: ["Georgia", "Times New Roman", "serif"],
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #ca7283, #53b9cc)",
-        "brand-gradient-vertical": "linear-gradient(to bottom, #ca7283, #53b9cc)",
-        "brand-gradient-animated": "linear-gradient(90deg, #ca7283, #53b9cc, #ca7283)",
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "hero-gradient": "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
+        "card-gradient": "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+        "accent-gradient": "linear-gradient(135deg, #14b8a6 0%, #f43f5e 100%)",
+      },
+      boxShadow: {
+        "soft": "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)",
+        "soft-lg": "0 10px 40px -10px rgba(0, 0, 0, 0.1), 0 2px 10px -2px rgba(0, 0, 0, 0.04)",
+        "glow": "0 0 20px rgba(20, 184, 166, 0.3)",
+        "glow-accent": "0 0 20px rgba(244, 63, 94, 0.3)",
+      },
+      borderRadius: {
+        "4xl": "2rem",
       },
       animation: {
-        "gradient-shift": "gradient-shift 8s ease infinite",
+        "fade-in": "fadeIn 0.5s ease-out forwards",
+        "fade-in-up": "fadeInUp 0.6s ease-out forwards",
+        "fade-in-down": "fadeInDown 0.6s ease-out forwards",
+        "scale-in": "scaleIn 0.4s ease-out forwards",
+        "slide-up": "slideUp 0.5s ease-out forwards",
+        "float": "float 6s ease-in-out infinite",
+        "pulse-soft": "pulseSoft 3s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
       keyframes: {
-        "gradient-shift": {
-          "0%, 100%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        fadeInUp: {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        fadeInDown: {
+          "0%": { opacity: "0", transform: "translateY(-20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: "0.4" },
+          "50%": { opacity: "0.8" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
         },
       },
     },

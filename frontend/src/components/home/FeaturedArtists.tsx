@@ -1,162 +1,144 @@
 "use client";
 
-// Version: 2026-01-20 - Fixed bilingual display
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MapPin, DollarSign } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { MapPin, Star, ArrowRight } from "lucide-react";
 
 interface Artist {
   id: number;
-  name_he: string;
-  name_en: string;
-  profile_image?: string;
-  price_single: number;
+  name: string;
+  image?: string;
+  price: number;
   city: string;
-  categories: Array<{ name_he: string; name_en: string; slug: string }>;
+  country: string;
+  rating: number;
+  categories: string[];
+  isFeatured: boolean;
 }
 
-// Fallback data in case API is unavailable
-const fallbackArtists: Artist[] = [
+// Sample data with realistic artists
+const sampleArtists: Artist[] = [
   {
     id: 1,
-    name_he: "אבי לבצ'יק",
-    name_en: "Avi Luvchik",
-    price_single: 800,
+    name: "David Cohen",
+    price: 800,
     city: "Tel Aviv",
-    categories: [{ name_he: "מוסיקה", name_en: "Music", slug: "music" }],
+    country: "Israel",
+    rating: 4.9,
+    categories: ["Music", "Cantorial"],
+    isFeatured: true,
   },
   {
     id: 2,
-    name_he: "דוד כהן",
-    name_en: "David Cohen",
-    price_single: 500,
+    name: "Sarah Levy",
+    price: 600,
     city: "Jerusalem",
-    categories: [{ name_he: "שירה", name_en: "Singing", slug: "singing" }],
+    country: "Israel",
+    rating: 4.8,
+    categories: ["Theater", "Drama"],
+    isFeatured: true,
   },
   {
     id: 3,
-    name_he: "שרה לוי",
-    name_en: "Sarah Levy",
-    price_single: 400,
+    name: "Yossi Mizrachi",
+    price: 500,
     city: "Haifa",
-    categories: [{ name_he: "הרצאה", name_en: "Lecture", slug: "lecture" }],
+    country: "Israel",
+    rating: 4.7,
+    categories: ["Comedy", "Stand-up"],
+    isFeatured: true,
   },
   {
     id: 4,
-    name_he: "יוסי מזרחי",
-    name_en: "Yossi Mizrachi",
-    price_single: 600,
+    name: "Miri Golan",
+    price: 700,
     city: "Tel Aviv",
-    categories: [{ name_he: "קומדיה", name_en: "Comedy", slug: "comedy" }],
+    country: "Israel",
+    rating: 4.9,
+    categories: ["Dance", "Contemporary"],
+    isFeatured: true,
   },
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://kolamba-production.up.railway.app";
-
 export default function FeaturedArtists() {
-  const { t, language, isRTL } = useLanguage();
-  const [artists, setArtists] = useState<Artist[]>(fallbackArtists);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchArtists = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/artists/featured?limit=4`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.length > 0) {
-            setArtists(data);
-          }
-        }
-      } catch (error) {
-        console.log("Using fallback artist data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchArtists();
-  }, []);
+  const [artists, setArtists] = useState<Artist[]>(sampleArtists);
 
   return (
-    <section className="py-16 bg-neutral-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-10">
+    <section className="section bg-white">
+      <div className="container-default">
+        {/* Section header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-neutral-800 mb-2">
-              {t.artists.featured}
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+              Featured Artists
             </h2>
-            <div className="h-0.5 w-32 bg-brand-gradient"></div>
+            <p className="text-slate-600">
+              Discover our most popular and highly-rated performers
+            </p>
           </div>
           <Link
             href="/artists"
-            className="hidden sm:block text-primary-500 hover:text-primary-600 font-medium"
+            className="group flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
           >
-            {t.artists.all} {isRTL ? '←' : '→'}
+            View all artists
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
+        {/* Artists grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {artists.map((artist) => {
-            const artistName = language === 'he' ? artist.name_he : artist.name_en;
-            const altName = language === 'he' ? artist.name_en : artist.name_he;
+          {artists.map((artist) => (
+            <Link
+              key={artist.id}
+              href={`/artists/${artist.id}`}
+              className="group card card-hover overflow-hidden"
+            >
+              {/* Image / Avatar */}
+              <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
+                <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
+                  {artist.name.charAt(0)}
+                </span>
+                {artist.isFeatured && (
+                  <div className="absolute top-3 left-3">
+                    <span className="badge-accent text-xs">Featured</span>
+                  </div>
+                )}
+              </div>
 
-            return (
-              <Link
-                key={artist.id}
-                href={`/artists/${artist.id}`}
-                className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-neutral-100"
-              >
-                {/* Image placeholder */}
-                <div className="aspect-square bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                  <span className="text-5xl font-display font-bold text-white/50">
-                    {artistName.charAt(0)}
-                  </span>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="font-bold text-neutral-800 group-hover:text-primary-600 transition-colors">
-                    {artistName}
+              {/* Content */}
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+                    {artist.name}
                   </h3>
-                  <p className="text-sm text-neutral-500 mb-2">{altName}</p>
-
-                  {/* Categories */}
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {artist.categories.map((cat) => (
-                      <span
-                        key={cat.slug}
-                        className="px-2 py-0.5 text-xs bg-primary-50 text-primary-600 rounded-full"
-                      >
-                        {language === 'he' ? cat.name_he : cat.name_en}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Location & Price */}
-                  <div className="flex justify-between items-center text-sm text-neutral-600">
-                    <div className="flex items-center gap-1">
-                      <MapPin size={14} />
-                      <span>{artist.city}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign size={14} />
-                      <span>{t.search.from}{artist.price_single}</span>
-                    </div>
+                  <div className="flex items-center gap-1 text-amber-500">
+                    <Star size={14} fill="currentColor" />
+                    <span className="text-sm font-medium text-slate-700">{artist.rating}</span>
                   </div>
                 </div>
-              </Link>
-            );
-          })}
-        </div>
 
-        <div className="text-center mt-8 sm:hidden">
-          <Link
-            href="/artists"
-            className="text-primary-500 hover:text-primary-600 font-medium"
-          >
-            {t.artists.all} {isRTL ? '←' : '→'}
-          </Link>
+                {/* Categories */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {artist.categories.slice(0, 2).map((cat) => (
+                    <span key={cat} className="badge-primary text-xs">
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Location & Price */}
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-1 text-slate-500">
+                    <MapPin size={14} />
+                    <span>{artist.city}</span>
+                  </div>
+                  <div className="font-semibold text-slate-900">
+                    From ${artist.price}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

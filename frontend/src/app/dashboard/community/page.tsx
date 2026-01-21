@@ -7,14 +7,12 @@ import {
   DollarSign,
   Clock,
   CheckCircle,
-  X,
   ChevronRight,
   Search,
   MapPin,
   Music,
+  Star,
 } from "lucide-react";
-import type { Booking, ArtistListItem } from "@/lib/api";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 // Mock community data (will be replaced with auth)
 const mockCommunity = {
@@ -24,142 +22,111 @@ const mockCommunity = {
 };
 
 // Mock bookings
-const mockBookings: (Booking & { artist?: { name_he: string; name_en?: string } })[] = [
+const mockBookings = [
   {
     id: 1,
     artist_id: 1,
-    community_id: 1,
+    artistName: "David Cohen",
     requested_date: "2025-03-15",
     location: "Main Hall",
     budget: 1500,
     status: "approved",
-    created_at: "2025-01-10",
-    updated_at: "2025-01-15",
-    artist: { name_he: "דוד כהן", name_en: "David Cohen" },
   },
   {
     id: 2,
     artist_id: 2,
-    community_id: 1,
+    artistName: "Sarah Levy",
     requested_date: "2025-04-20",
     location: "Community Center",
     budget: 2000,
     status: "pending",
-    created_at: "2025-01-12",
-    updated_at: "2025-01-12",
-    artist: { name_he: "שרה לוי", name_en: "Sara Levi" },
   },
   {
     id: 3,
     artist_id: 3,
-    community_id: 1,
+    artistName: "Yossi Mizrachi",
     requested_date: "2025-02-28",
     location: "Sanctuary",
     budget: 1200,
     status: "completed",
-    created_at: "2024-12-01",
-    updated_at: "2025-03-01",
-    artist: { name_he: "יוסי אברהם", name_en: "Yossi Avraham" },
   },
 ];
 
 // Mock recommended artists
-const mockRecommendedArtists: ArtistListItem[] = [
+const mockRecommendedArtists = [
   {
     id: 4,
-    name_he: "מיכל רוזן",
-    name_en: "Michal Rosen",
-    price_single: 800,
-    city: "Tel Aviv",
-    country: "Israel",
-    is_featured: true,
-    categories: [{ id: 1, name_he: "שירה", name_en: "Singing", slug: "singing", sort_order: 1 }],
+    name: "Michal Rosen",
+    category: "Singing",
+    price: 800,
+    rating: 4.9,
   },
   {
     id: 5,
-    name_he: "אלון בן דוד",
-    name_en: "Alon Ben David",
-    price_single: 1000,
-    city: "Jerusalem",
-    country: "Israel",
-    is_featured: false,
-    categories: [{ id: 2, name_he: "נגינה", name_en: "Music", slug: "music", sort_order: 2 }],
+    name: "Alon Ben David",
+    category: "Music",
+    price: 1000,
+    rating: 4.8,
   },
 ];
 
-function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof useLanguage>['t'] }) {
+function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-700",
-    approved: "bg-green-100 text-green-700",
+    pending: "bg-amber-100 text-amber-700",
+    approved: "bg-emerald-100 text-emerald-700",
     rejected: "bg-red-100 text-red-700",
-    completed: "bg-purple-100 text-purple-700",
-    cancelled: "bg-neutral-100 text-neutral-600",
+    completed: "bg-violet-100 text-violet-700",
+    cancelled: "bg-slate-100 text-slate-600",
   };
 
-  const statusKey = status as keyof typeof t.status;
-  const label = t.status[statusKey] || status;
+  const labels: Record<string, string> = {
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  };
 
   return (
-    <span className={`px-2 py-0.5 text-xs rounded-full ${styles[status] || styles.pending}`}>
-      {label}
+    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status] || styles.pending}`}>
+      {labels[status] || status}
     </span>
   );
 }
 
-function BookingCard({
-  booking,
-  t,
-  language,
-}: {
-  booking: Booking & { artist?: { name_he: string; name_en?: string } };
-  t: ReturnType<typeof useLanguage>['t'];
-  language: string;
-}) {
-  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
-  const artistName = language === 'he' ? booking.artist?.name_he : (booking.artist?.name_en || booking.artist?.name_he);
-  const altName = language === 'he' ? booking.artist?.name_en : booking.artist?.name_he;
-
+function BookingCard({ booking }: { booking: typeof mockBookings[0] }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-5">
+    <div className="card p-5">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="font-bold text-neutral-800">{artistName}</h3>
-          {altName && (
-            <p className="text-sm text-neutral-500">{altName}</p>
-          )}
+          <h3 className="font-bold text-slate-900">{booking.artistName}</h3>
         </div>
-        <StatusBadge status={booking.status} t={t} />
+        <StatusBadge status={booking.status} />
       </div>
 
-      <div className="space-y-2 text-sm text-neutral-600">
-        {booking.requested_date && (
-          <div className="flex items-center gap-2">
-            <Calendar size={14} className="text-neutral-400" />
-            <span>{new Date(booking.requested_date).toLocaleDateString(dateLocale)}</span>
-          </div>
-        )}
-        {booking.location && (
-          <div className="flex items-center gap-2">
-            <MapPin size={14} className="text-neutral-400" />
-            <span>{booking.location}</span>
-          </div>
-        )}
-        {booking.budget && (
-          <div className="flex items-center gap-2">
-            <DollarSign size={14} className="text-neutral-400" />
-            <span>${booking.budget}</span>
-          </div>
-        )}
+      <div className="space-y-2 text-sm text-slate-600">
+        <div className="flex items-center gap-2">
+          <Calendar size={14} className="text-slate-400" />
+          <span>{new Date(booking.requested_date).toLocaleDateString()}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin size={14} className="text-slate-400" />
+          <span>{booking.location}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <DollarSign size={14} className="text-slate-400" />
+          <span>${booking.budget}</span>
+        </div>
       </div>
 
       {booking.status === "approved" && (
-        <div className="mt-4 pt-4 border-t flex justify-between items-center">
-          <span className="text-sm text-green-600 font-medium">{t.dashboard.bookingApproved}</span>
+        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+          <span className="text-sm text-emerald-600 font-medium">Confirmed</span>
           <Link
             href={`/artists/${booking.artist_id}`}
-            className="text-sm text-primary-500 hover:underline"
+            className="text-sm text-primary-600 hover:text-primary-700"
           >
-            {t.dashboard.artistDetails}
+            View Artist
           </Link>
         </div>
       )}
@@ -167,34 +134,29 @@ function BookingCard({
   );
 }
 
-function ArtistRecommendationCard({ artist, t, language }: { artist: ArtistListItem; t: ReturnType<typeof useLanguage>['t']; language: string }) {
-  const artistName = language === 'he' ? artist.name_he : (artist.name_en || artist.name_he);
-  const altName = language === 'he' ? artist.name_en : artist.name_he;
-  const categoryName = language === 'he' ? artist.categories[0]?.name_he : (artist.categories[0]?.name_en || artist.categories[0]?.name_he);
-
+function ArtistRecommendationCard({ artist }: { artist: typeof mockRecommendedArtists[0] }) {
   return (
     <Link
       href={`/artists/${artist.id}`}
-      className="block bg-white rounded-xl shadow-sm border border-neutral-100 p-4 hover:shadow-md transition-shadow"
+      className="block card card-hover p-4"
     >
       <div className="flex gap-4">
-        <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center flex-shrink-0">
-          <span className="text-xl font-bold text-white/50">
-            {artistName.charAt(0)}
+        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center flex-shrink-0">
+          <span className="text-xl font-bold text-primary-600/50">
+            {artist.name.charAt(0)}
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-neutral-800 truncate">{artistName}</h4>
-          <p className="text-sm text-neutral-500 truncate">{altName}</p>
-          <div className="flex items-center gap-2 mt-1 text-sm text-neutral-600">
-            <Music size={12} className="text-neutral-400" />
-            <span>{categoryName}</span>
-            {artist.price_single && (
-              <>
-                <span className="text-neutral-300">•</span>
-                <span>{t.dashboard.fromPrice}${artist.price_single}</span>
-              </>
-            )}
+          <h4 className="font-bold text-slate-900 truncate">{artist.name}</h4>
+          <div className="flex items-center gap-2 mt-1 text-sm text-slate-600">
+            <Music size={12} className="text-slate-400" />
+            <span>{artist.category}</span>
+            <span className="text-slate-300">•</span>
+            <span>From ${artist.price}</span>
+          </div>
+          <div className="flex items-center gap-1 mt-1">
+            <Star size={12} className="text-amber-500 fill-amber-500" />
+            <span className="text-sm text-slate-600">{artist.rating}</span>
           </div>
         </div>
       </div>
@@ -203,7 +165,6 @@ function ArtistRecommendationCard({ artist, t, language }: { artist: ArtistListI
 }
 
 export default function CommunityDashboardPage() {
-  const { t, language, isRTL } = useLanguage();
   const [bookings] = useState(mockBookings);
   const [recommendedArtists] = useState(mockRecommendedArtists);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
@@ -220,75 +181,72 @@ export default function CommunityDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white border-b border-slate-100">
+        <div className="container-default py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-800">
-                {t.dashboard.communityGreeting.replace('{name}', mockCommunity.name)}
+              <h1 className="text-2xl font-bold text-slate-900">
+                Welcome, {mockCommunity.name}
               </h1>
-              <p className="text-neutral-500">
-                <MapPin className={`inline-block ${isRTL ? 'ml-1' : 'mr-1'}`} size={14} />
+              <p className="text-slate-500 flex items-center gap-1">
+                <MapPin size={14} />
                 {mockCommunity.location}
               </p>
             </div>
-            <Link
-              href="/artists"
-              className="px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-            >
+            <Link href="/artists" className="btn-primary">
               <Search size={18} />
-              {t.dashboard.searchArtists}
+              Find Artists
             </Link>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="container-default py-8">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                 <Calendar size={20} className="text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.total}</p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.totalBookings}</p>
+                <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
+                <p className="text-sm text-slate-500">Total Bookings</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock size={20} className="text-yellow-600" />
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Clock size={20} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.pending}</p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.pending}</p>
+                <p className="text-2xl font-bold text-slate-900">{stats.pending}</p>
+                <p className="text-sm text-slate-500">Pending</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle size={20} className="text-green-600" />
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <CheckCircle size={20} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.approved}</p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.approved}</p>
+                <p className="text-2xl font-bold text-slate-900">{stats.approved}</p>
+                <p className="text-sm text-slate-500">Approved</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-neutral-100">
+          <div className="card p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <CheckCircle size={20} className="text-purple-600" />
+              <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                <CheckCircle size={20} className="text-violet-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-neutral-800">{stats.completed}</p>
-                <p className="text-sm text-neutral-500">{t.dashboard.stats.completed}</p>
+                <p className="text-2xl font-bold text-slate-900">{stats.completed}</p>
+                <p className="text-sm text-slate-500">Completed</p>
               </div>
             </div>
           </div>
@@ -298,61 +256,58 @@ export default function CommunityDashboardPage() {
           {/* Bookings */}
           <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-lg text-neutral-800">{t.dashboard.myBookings}</h2>
+              <h2 className="font-bold text-lg text-slate-900">My Bookings</h2>
               <div className="flex gap-2">
                 <button
                   onClick={() => setActiveFilter(null)}
                   className={`px-3 py-1 text-sm rounded-full transition-colors ${
                     activeFilter === null
-                      ? "bg-primary-400 text-white"
-                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                      ? "bg-primary-500 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
-                  {t.dashboard.filters.all}
+                  All
                 </button>
                 <button
                   onClick={() => setActiveFilter("pending")}
                   className={`px-3 py-1 text-sm rounded-full transition-colors ${
                     activeFilter === "pending"
-                      ? "bg-yellow-400 text-white"
-                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                      ? "bg-amber-500 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
-                  {t.dashboard.filters.pending}
+                  Pending
                 </button>
                 <button
                   onClick={() => setActiveFilter("approved")}
                   className={`px-3 py-1 text-sm rounded-full transition-colors ${
                     activeFilter === "approved"
-                      ? "bg-green-500 text-white"
-                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                   }`}
                 >
-                  {t.dashboard.filters.approved}
+                  Approved
                 </button>
               </div>
             </div>
 
             {filteredBookings.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 text-center">
-                <Calendar size={48} className="text-neutral-300 mx-auto mb-4" />
-                <h3 className="font-bold text-lg text-neutral-800 mb-2">
-                  {activeFilter ? t.dashboard.empty.noBookingsStatus : t.dashboard.empty.noBookingsYet}
+              <div className="card p-8 text-center">
+                <Calendar size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  {activeFilter ? "No bookings with this status" : "No bookings yet"}
                 </h3>
-                <p className="text-neutral-500 mb-4">
-                  {t.dashboard.empty.searchAndBook}
+                <p className="text-slate-500 mb-4">
+                  Start by searching for artists and sending booking requests.
                 </p>
-                <Link
-                  href="/artists"
-                  className="inline-block px-4 py-2 bg-primary-400 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
-                >
-                  {t.dashboard.searchArtists}
+                <Link href="/artists" className="btn-primary inline-flex">
+                  Find Artists
                 </Link>
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredBookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} t={t} language={language} />
+                  <BookingCard key={booking.id} booking={booking} />
                 ))}
               </div>
             )}
@@ -360,40 +315,40 @@ export default function CommunityDashboardPage() {
 
           {/* Sidebar - Recommendations */}
           <div>
-            <h2 className="font-bold text-lg text-neutral-800 mb-4">
-              {t.dashboard.recommendedArtists}
+            <h2 className="font-bold text-lg text-slate-900 mb-4">
+              Recommended Artists
             </h2>
             <div className="space-y-3">
               {recommendedArtists.map((artist) => (
-                <ArtistRecommendationCard key={artist.id} artist={artist} t={t} language={language} />
+                <ArtistRecommendationCard key={artist.id} artist={artist} />
               ))}
             </div>
 
             <Link
               href="/artists"
-              className="mt-4 flex items-center justify-center gap-2 text-primary-500 hover:text-primary-600 font-medium"
+              className="mt-4 flex items-center justify-center gap-2 text-primary-600 hover:text-primary-700 font-medium"
             >
-              {t.dashboard.seeMoreArtists}
-              <ChevronRight size={18} className={isRTL ? '' : 'rotate-180'} />
+              See More Artists
+              <ChevronRight size={18} />
             </Link>
 
             {/* Quick actions */}
-            <div className="mt-8 bg-white rounded-xl p-5 shadow-sm border border-neutral-100">
-              <h3 className="font-bold text-neutral-800 mb-4">{t.dashboard.quickActions}</h3>
+            <div className="mt-8 card p-5">
+              <h3 className="font-bold text-slate-900 mb-4">Quick Actions</h3>
               <div className="space-y-2">
                 <Link
                   href="/search"
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors"
                 >
-                  <Search size={18} className="text-primary-500" />
-                  <span className="text-neutral-700">{t.dashboard.advancedSearch}</span>
+                  <Search size={18} className="text-primary-600" />
+                  <span className="text-slate-700">Advanced Search</span>
                 </Link>
                 <Link
                   href="/dashboard/community/settings"
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors"
                 >
-                  <MapPin size={18} className="text-primary-500" />
-                  <span className="text-neutral-700">{t.dashboard.updateCommunityDetails}</span>
+                  <MapPin size={18} className="text-primary-600" />
+                  <span className="text-slate-700">Update Profile</span>
                 </Link>
               </div>
             </div>
