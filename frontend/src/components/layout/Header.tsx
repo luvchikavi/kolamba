@@ -80,11 +80,11 @@ export default function Header() {
           <Link href="/" className="flex items-center">
             <Image
               src="/kolamba_logo.png"
-              alt="Kolamba"
-              width={120}
-              height={40}
+              alt="Kolamba - The Jewish Culture Club"
+              width={160}
+              height={80}
               priority
-              className="h-8 w-auto"
+              className="h-10 w-auto"
             />
           </Link>
 
