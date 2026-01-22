@@ -326,6 +326,7 @@ class UserMeResponse(BaseModel):
     name: Optional[str]
     role: str
     is_active: bool
+    is_superuser: bool = False
     artist_id: Optional[int] = None
     community_id: Optional[int] = None
 
@@ -358,6 +359,7 @@ async def get_me(
         name=current_user.name,
         role=current_user.role,
         is_active=current_user.is_active,
+        is_superuser=current_user.is_superuser,
         artist_id=artist_id,
         community_id=community_id,
     )

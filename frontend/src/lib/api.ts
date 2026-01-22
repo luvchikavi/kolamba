@@ -188,6 +188,38 @@ export interface TourCreateRequest {
   booking_ids?: number[];
 }
 
+export interface AdminStats {
+  total_users: number;
+  total_artists: number;
+  total_communities: number;
+  pending_artists: number;
+  active_artists: number;
+  active_communities: number;
+}
+
+export interface AdminUser {
+  id: number;
+  email: string;
+  name: string | null;
+  role: string;
+  status: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  created_at: string;
+}
+
+export interface AdminArtist {
+  id: number;
+  user_id: number;
+  name_en: string | null;
+  name_he: string | null;
+  email: string;
+  status: string;
+  city: string | null;
+  is_featured: boolean;
+  created_at: string;
+}
+
 // API Functions
 export const api = {
   // Generic methods
@@ -297,6 +329,54 @@ export const api = {
     api.post<{ message: string }>(`/v1/tours/${tourId}/bookings/${bookingId}`),
   removeBookingFromTour: (tourId: number, bookingId: number) =>
     api.delete<{ message: string }>(`/v1/tours/${tourId}/bookings/${bookingId}`),
+
+  // Admin endpoints
+  admin: {
+    getStats: (token: string) =>
+      api.get<AdminStats>("/admin/stats", { token }),
+    getUsers: (token: string, params?: { search?: string; role?: string; status?: string; limit?: number; offset?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            searchParams.set(key, String(value));
+          }
+        });
+      }
+      const query = searchParams.toString();
+      return api.get<AdminUser[]>(`/admin/users${query ? `?${query}` : ""}`, { token });
+    },
+    getUser: (token: string, userId: number) =>
+      api.get<AdminUser>(`/admin/users/${userId}`, { token }),
+    updateUser: (token: string, userId: number, data: Partial<AdminUser>) =>
+      api.put<AdminUser>(`/admin/users/${userId}`, data, { token }),
+    deleteUser: (token: string, userId: number) =>
+      api.delete<{ message: string }>(`/admin/users/${userId}`, { token }),
+    getArtists: (token: string, params?: { search?: string; status?: string; limit?: number; offset?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            searchParams.set(key, String(value));
+          }
+        });
+      }
+      const query = searchParams.toString();
+      return api.get<AdminArtist[]>(`/admin/artists${query ? `?${query}` : ""}`, { token });
+    },
+    updateArtistStatus: (token: string, artistId: number, status: string) =>
+      api.put<{ id: number; name_en: string; status: string; message: string }>(
+        `/admin/artists/${artistId}/status?status=${status}`,
+        undefined,
+        { token }
+      ),
+    toggleArtistFeatured: (token: string, artistId: number, isFeatured: boolean) =>
+      api.put<{ id: number; name_en: string; is_featured: boolean }>(
+        `/admin/artists/${artistId}/featured?is_featured=${isFeatured}`,
+        undefined,
+        { token }
+      ),
+  },
 };
 
 export default api;

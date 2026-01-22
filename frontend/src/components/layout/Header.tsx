@@ -9,6 +9,7 @@ interface UserInfo {
   name: string | null;
   role: string;
   email: string;
+  is_superuser?: boolean;
 }
 
 export default function Header() {
@@ -50,6 +51,7 @@ export default function Header() {
   };
 
   const getDashboardLink = () => {
+    if (user?.is_superuser) return "/dashboard/admin";
     if (user?.role === "artist") return "/dashboard/artist";
     if (user?.role === "community") return "/dashboard/community";
     return "/";

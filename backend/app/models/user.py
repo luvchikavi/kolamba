@@ -24,6 +24,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(20), nullable=False)  # artist, community, admin
     status: Mapped[str] = mapped_column(String(20), default="active")  # active, inactive, pending
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
