@@ -75,13 +75,6 @@ export default function Header() {
             <span className="text-sm uppercase tracking-wide">Search</span>
           </Link>
 
-          {/* Center: Logo text */}
-          <Link href="/" className="flex items-center">
-            <span className="font-serif text-xl font-bold bg-gradient-to-r from-rose-400 to-teal-400 bg-clip-text text-transparent">
-              KOLAMBA
-            </span>
-          </Link>
-
           {/* Right: User Menu or Sign In */}
           {user ? (
             <div className="relative">
