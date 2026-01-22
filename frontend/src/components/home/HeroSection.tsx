@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -44,39 +45,16 @@ export default function HeroSection() {
 
       {/* Content at bottom */}
       <div className="relative z-10 w-full pb-16 px-4">
-        {/* Main Title with decorative accents */}
-        <div className="relative flex items-center justify-center mb-8">
-          {/* Left decorative squiggle */}
-          <svg
-            className="absolute left-4 sm:left-8 md:left-16 lg:left-24 xl:left-32 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary-500"
-            viewBox="0 0 40 40"
-            fill="none"
-          >
-            <path
-              d="M8 20C12 12 18 8 26 8M8 32C16 24 24 20 32 20"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-white text-center tracking-tight px-16 sm:px-20 md:px-24">
-            THE JEWISH CULTURE CLUB
-          </h1>
-
-          {/* Right decorative squiggle */}
-          <svg
-            className="absolute right-4 sm:right-8 md:right-16 lg:right-24 xl:right-32 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary-500"
-            viewBox="0 0 40 40"
-            fill="none"
-          >
-            <path
-              d="M32 20C28 12 22 8 14 8M32 32C24 24 16 20 8 20"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-          </svg>
+        {/* Main Logo - prominently displayed */}
+        <div className="flex items-center justify-center mb-8">
+          <Image
+            src="/kolamba_logo.png"
+            alt="Kolamba - The Jewish Culture Club"
+            width={756}
+            height={376}
+            priority
+            className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl h-auto"
+          />
         </div>
 
         {/* CTA Buttons */}

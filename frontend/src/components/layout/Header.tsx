@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
@@ -76,16 +75,11 @@ export default function Header() {
             <span className="text-sm uppercase tracking-wide">Search</span>
           </Link>
 
-          {/* Center: Logo */}
+          {/* Center: Logo text */}
           <Link href="/" className="flex items-center">
-            <Image
-              src="/kolamba_logo.png"
-              alt="Kolamba - The Jewish Culture Club"
-              width={160}
-              height={80}
-              priority
-              className="h-10 w-auto"
-            />
+            <span className="font-serif text-xl font-bold bg-gradient-to-r from-rose-400 to-teal-400 bg-clip-text text-transparent">
+              KOLAMBA
+            </span>
           </Link>
 
           {/* Right: User Menu or Sign In */}
