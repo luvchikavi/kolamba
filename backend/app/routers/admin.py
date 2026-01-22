@@ -12,6 +12,10 @@ from app.models.user import User
 from app.models.artist import Artist
 from app.models.community import Community
 from app.routers.auth import get_current_active_user
+from app.utils.security import get_password_hash
+from app.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter()
 
@@ -352,4 +356,55 @@ async def toggle_artist_featured(
         "id": artist.id,
         "name_en": artist.name_en,
         "is_featured": artist.is_featured,
+    }
+
+
+@router.post("/seed-superusers")
+async def seed_superusers(
+    admin_secret: str = Query(..., description="Admin secret for authorization"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create superuser accounts. Requires admin secret."""
+    if admin_secret != settings.secret_key:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+
+    superusers_data = [
+        {"email": "avi@kolamba.org", "name": "Avi Luvchik", "password": "Kolamba!26"},
+        {"email": "avital@kolamba.org", "name": "Avital", "password": "Kolamba!26"},
+    ]
+
+    created = []
+    updated = []
+
+    for user_data in superusers_data:
+        result = await db.execute(
+            select(User).where(User.email == user_data["email"])
+        )
+        existing_user = result.scalar_one_or_none()
+
+        if existing_user:
+            existing_user.is_superuser = True
+            existing_user.role = "admin"
+            existing_user.status = "active"
+            existing_user.is_active = True
+            updated.append(user_data["email"])
+        else:
+            user = User(
+                email=user_data["email"],
+                password_hash=get_password_hash(user_data["password"]),
+                name=user_data["name"],
+                role="admin",
+                status="active",
+                is_active=True,
+                is_superuser=True,
+            )
+            db.add(user)
+            created.append(user_data["email"])
+
+    await db.commit()
+
+    return {
+        "message": "Superusers seeded successfully",
+        "created": created,
+        "updated": updated,
     }
