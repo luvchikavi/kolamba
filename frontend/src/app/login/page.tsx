@@ -56,7 +56,9 @@ export default function LoginPage() {
 
       if (meResponse.ok) {
         const user = await meResponse.json();
-        if (user.role === "artist") {
+        if (user.is_superuser) {
+          router.push("/dashboard/admin");
+        } else if (user.role === "artist") {
           router.push("/dashboard/artist");
         } else if (user.role === "community") {
           router.push("/dashboard/community");
