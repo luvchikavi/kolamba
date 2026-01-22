@@ -55,7 +55,12 @@
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiYXZpQGtvbGFtYmEuY29tIiwicm9sZSI6ImFydGlzdCIsImV4cCI6MTc2OTAyMzE4Mn0.RlCN3eMgam1P2wKS2n7W7KOWVeZpapVlXpUvwru_R5Y\" __NEW_LINE_725067e32cba68f7__ echo \"=== Artist Profile ===\" curl -s \"http://localhost:8000/api/artists/me\" -H \"Authorization: Bearer $TOKEN\")",
       "Bash(jq '.name_en, .city, .categories' __NEW_LINE_725067e32cba68f7__ echo -e \"\\\\n=== Bookings ===\" curl -s \"http://localhost:8000/api/bookings?artist_id=1\")",
       "Bash(jq '.[].location' __NEW_LINE_725067e32cba68f7__ echo -e \"\\\\n=== Tours ===\" curl -s \"http://localhost:8000/api/tours?artist_id=1\")",
-      "Bash(open \"http://localhost:3001/login\")"
+      "Bash(open \"http://localhost:3001/login\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiYXZpQGtvbGFtYmEuY29tIiwicm9sZSI6ImFydGlzdCIsImV4cCI6MTc2OTAyNTUzOX0.9L0O3UInZaFRSw_li5YMWv3clJgcy9rzmKpQNElsRVo\" curl -s \"https://kolamba-production.up.railway.app/api/artists/me\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(open \"https://kolamba.vercel.app/login\")",
+      "Bash(sips:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:api.vercel.com)"
     ]
   }
 }

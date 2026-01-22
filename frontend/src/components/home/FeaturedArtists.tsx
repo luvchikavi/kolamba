@@ -32,14 +32,6 @@ const sampleArtists = [
   },
   {
     id: 4,
-    name: "Rotem Bar",
-    category: "Music",
-    description: "Short description about the artist, recent work and notable awards. Up to 3 lines max",
-    image: "/artists/rotem-bar.jpg",
-    rating: 4.5,
-  },
-  {
-    id: 5,
     name: "Eden Ben Zaken",
     category: "Music",
     description: "One of Israel's most beloved pop stars with numerous hit songs and sold-out performances worldwide.",
