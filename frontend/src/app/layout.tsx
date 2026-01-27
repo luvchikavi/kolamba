@@ -23,9 +23,6 @@ const frankRuhlLibre = Frank_Ruhl_Libre({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://kolamba.vercel.app"),
-  icons: {
-    icon: "/favicon.ico",
-  },
   title: {
     default: "Kolamba - The Jewish Culture Club",
     template: "%s | Kolamba",
