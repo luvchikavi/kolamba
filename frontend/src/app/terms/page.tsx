@@ -68,8 +68,8 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-slate-900 mt-8 mb-4">8. Contact</h2>
             <p className="text-slate-600">
               For questions about these Terms of Service, please contact us at{" "}
-              <a href="mailto:legal@kolamba.org" className="text-primary-600 hover:text-primary-700">
-                legal@kolamba.org
+              <a href="mailto:contact@kolamba.org" className="text-primary-600 hover:text-primary-700">
+                contact@kolamba.org
               </a>
             </p>
           </div>

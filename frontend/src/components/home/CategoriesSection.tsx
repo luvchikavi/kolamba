@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Music, BookOpen, Mic2, Theater, Palette, GraduationCap } from "lucide-react";
+import { Music, BookOpen, Mic2, Newspaper, Star, Sparkles } from "lucide-react";
 
 const categories = [
   {
@@ -21,6 +21,22 @@ const categories = [
     accentColor: "text-teal-300",
   },
   {
+    slug: "journalism",
+    name: "JOURNALISM",
+    icon: Newspaper,
+    iconColor: "text-blue-400",
+    bgColor: "bg-blue-50",
+    accentColor: "text-pink-300",
+  },
+  {
+    slug: "judaism",
+    name: "JUDAISM",
+    icon: Star,
+    iconColor: "text-purple-400",
+    bgColor: "bg-purple-50",
+    accentColor: "text-teal-300",
+  },
+  {
     slug: "comedy",
     name: "COMEDY",
     icon: Mic2,
@@ -29,28 +45,12 @@ const categories = [
     accentColor: "text-teal-300",
   },
   {
-    slug: "theater",
-    name: "THEATER",
-    icon: Theater,
-    iconColor: "text-purple-400",
-    bgColor: "bg-purple-50",
-    accentColor: "text-pink-300",
-  },
-  {
-    slug: "visual-arts",
-    name: "VISUAL ARTS",
-    icon: Palette,
+    slug: "inspiration",
+    name: "INSPIRATION",
+    icon: Sparkles,
     iconColor: "text-emerald-400",
     bgColor: "bg-emerald-50",
     accentColor: "text-pink-300",
-  },
-  {
-    slug: "lectures",
-    name: "LECTURES",
-    icon: GraduationCap,
-    iconColor: "text-blue-400",
-    bgColor: "bg-blue-50",
-    accentColor: "text-teal-300",
   },
 ];
 

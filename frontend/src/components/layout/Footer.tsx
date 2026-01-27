@@ -10,7 +10,7 @@ export default function Footer() {
         {/* Links */}
         <div className="flex flex-wrap justify-center gap-8 md:gap-16 mb-8">
           <Link
-            href="/register"
+            href="/register/community"
             className="text-slate-800 hover:text-slate-900 font-medium uppercase tracking-wide text-sm"
           >
             Sign Up
@@ -27,18 +27,12 @@ export default function Footer() {
           >
             Terms of Service
           </Link>
-          <Link
-            href="/donate"
-            className="text-slate-800 hover:text-slate-900 font-medium uppercase tracking-wide text-sm"
-          >
-            Donate
-          </Link>
         </div>
 
         {/* Social Icons */}
         <div className="flex justify-center gap-4">
           <a
-            href="https://facebook.com/kolamba"
+            href="https://www.facebook.com/kolamba.org/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-800 hover:text-slate-900 transition-colors"
@@ -47,7 +41,7 @@ export default function Footer() {
             <Facebook size={24} />
           </a>
           <a
-            href="https://instagram.com/kolamba"
+            href="https://www.instagram.com/kolamba_org/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-800 hover:text-slate-900 transition-colors"

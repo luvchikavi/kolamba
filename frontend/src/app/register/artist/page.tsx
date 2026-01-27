@@ -6,18 +6,49 @@ import { CheckCircle, ChevronDown, X, Search } from "lucide-react";
 
 const categories = [
   "Music",
-  "Dance",
-  "Theater",
   "Literature",
-  "Comedy",
-  "Lectures",
-  "Workshops",
   "Journalism",
+  "Judaism",
+  "Comedy",
   "Inspiration",
-  "Visual Arts",
 ];
 
-const languages = ["English", "Hebrew", "French", "Spanish", "Russian", "German"];
+const languages = [
+  "English",
+  "Hebrew",
+  "French",
+  "Spanish",
+  "Russian",
+  "German",
+  "Italian",
+  "Amharic",
+  "Dutch",
+  "Swedish",
+  "Yiddish",
+];
+
+const countryCodes = [
+  { code: "+972", label: "Israel (+972)" },
+  { code: "+1", label: "US/Canada (+1)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+33", label: "France (+33)" },
+  { code: "+49", label: "Germany (+49)" },
+  { code: "+34", label: "Spain (+34)" },
+  { code: "+39", label: "Italy (+39)" },
+  { code: "+31", label: "Netherlands (+31)" },
+  { code: "+32", label: "Belgium (+32)" },
+  { code: "+41", label: "Switzerland (+41)" },
+  { code: "+43", label: "Austria (+43)" },
+  { code: "+46", label: "Sweden (+46)" },
+  { code: "+47", label: "Norway (+47)" },
+  { code: "+45", label: "Denmark (+45)" },
+  { code: "+7", label: "Russia (+7)" },
+  { code: "+54", label: "Argentina (+54)" },
+  { code: "+55", label: "Brazil (+55)" },
+  { code: "+61", label: "Australia (+61)" },
+  { code: "+27", label: "South Africa (+27)" },
+  { code: "+251", label: "Ethiopia (+251)" },
+];
 
 const performanceTypes = [
   "Solo Performance",
@@ -51,6 +82,10 @@ export default function ArtistRegistrationPage() {
     website: "",
     instagram: "",
     youtube: "",
+    facebook: "",
+    twitter: "",
+    linkedin: "",
+    acceptTerms: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -91,19 +126,29 @@ export default function ArtistRegistrationPage() {
       !formData.otherCategories.includes(cat)
   );
 
+  // Helper to detect Hebrew characters
+  const containsHebrew = (text: string) => /[\u0590-\u05FF]/.test(text);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.artistName || formData.artistName.length < 2) {
       newErrors.artistName = "Artist/Stage name is required";
+    } else if (containsHebrew(formData.artistName)) {
+      newErrors.artistName = "Please use English characters only";
     }
     if (!formData.realName || formData.realName.length < 2) {
       newErrors.realName = "Full name is required";
+    } else if (containsHebrew(formData.realName)) {
+      newErrors.realName = "Please use English characters only";
     }
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Valid email is required";
     }
     if (!formData.category) {
       newErrors.category = "Primary category is required";
+    }
+    if (!formData.acceptTerms) {
+      newErrors.acceptTerms = "You must accept the Terms of Service";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -136,6 +181,9 @@ export default function ArtistRegistrationPage() {
             website: formData.website || null,
             instagram: formData.instagram || null,
             youtube: formData.youtube || null,
+            facebook: formData.facebook || null,
+            twitter: formData.twitter || null,
+            linkedin: formData.linkedin || null,
           }),
         }
       );
@@ -211,7 +259,7 @@ export default function ArtistRegistrationPage() {
                   type="text"
                   value={formData.artistName}
                   onChange={(e) => setFormData({ ...formData, artistName: e.target.value })}
-                  placeholder="Tuna"
+                  placeholder="Your stage name"
                   className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
                     errors.artistName
                       ? "border-red-300 focus:border-red-400"
@@ -426,10 +474,11 @@ export default function ArtistRegistrationPage() {
                       onChange={(e) => setFormData({ ...formData, phoneCountryCode: e.target.value })}
                       className="h-full px-3 py-3.5 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white pr-10 text-teal-600"
                     >
-                      <option value="+972">(+972)</option>
-                      <option value="+1">(+1)</option>
-                      <option value="+44">(+44)</option>
-                      <option value="+33">(+33)</option>
+                      {countryCodes.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.label}
+                        </option>
+                      ))}
                     </select>
                     <ChevronDown
                       size={16}
@@ -533,13 +582,57 @@ export default function ArtistRegistrationPage() {
                     placeholder="YouTube channel URL"
                     className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
+                  <input
+                    type="url"
+                    value={formData.facebook}
+                    onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                    placeholder="Facebook page URL"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <input
+                    type="text"
+                    value={formData.twitter}
+                    onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                    placeholder="@twitter / X handle"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  <input
+                    type="url"
+                    value={formData.linkedin}
+                    onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+                    placeholder="LinkedIn profile URL"
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Terms Acceptance */}
+          <div className="mt-12 flex justify-center">
+            <label className="flex items-start gap-3 cursor-pointer max-w-md">
+              <input
+                type="checkbox"
+                checked={formData.acceptTerms}
+                onChange={(e) =>
+                  setFormData({ ...formData, acceptTerms: e.target.checked })
+                }
+                className="mt-1 w-5 h-5 text-teal-500 border-2 border-slate-300 rounded focus:ring-teal-400"
+              />
+              <span className="text-slate-600 text-sm">
+                I accept the{" "}
+                <Link href="/terms" className="text-teal-600 hover:text-teal-700 underline" target="_blank">
+                  Terms of Service
+                </Link>
+              </span>
+            </label>
+          </div>
+          {errors.acceptTerms && (
+            <p className="text-red-500 text-sm text-center mt-2">{errors.acceptTerms}</p>
+          )}
+
           {/* Submit Button */}
-          <div className="mt-16 flex flex-col items-center">
+          <div className="mt-8 flex flex-col items-center">
             {errors.submit && (
               <p className="text-red-500 text-sm mb-4">{errors.submit}</p>
             )}

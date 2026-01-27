@@ -1,7 +1,8 @@
 import HeroSection from "@/components/home/HeroSection";
 import FeaturedArtists from "@/components/home/FeaturedArtists";
-import HolidayRecommendations from "@/components/home/HolidayRecommendations";
+import NewTours from "@/components/home/NewTours";
 import CategoriesSection from "@/components/home/CategoriesSection";
+import HowItWorksSteps from "@/components/home/HowItWorksSteps";
 import HowItWorks from "@/components/home/HowItWorks";
 import CTASection from "@/components/home/CTASection";
 
@@ -10,8 +11,9 @@ export default function Home() {
     <>
       <HeroSection />
       <FeaturedArtists />
-      <HolidayRecommendations />
+      <NewTours />
       <CategoriesSection />
+      <HowItWorksSteps />
       <HowItWorks />
       <CTASection />
     </>

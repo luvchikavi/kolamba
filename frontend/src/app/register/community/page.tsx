@@ -25,7 +25,51 @@ interface FormData {
   email: string;
   phone: string;
   phoneCountryCode: string;
+  acceptTerms: boolean;
 }
+
+const communityRoles = [
+  "Executive Director / CEO",
+  "Program / Cultural Director",
+  "Rabbi / Spiritual Leader",
+  "Educator / School Director",
+  "Administrative Staff",
+  "Shaliach",
+  "Community Member / Participant",
+  "Other",
+];
+
+const countryCodes = [
+  { code: "+1", label: "US/Canada (+1)" },
+  { code: "+972", label: "Israel (+972)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+33", label: "France (+33)" },
+  { code: "+49", label: "Germany (+49)" },
+  { code: "+34", label: "Spain (+34)" },
+  { code: "+39", label: "Italy (+39)" },
+  { code: "+31", label: "Netherlands (+31)" },
+  { code: "+32", label: "Belgium (+32)" },
+  { code: "+41", label: "Switzerland (+41)" },
+  { code: "+43", label: "Austria (+43)" },
+  { code: "+46", label: "Sweden (+46)" },
+  { code: "+47", label: "Norway (+47)" },
+  { code: "+45", label: "Denmark (+45)" },
+  { code: "+358", label: "Finland (+358)" },
+  { code: "+48", label: "Poland (+48)" },
+  { code: "+7", label: "Russia (+7)" },
+  { code: "+380", label: "Ukraine (+380)" },
+  { code: "+36", label: "Hungary (+36)" },
+  { code: "+420", label: "Czech Rep (+420)" },
+  { code: "+54", label: "Argentina (+54)" },
+  { code: "+55", label: "Brazil (+55)" },
+  { code: "+52", label: "Mexico (+52)" },
+  { code: "+56", label: "Chile (+56)" },
+  { code: "+57", label: "Colombia (+57)" },
+  { code: "+61", label: "Australia (+61)" },
+  { code: "+64", label: "New Zealand (+64)" },
+  { code: "+27", label: "South Africa (+27)" },
+  { code: "+251", label: "Ethiopia (+251)" },
+];
 
 export default function CommunityRegistrationPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -48,7 +92,8 @@ export default function CommunityRegistrationPage() {
     contactRole: "",
     email: "",
     phone: "",
-    phoneCountryCode: "+000",
+    phoneCountryCode: "+1",
+    acceptTerms: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -77,8 +122,8 @@ export default function CommunityRegistrationPage() {
             "Family Events",
             "Youth Programs",
           ],
-          contact_roles: [],
-          languages: ["English", "Hebrew", "French", "Spanish", "Russian"],
+          contact_roles: communityRoles,
+          languages: ["English", "Hebrew", "French", "Spanish", "Russian", "Italian", "Amharic", "Dutch", "Swedish", "Yiddish"],
         });
       }
     };
@@ -137,19 +182,34 @@ export default function CommunityRegistrationPage() {
       !formData.eventTypes.includes(type)
   );
 
+  // Helper to detect Hebrew characters
+  const containsHebrew = (text: string) => /[\u0590-\u05FF]/.test(text);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.communityName || formData.communityName.length < 2) {
       newErrors.communityName = "Community name is required";
+    } else if (containsHebrew(formData.communityName)) {
+      newErrors.communityName = "Please use English characters only";
     }
     if (!formData.location || formData.location.length < 3) {
       newErrors.location = "Location is required";
+    } else if (containsHebrew(formData.location)) {
+      newErrors.location = "Please use English characters only";
     }
     if (!formData.name || formData.name.length < 2) {
       newErrors.name = "Full name is required";
+    } else if (containsHebrew(formData.name)) {
+      newErrors.name = "Please use English characters only";
     }
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Valid email is required";
+    }
+    if (!formData.phone || formData.phone.length < 6) {
+      newErrors.phone = "Phone number is required";
+    }
+    if (!formData.acceptTerms) {
+      newErrors.acceptTerms = "You must accept the Terms of Service";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -247,7 +307,7 @@ export default function CommunityRegistrationPage() {
               {/* Community Name */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Community Name
+                  Community Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -255,7 +315,7 @@ export default function CommunityRegistrationPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, communityName: e.target.value })
                   }
-                  placeholder="NY Community"
+                  placeholder="City, State/Country"
                   className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
                     duplicateWarning
                       ? "border-slate-300"
@@ -275,7 +335,7 @@ export default function CommunityRegistrationPage() {
               {/* Location */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Location
+                  Location <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -420,7 +480,7 @@ export default function CommunityRegistrationPage() {
               {/* Full Name */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -441,23 +501,34 @@ export default function CommunityRegistrationPage() {
               {/* Community Role */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Community Roll
+                  Community Role
                 </label>
-                <input
-                  type="text"
-                  value={formData.contactRole}
-                  onChange={(e) =>
-                    setFormData({ ...formData, contactRole: e.target.value })
-                  }
-                  placeholder="GCC Manager"
-                  className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 transition-colors"
-                />
+                <div className="relative">
+                  <select
+                    value={formData.contactRole}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactRole: e.target.value })
+                    }
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 appearance-none bg-white transition-colors"
+                  >
+                    <option value="">Select your role</option>
+                    {communityRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={20}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                </div>
               </div>
 
               {/* Email */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -478,7 +549,7 @@ export default function CommunityRegistrationPage() {
               {/* Phone Number */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Phone Number
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-3">
                   <div className="relative">
@@ -489,11 +560,11 @@ export default function CommunityRegistrationPage() {
                       }
                       className="h-full px-3 py-3.5 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-slate-400 appearance-none bg-white pr-10 text-teal-600"
                     >
-                      <option value="+000">(+000)</option>
-                      <option value="+1">(+1)</option>
-                      <option value="+972">(+972)</option>
-                      <option value="+44">(+44)</option>
-                      <option value="+33">(+33)</option>
+                      {countryCodes.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.label}
+                        </option>
+                      ))}
                     </select>
                     <ChevronDown
                       size={16}
@@ -507,15 +578,45 @@ export default function CommunityRegistrationPage() {
                       setFormData({ ...formData, phone: e.target.value })
                     }
                     placeholder=""
-                    className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 transition-colors"
+                    className={`flex-1 px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                      errors.phone
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-slate-400"
+                    }`}
                   />
                 </div>
+                {errors.phone && (
+                  <p className="mt-2 text-sm text-red-500">{errors.phone}</p>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Terms Acceptance */}
+          <div className="mt-12 flex justify-center">
+            <label className="flex items-start gap-3 cursor-pointer max-w-md">
+              <input
+                type="checkbox"
+                checked={formData.acceptTerms}
+                onChange={(e) =>
+                  setFormData({ ...formData, acceptTerms: e.target.checked })
+                }
+                className="mt-1 w-5 h-5 text-teal-500 border-2 border-slate-300 rounded focus:ring-teal-400"
+              />
+              <span className="text-slate-600 text-sm">
+                I accept the{" "}
+                <Link href="/terms" className="text-teal-600 hover:text-teal-700 underline" target="_blank">
+                  Terms of Service
+                </Link>
+              </span>
+            </label>
+          </div>
+          {errors.acceptTerms && (
+            <p className="text-red-500 text-sm text-center mt-2">{errors.acceptTerms}</p>
+          )}
+
           {/* Submit Button */}
-          <div className="mt-16 flex flex-col items-center">
+          <div className="mt-8 flex flex-col items-center">
             {errors.submit && (
               <p className="text-red-500 text-sm mb-4">{errors.submit}</p>
             )}

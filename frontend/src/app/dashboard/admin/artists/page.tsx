@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Loader2,
   ExternalLink,
+  X,
 } from "lucide-react";
 
 interface Artist {
@@ -26,6 +27,84 @@ interface Artist {
   city: string | null;
   is_featured: boolean;
   created_at: string;
+}
+
+interface RejectionModalProps {
+  isOpen: boolean;
+  artistName: string;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+}
+
+function RejectionModal({ isOpen, artistName, onClose, onConfirm }: RejectionModalProps) {
+  const [reason, setReason] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    await onConfirm(reason);
+    setIsSubmitting(false);
+    setReason("");
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+        >
+          <X size={20} />
+        </button>
+
+        <h3 className="text-xl font-bold text-slate-900 mb-2">Reject Artist</h3>
+        <p className="text-slate-600 mb-4">
+          Please provide a reason for rejecting <strong>{artistName}</strong>.
+          This will be sent to the artist.
+        </p>
+
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Enter rejection reason..."
+          rows={4}
+          className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-red-400 transition-colors resize-none mb-4"
+        />
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!reason.trim() || isSubmitting}
+            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Rejecting...
+              </>
+            ) : (
+              <>
+                <XCircle size={16} />
+                Reject
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -53,6 +132,11 @@ export default function ArtistsPage() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "");
   const [error, setError] = useState<string | null>(null);
+  const [rejectionModal, setRejectionModal] = useState<{ isOpen: boolean; artistId: number | null; artistName: string }>({
+    isOpen: false,
+    artistId: null,
+    artistName: "",
+  });
 
   useEffect(() => {
     fetchArtists();
@@ -97,18 +181,21 @@ export default function ArtistsPage() {
     }
   };
 
-  const handleUpdateStatus = async (artistId: number, newStatus: string) => {
+  const handleUpdateStatus = async (artistId: number, newStatus: string, reason?: string) => {
     try {
       const token = localStorage.getItem("access_token");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      const response = await fetch(
-        `${apiUrl}/api/admin/artists/${artistId}/status?status=${newStatus}`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const url = new URL(`${apiUrl}/api/admin/artists/${artistId}/status`);
+      url.searchParams.set("status", newStatus);
+      if (reason) {
+        url.searchParams.set("reason", reason);
+      }
+
+      const response = await fetch(url.toString(), {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (response.ok) {
         setArtists(artists.map((a) =>
@@ -118,6 +205,17 @@ export default function ArtistsPage() {
     } catch (err) {
       console.error("Failed to update artist status:", err);
     }
+  };
+
+  const handleRejectWithReason = async (reason: string) => {
+    if (rejectionModal.artistId) {
+      await handleUpdateStatus(rejectionModal.artistId, "inactive", reason);
+      setRejectionModal({ isOpen: false, artistId: null, artistName: "" });
+    }
+  };
+
+  const openRejectionModal = (artistId: number, artistName: string) => {
+    setRejectionModal({ isOpen: true, artistId, artistName });
   };
 
   const handleToggleFeatured = async (artistId: number, isFeatured: boolean) => {
@@ -294,7 +392,7 @@ export default function ArtistsPage() {
                       Approve
                     </button>
                     <button
-                      onClick={() => handleUpdateStatus(artist.id, "inactive")}
+                      onClick={() => openRejectionModal(artist.id, artist.name_en || artist.name_he || "Unnamed Artist")}
                       className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <XCircle size={16} />
@@ -331,6 +429,14 @@ export default function ArtistsPage() {
           ))}
         </div>
       )}
+
+      {/* Rejection Modal */}
+      <RejectionModal
+        isOpen={rejectionModal.isOpen}
+        artistName={rejectionModal.artistName}
+        onClose={() => setRejectionModal({ isOpen: false, artistId: null, artistName: "" })}
+        onConfirm={handleRejectWithReason}
+      />
     </div>
   );
 }

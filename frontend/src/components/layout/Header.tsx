@@ -68,7 +68,15 @@ export default function Header() {
         }`}
       >
         <div className={`flex justify-between items-center ${isScrolled ? "container-default h-16" : "h-14 px-6"}`}>
-          {/* Left: Search */}
+          {/* Left: Home */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+          >
+            <span className="text-sm uppercase tracking-wide font-bold">KOLAMBA</span>
+          </Link>
+
+          {/* Center: Search */}
           <Link
             href="/search"
             className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"

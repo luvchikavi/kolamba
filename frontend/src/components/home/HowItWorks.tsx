@@ -17,12 +17,12 @@ const faqs = [
   {
     question: "WHAT HAPPENS IF THE ARTIST CANCELS?",
     answer:
-      "In the rare event of a cancellation, Kolamba will work to find a suitable replacement artist or offer a full refund. Our booking agreements include clear cancellation policies to protect both communities and artists.",
+      "In any event of a cancellation, Kolamba will work to find a suitable replacement artist or offer a full refund. Our booking agreements include clear cancellation policies to protect both communities and artists.",
   },
   {
-    question: "CAN WE GET SPONSORS FOR THE SHOWS/TOURS",
+    question: "IS SIGNING UP FREE?",
     answer:
-      "Yes! Kolamba can help connect you with potential sponsors for cultural events. Many Jewish organizations, foundations, and businesses are interested in supporting Israeli cultural programming in diaspora communities.",
+      "Yes, signing up for Kolamba is completely free. Kolamba only charges a fee when you book a talent, which is a percentage of the booking amount.",
   },
 ];
 
