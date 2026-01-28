@@ -2,7 +2,9 @@
  * API client for Kolamba backend
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+// Normalize API URL - ensure it ends with /api
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
 
 interface RequestOptions extends RequestInit {
   token?: string;
@@ -277,14 +279,14 @@ export const api = {
   },
 
   // Communities
-  getCommunities: () => api.get<Community[]>("/v1/communities"),
-  getCommunity: (id: number) => api.get<Community>(`/v1/communities/${id}`),
+  getCommunities: () => api.get<Community[]>("/communities"),
+  getCommunity: (id: number) => api.get<Community>(`/communities/${id}`),
   registerCommunity: (data: CommunityRegisterRequest) =>
-    api.post<Community>("/v1/communities", data),
+    api.post<Community>("/communities", data),
 
   // Bookings
   createBooking: (data: BookingCreateRequest) =>
-    api.post<Booking>("/v1/bookings", data),
+    api.post<Booking>("/bookings", data),
   getBookings: (params?: { status?: string; artist_id?: number; community_id?: number }) => {
     const searchParams = new URLSearchParams();
     if (params) {
@@ -295,20 +297,20 @@ export const api = {
       });
     }
     const query = searchParams.toString();
-    return api.get<Booking[]>(`/v1/bookings${query ? `?${query}` : ""}`);
+    return api.get<Booking[]>(`/bookings${query ? `?${query}` : ""}`);
   },
-  getBooking: (id: number) => api.get<Booking>(`/v1/bookings/${id}`),
+  getBooking: (id: number) => api.get<Booking>(`/bookings/${id}`),
   updateBooking: (id: number, data: Partial<Booking>) =>
-    api.put<Booking>(`/v1/bookings/${id}`, data),
-  cancelBooking: (id: number) => api.delete<{ message: string }>(`/v1/bookings/${id}`),
+    api.put<Booking>(`/bookings/${id}`, data),
+  cancelBooking: (id: number) => api.delete<{ message: string }>(`/bookings/${id}`),
 
   // Tours
   getTourSuggestions: (artistId: number, maxDistanceKm = 500, minBookings = 2) =>
     api.get<TourSuggestion[]>(
-      `/v1/tours/suggestions?artist_id=${artistId}&max_distance_km=${maxDistanceKm}&min_bookings=${minBookings}`
+      `/tours/suggestions?artist_id=${artistId}&max_distance_km=${maxDistanceKm}&min_bookings=${minBookings}`
     ),
   createTour: (data: TourCreateRequest) =>
-    api.post<Tour>("/v1/tours", data),
+    api.post<Tour>("/tours", data),
   getTours: (params?: { artist_id?: number; status?: string }) => {
     const searchParams = new URLSearchParams();
     if (params) {
@@ -319,16 +321,16 @@ export const api = {
       });
     }
     const query = searchParams.toString();
-    return api.get<Tour[]>(`/v1/tours${query ? `?${query}` : ""}`);
+    return api.get<Tour[]>(`/tours${query ? `?${query}` : ""}`);
   },
-  getTour: (id: number) => api.get<Tour>(`/v1/tours/${id}`),
+  getTour: (id: number) => api.get<Tour>(`/tours/${id}`),
   updateTour: (id: number, data: Partial<Tour>) =>
-    api.put<Tour>(`/v1/tours/${id}`, data),
-  deleteTour: (id: number) => api.delete<{ message: string }>(`/v1/tours/${id}`),
+    api.put<Tour>(`/tours/${id}`, data),
+  deleteTour: (id: number) => api.delete<{ message: string }>(`/tours/${id}`),
   addBookingToTour: (tourId: number, bookingId: number) =>
-    api.post<{ message: string }>(`/v1/tours/${tourId}/bookings/${bookingId}`),
+    api.post<{ message: string }>(`/tours/${tourId}/bookings/${bookingId}`),
   removeBookingFromTour: (tourId: number, bookingId: number) =>
-    api.delete<{ message: string }>(`/v1/tours/${tourId}/bookings/${bookingId}`),
+    api.delete<{ message: string }>(`/tours/${tourId}/bookings/${bookingId}`),
 
   // Admin endpoints
   admin: {
