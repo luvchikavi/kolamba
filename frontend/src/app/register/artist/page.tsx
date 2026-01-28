@@ -13,6 +13,72 @@ const categories = [
   "Inspiration",
 ];
 
+const subcategories: Record<string, string[]> = {
+  Music: [
+    "Pop",
+    "Rock",
+    "Jazz",
+    "Classical",
+    "Mediterranean",
+    "Mizrahi",
+    "Hip Hop / Rap",
+    "Electronic",
+    "Folk",
+    "World Music",
+    "Piyyut / Liturgical",
+    "Cantorial",
+    "A Cappella",
+    "Children's Music",
+  ],
+  Literature: [
+    "Poetry",
+    "Fiction",
+    "Non-Fiction",
+    "Playwriting",
+    "Screenwriting",
+    "Children's Literature",
+    "Storytelling",
+    "Spoken Word",
+  ],
+  Journalism: [
+    "Print",
+    "Broadcast",
+    "Digital",
+    "Investigative",
+    "Political Analysis",
+    "War Correspondence",
+    "Cultural Reporting",
+  ],
+  Judaism: [
+    "Torah Study",
+    "Jewish History",
+    "Jewish Philosophy",
+    "Kabbalah / Mysticism",
+    "Halacha",
+    "Israel Education",
+    "Holocaust Education",
+    "Interfaith Dialogue",
+  ],
+  Comedy: [
+    "Stand-up",
+    "Improv",
+    "Sketch",
+    "Musical Comedy",
+    "Satire",
+    "Physical Comedy",
+    "Family-Friendly",
+  ],
+  Inspiration: [
+    "Motivational Speaking",
+    "Life Coaching",
+    "Leadership",
+    "Personal Development",
+    "Entrepreneurship",
+    "Wellness / Mindfulness",
+    "Storytelling",
+  ],
+};
+
 const languages = [
   "English",
   "Hebrew",
@@ -72,6 +138,7 @@ export default function ArtistRegistrationPage() {
     phone: "",
     phoneCountryCode: "+972",
     category: "",
+    subcategories: [] as string[],
     otherCategories: [] as string[],
     bio: "",
     location: "",
@@ -117,6 +184,28 @@ export default function ArtistRegistrationPage() {
         performanceTypes: [...formData.performanceTypes, type],
       });
     }
+  };
+
+  const handleToggleSubcategory = (subcat: string) => {
+    if (formData.subcategories.includes(subcat)) {
+      setFormData({
+        ...formData,
+        subcategories: formData.subcategories.filter((s) => s !== subcat),
+      });
+    } else {
+      setFormData({
+        ...formData,
+        subcategories: [...formData.subcategories, subcat],
+      });
+    }
+  };
+
+  const handleCategoryChange = (newCategory: string) => {
+    setFormData({
+      ...formData,
+      category: newCategory,
+      subcategories: [], // Reset subcategories when category changes
+    });
   };
 
   const filteredCategories = categories.filter(
@@ -170,6 +259,7 @@ export default function ArtistRegistrationPage() {
             name: formData.realName,
             artist_name: formData.artistName,
             category: formData.category,
+            subcategories: formData.subcategories,
             other_categories: formData.otherCategories,
             bio: formData.bio,
             city: formData.location,
@@ -279,7 +369,7 @@ export default function ArtistRegistrationPage() {
                 <div className="relative">
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
                     className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none appearance-none bg-white transition-colors ${
                       errors.category
                         ? "border-red-300 focus:border-red-400"
@@ -302,6 +392,31 @@ export default function ArtistRegistrationPage() {
                   <p className="mt-2 text-sm text-red-500">{errors.category}</p>
                 )}
               </div>
+
+              {/* Subcategories - shown when a primary category is selected */}
+              {formData.category && subcategories[formData.category] && (
+                <div>
+                  <label className="block text-base font-medium text-slate-800 mb-2">
+                    {formData.category} Subcategories <span className="text-slate-400 font-normal">(Optional)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {subcategories[formData.category].map((subcat) => (
+                      <button
+                        key={subcat}
+                        type="button"
+                        onClick={() => handleToggleSubcategory(subcat)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          formData.subcategories.includes(subcat)
+                            ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                            : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        {subcat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Additional Categories */}
               <div>
