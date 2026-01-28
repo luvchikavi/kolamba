@@ -480,7 +480,7 @@ export default function ArtistRegistrationPage() {
                     type="text"
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Tel Aviv, Israel"
+                    placeholder="City, Country/State"
                     className="w-full px-4 py-3.5 pr-12 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
                   <Search
