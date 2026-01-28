@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Globe, Users, Music, Heart, Star } from "lucide-react";
+import { ArrowLeft, Globe, Sparkles, Users, Target, Lightbulb, MapPin, Star, CheckCircle } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -25,59 +25,187 @@ export default function AboutPage() {
           Back to Home
         </Link>
 
-        <div className="card p-8 md:p-12 space-y-12">
-          {/* Mission */}
-          <section>
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Our Mission</h2>
+        <div className="space-y-12">
+          {/* Who We Are */}
+          <section className="card p-8 md:p-12">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                <Users className="text-white" size={28} />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Who We Are</h2>
+            </div>
             <div className="divider-gradient mb-6" />
             <p className="text-slate-600 leading-relaxed text-lg">
-              Kolamba is dedicated to bridging the gap between talented Israeli artists and Jewish
-              communities around the world. We believe that cultural exchange strengthens community
-              bonds and creates lasting memories through shared experiences of music, theater,
-              lectures, and artistic performances.
+              Kolamba is a digital platform that connects Israeli and Jewish creators, artists, and speakers
+              with Jewish communities around the world. We bridge the gap between talented performers who lack
+              the means to reach diaspora communities and Jewish groups worldwide who struggle to discover
+              authentic Israeli and Jewish cultural offerings.
+            </p>
+            <p className="text-slate-600 leading-relaxed text-lg mt-4">
+              Today, only well-known, well-connected performers secure international bookings in established venues.
+              Kolamba aims to change that through straightforward, effective matchmaking between creators and audiences.
             </p>
           </section>
 
-          {/* Features */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6 bg-slate-50 rounded-2xl">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+          {/* The Platform */}
+          <section className="card p-8 md:p-12">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                <Sparkles className="text-white" size={28} />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">The Platform</h2>
+            </div>
+            <div className="divider-gradient mb-6" />
+            <p className="text-slate-600 leading-relaxed text-lg mb-8">
+              Kolamba is a smart cultural matchmaking and booking platform designed to make discovering
+              and booking Jewish talent simple and effective.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <Target className="text-teal-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">AI-Powered Matching</h3>
+                  <p className="text-sm text-slate-600">Smart algorithms to identify suitable creators and performances for your community</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <Users className="text-teal-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">Hundreds of Artists</h3>
+                  <p className="text-sm text-slate-600">Access to Jewish artists spanning music, film, journalism, literature, and more</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="text-teal-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">On the Map</h3>
+                  <p className="text-sm text-slate-600">Geographic visibility for touring artists to connect with nearby communities</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <Star className="text-teal-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">Verified Reviews</h3>
+                  <p className="text-sm text-slate-600">Honest ratings and reviews from communities who have booked performers</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="text-teal-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">Personalized Recommendations</h3>
+                  <p className="text-sm text-slate-600">Suggestions based on your community&apos;s preferences and past bookings</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="text-teal-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1">Collaborative Booking</h3>
+                  <p className="text-sm text-slate-600">Join with nearby communities to share costs and bring top talent</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* The Vision */}
+          <section className="card p-8 md:p-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
                 <Globe className="text-white" size={28} />
               </div>
-              <h3 className="font-bold text-slate-900 mb-2">Global Reach</h3>
-              <p className="text-sm text-slate-600">
-                Connecting Jewish communities across North America, Europe, and beyond
-              </p>
+              <h2 className="text-2xl md:text-3xl font-bold">The Vision</h2>
             </div>
-            <div className="text-center p-6 bg-slate-50 rounded-2xl">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
-                <Music className="text-white" size={28} />
+            <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-teal-400 rounded-full mb-6" />
+            <p className="text-slate-300 leading-relaxed text-lg mb-4">
+              Following our initial US operations, we plan to expand to encompass global Jewish communities.
+              International travel enriches creators as cultural ambassadors, bringing authentic Israeli and
+              Jewish culture to every corner of the world.
+            </p>
+            <p className="text-slate-300 leading-relaxed text-lg">
+              Our long-term ambition is to become the <span className="text-white font-semibold">&quot;Google-meets-Airbnb of Jewish culture&quot;</span> -
+              a comprehensive platform featuring digital publications, culinary resources, and annual festivals
+              that strengthen Jewish identity and connection across generations.
+            </p>
+          </section>
+
+          {/* The Team */}
+          <section className="card p-8 md:p-12">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <Users className="text-white" size={28} />
               </div>
-              <h3 className="font-bold text-slate-900 mb-2">Talented Artists</h3>
-              <p className="text-sm text-slate-600">
-                Curated selection of musicians, speakers, performers, and educators
-              </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">The Team</h2>
             </div>
-            <div className="text-center p-6 bg-slate-50 rounded-2xl">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                <Heart className="text-white" size={28} />
+            <div className="divider-gradient mb-8" />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Avital */}
+              <div className="text-center">
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-primary-600">AI</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">Avital Indig</h3>
+                <p className="text-primary-600 font-medium mb-3">Co-Founder</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Award-winning journalist and 2025 B&apos;nai B&apos;rith Journalism Award recipient with expertise
+                  in diaspora coverage. Holds an M.A. in American Jewish Studies.
+                </p>
               </div>
-              <h3 className="font-bold text-slate-900 mb-2">Cultural Connection</h3>
-              <p className="text-sm text-slate-600">
-                Creating meaningful experiences that celebrate Jewish heritage
-              </p>
+
+              {/* Michal */}
+              <div className="text-center">
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-teal-600">MW</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">Michal Wachtel Halamish</h3>
+                <p className="text-primary-600 font-medium mb-3">Co-Founder</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Veteran technology executive and Founder/CEO of HaK&apos;vutza nonprofit,
+                  specializing in transparent philanthropic connections.
+                </p>
+              </div>
+
+              {/* Einat */}
+              <div className="text-center">
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center">
+                  <span className="text-4xl font-bold text-violet-600">EK</span>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">Einat Kapach</h3>
+                <p className="text-primary-600 font-medium mb-3">Co-Founder</p>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Content creator, screenwriter, and director. Former External Relations Head at
+                  Ma&apos;aleh Film School, focusing on cinema and identity education.
+                </p>
+              </div>
             </div>
           </section>
 
           {/* Contact */}
-          <section>
+          <section className="card p-8 md:p-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">Get in Touch</h2>
-            <div className="divider-gradient mb-6" />
-            <p className="text-slate-600 mb-4">
-              Have questions? We&apos;d love to hear from you.
+            <p className="text-slate-600 mb-6 max-w-lg mx-auto">
+              Have questions about Kolamba? Want to learn more about how we can help your community
+              discover amazing Jewish talent? We&apos;d love to hear from you.
             </p>
             <a
-              href="mailto:info@kolamba.org"
+              href="mailto:contact@kolamba.org"
               className="btn-primary inline-flex"
             >
               Contact Us
