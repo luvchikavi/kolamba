@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,46 +13,39 @@ import {
   Settings,
   Bell,
   ExternalLink,
+  Loader2,
+  MapPin,
 } from "lucide-react";
 
-// Mock community data (will be replaced with auth)
-const mockUser = {
-  id: 1,
-  name: "Avital",
-  communityName: "Beth Israel Synagogue",
-  location: "New York, NY",
-};
+interface TourDate {
+  id: number;
+  artist_id: number;
+  location: string;
+  start_date: string;
+  end_date: string | null;
+  description: string | null;
+  is_booked: boolean;
+}
 
-// Mock events in area
-const mockEventsInArea = [
-  {
-    id: 1,
-    artistName: "Noga Erez",
-    artistImage: "/artists/noga-erez.jpg",
-    eventName: "NY CONCERT",
-    distance: "3,000 Miles from your location",
-    date: "01/01/2026",
-    bookedBy: "JCC Chicago",
-  },
-  {
-    id: 2,
-    artistName: "Idan Raichel",
-    artistImage: "/artists/idan-raichel.jpg",
-    eventName: "NY CONCERT",
-    distance: "1,000 Miles from your location",
-    date: "29/12/2025",
-    bookedBy: "JCC Chicago",
-  },
-  {
-    id: 3,
-    artistName: "Tuna",
-    artistImage: "/artists/tuna.jpg",
-    eventName: "NY CONCERT",
-    distance: "1,000 Miles from your location",
-    date: "29/12/2025",
-    bookedBy: "JCC Chicago",
-  },
-];
+interface NearbyTouringArtist {
+  artist_id: number;
+  artist_name: string;
+  profile_image: string | null;
+  tour_date: TourDate;
+  distance_km: number;
+}
+
+interface CommunityProfile {
+  id: number;
+  name: string;
+  location: string;
+}
+
+interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+}
 
 // Sidebar menu items
 const menuItems = [
@@ -64,45 +57,59 @@ const menuItems = [
   { label: "Privacy & Notifications", icon: Bell, href: "/dashboard/community/privacy" },
 ];
 
-function EventCard({ event }: { event: typeof mockEventsInArea[0] }) {
+function EventCard({ artist }: { artist: NearbyTouringArtist }) {
+  const formattedDate = new Date(artist.tour_date.start_date).toLocaleDateString("en-GB");
+  const distanceText = artist.distance_km < 1
+    ? "Less than 1 km away"
+    : `${Math.round(artist.distance_km)} km away`;
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm flex">
       {/* Artist Image */}
       <div className="relative w-48 h-48 flex-shrink-0">
         <Image
-          src={event.artistImage || "/placeholder-artist.jpg"}
-          alt={event.artistName}
+          src={artist.profile_image || "/placeholder-artist.jpg"}
+          alt={artist.artist_name}
           fill
           className="object-cover"
         />
         {/* Date overlay */}
         <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded">
-          {event.date}
+          {formattedDate}
         </div>
         {/* Location overlay */}
         <div className="absolute bottom-10 left-3 text-white text-xs">
           <p>Location:</p>
-          <p className="font-medium">USA, New York City</p>
+          <p className="font-medium">{artist.tour_date.location}</p>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 p-5 flex flex-col justify-between">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">{event.eventName}</h3>
-          <p className="text-sm text-slate-500 mb-1">{event.distance}</p>
+          <h3 className="text-lg font-bold text-slate-900 mb-2">{artist.artist_name}</h3>
+          <div className="flex items-center gap-1 text-sm text-slate-500 mb-1">
+            <MapPin size={14} />
+            <span>{distanceText}</span>
+          </div>
           <p className="text-sm text-slate-500 mb-1">
-            <span className="font-medium">Date:</span> {event.date}
+            <span className="font-medium">Date:</span> {formattedDate}
+            {artist.tour_date.end_date && ` - ${new Date(artist.tour_date.end_date).toLocaleDateString("en-GB")}`}
           </p>
           <p className="text-sm text-slate-500">
-            <span className="font-medium">Booked by:</span> {event.bookedBy}
+            <span className="font-medium">Location:</span> {artist.tour_date.location}
           </p>
+          {artist.tour_date.description && (
+            <p className="text-sm text-slate-400 mt-2 line-clamp-2">
+              {artist.tour_date.description}
+            </p>
+          )}
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3 mt-4">
           <Link
-            href={`/artists/${event.id}`}
+            href={`/artists/${artist.artist_id}`}
             className="flex items-center gap-2 px-4 py-2.5 border-2 border-slate-900 rounded-full text-sm font-semibold hover:bg-slate-50 transition-colors"
           >
             VISIT PROFILE
@@ -117,7 +124,94 @@ function EventCard({ event }: { event: typeof mockEventsInArea[0] }) {
   );
 }
 
+function EmptyState() {
+  return (
+    <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+      <MapPin size={48} className="text-slate-300 mx-auto mb-4" />
+      <h3 className="text-lg font-bold text-slate-900 mb-2">No Artists Touring Nearby</h3>
+      <p className="text-slate-500 max-w-md mx-auto">
+        When artists announce tour dates within 200km of your location, they&apos;ll appear here.
+        Check back soon or browse all artists to send booking requests.
+      </p>
+      <Link
+        href="/search"
+        className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors"
+      >
+        <Search size={16} />
+        BROWSE ARTISTS
+      </Link>
+    </div>
+  );
+}
+
 export default function CommunityDashboardPage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [nearbyArtists, setNearbyArtists] = useState<NearbyTouringArtist[]>([]);
+  const [userName, setUserName] = useState("Friend");
+  const [communityName, setCommunityName] = useState("");
+  const [communityId, setCommunityId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Get community profile
+      const profileRes = await fetch(`${apiUrl}/api/auth/me`, { headers });
+      if (profileRes.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      if (profileRes.ok) {
+        const userData = await profileRes.json();
+        setUserName(userData.name || "Friend");
+
+        // Get community details
+        if (userData.community) {
+          setCommunityId(userData.community.id);
+          setCommunityName(userData.community.name);
+
+          // Fetch nearby touring artists
+          const nearbyRes = await fetch(
+            `${apiUrl}/api/communities/${userData.community.id}/nearby-touring-artists?radius_km=200`,
+            { headers }
+          );
+
+          if (nearbyRes.ok) {
+            const artists: NearbyTouringArtist[] = await nearbyRes.json();
+            setNearbyArtists(artists);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={40} className="animate-spin text-pink-500 mx-auto mb-4" />
+          <p className="text-slate-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
       {/* Header */}
@@ -144,7 +238,7 @@ export default function CommunityDashboardPage() {
                 className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium"
               >
                 <User size={18} />
-                <span className="uppercase tracking-wide text-sm">{mockUser.name}</span>
+                <span className="uppercase tracking-wide text-sm">{userName}</span>
               </Link>
             </div>
           </div>
@@ -162,11 +256,14 @@ export default function CommunityDashboardPage() {
               </div>
               <div>
                 <h1 className="text-5xl md:text-6xl font-serif font-bold text-slate-900 mb-2">
-                  HEY {mockUser.name.toUpperCase()}
+                  HEY {userName.toUpperCase()}
                 </h1>
                 <p className="text-xl text-slate-600">
                   IT&apos;S GOOD TO SEE YOU AGAIN MEYDELE!
                 </p>
+                {communityName && (
+                  <p className="text-sm text-slate-500 mt-2">{communityName}</p>
+                )}
               </div>
             </div>
 
@@ -176,11 +273,15 @@ export default function CommunityDashboardPage() {
                 EVENTS IN YOUR AREA
               </h2>
 
-              <div className="space-y-6">
-                {mockEventsInArea.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
+              {nearbyArtists.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <div className="space-y-6">
+                  {nearbyArtists.map((artist) => (
+                    <EventCard key={`${artist.artist_id}-${artist.tour_date.id}`} artist={artist} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

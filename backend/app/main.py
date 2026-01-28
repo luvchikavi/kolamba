@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import auth, artists, communities, categories, bookings, search, tours, admin
+from app.routers import auth, artists, communities, categories, bookings, search, tours, admin, artist_tour_dates
 
 settings = get_settings()
 
@@ -43,6 +43,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(artists.router, prefix="/api/artists", tags=["Artists"])
+app.include_router(artist_tour_dates.router, prefix="/api/artists", tags=["Artist Tour Dates"])
 app.include_router(communities.router, prefix="/api/communities", tags=["Communities"])
 app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])

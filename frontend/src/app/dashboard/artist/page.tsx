@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Settings,
   Loader2,
+  X,
+  Trash2,
 } from "lucide-react";
 
 interface TourSuggestion {
@@ -47,6 +49,17 @@ interface Booking {
 interface ArtistProfile {
   id: number;
   name_en: string;
+}
+
+interface ArtistTourDate {
+  id: number;
+  artist_id: number;
+  location: string;
+  start_date: string;
+  end_date: string | null;
+  description: string | null;
+  is_booked: boolean;
+  created_at: string;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -109,7 +122,7 @@ function TourSuggestionCard({
               {idx + 1}
             </span>
             <span>{community.name}</span>
-            <span className="text-slate-300">•</span>
+            <span className="text-slate-300">-</span>
             <span className="text-slate-500">{community.location}</span>
           </div>
         ))}
@@ -206,13 +219,206 @@ function BookingCard({ booking }: { booking: Booking }) {
   );
 }
 
+function TourDateCard({
+  tourDate,
+  onDelete,
+}: {
+  tourDate: ArtistTourDate;
+  onDelete: (id: number) => void;
+}) {
+  return (
+    <div className="card p-4">
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin size={14} className="text-slate-400" />
+            <p className="font-medium text-slate-900">{tourDate.location}</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Calendar size={14} className="text-slate-400" />
+            <span>
+              {new Date(tourDate.start_date).toLocaleDateString()}
+              {tourDate.end_date && ` - ${new Date(tourDate.end_date).toLocaleDateString()}`}
+            </span>
+          </div>
+          {tourDate.description && (
+            <p className="text-sm text-slate-400 mt-2 line-clamp-2">{tourDate.description}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {tourDate.is_booked && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+              Booked
+            </span>
+          )}
+          <button
+            onClick={() => onDelete(tourDate.id)}
+            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+            title="Delete tour date"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddTourDateModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: { location: string; start_date: string; end_date?: string; description?: string }) => void;
+  isSubmitting: boolean;
+}) {
+  const [location, setLocation] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      location,
+      start_date: startDate,
+      end_date: endDate || undefined,
+      description: description || undefined,
+    });
+  };
+
+  const resetForm = () => {
+    setLocation("");
+    setStartDate("");
+    setEndDate("");
+    setDescription("");
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-slate-900">Add Tour Date</h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Location *
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g., Boston, MA or New York, USA"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Location will be automatically geocoded for distance calculations
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Start Date *
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                End Date
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional: Add details about your availability or event"
+              rows={3}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !location || !startDate}
+              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus size={16} />
+                  Add Tour Date
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function ArtistDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [artistId, setArtistId] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<TourSuggestion[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
-  const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings">("suggestions");
+  const [tourDates, setTourDates] = useState<ArtistTourDate[]>([]);
+  const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings" | "tourDates">("suggestions");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -241,11 +447,12 @@ export default function ArtistDashboardPage() {
       const profile: ArtistProfile = await profileRes.json();
       setArtistId(profile.id);
 
-      // Fetch bookings, tours, and suggestions in parallel
-      const [bookingsRes, toursRes, suggestionsRes] = await Promise.all([
+      // Fetch bookings, tours, suggestions, and tour dates in parallel
+      const [bookingsRes, toursRes, suggestionsRes, tourDatesRes] = await Promise.all([
         fetch(`${apiUrl}/api/bookings?artist_id=${profile.id}`, { headers }),
         fetch(`${apiUrl}/api/tours?artist_id=${profile.id}`, { headers }),
         fetch(`${apiUrl}/api/tours/suggestions?artist_id=${profile.id}`, { headers }),
+        fetch(`${apiUrl}/api/artists/${profile.id}/tour-dates`, { headers }),
       ]);
 
       if (bookingsRes.ok) {
@@ -261,6 +468,11 @@ export default function ArtistDashboardPage() {
       if (suggestionsRes.ok) {
         const suggestionsData: TourSuggestion[] = await suggestionsRes.json();
         setSuggestions(suggestionsData);
+      }
+
+      if (tourDatesRes.ok) {
+        const tourDatesData: ArtistTourDate[] = await tourDatesRes.json();
+        setTourDates(tourDatesData);
       }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
@@ -303,6 +515,65 @@ export default function ArtistDashboardPage() {
     }
   };
 
+  const handleAddTourDate = async (data: {
+    location: string;
+    start_date: string;
+    end_date?: string;
+    description?: string;
+  }) => {
+    if (!artistId) return;
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      const response = await fetch(`${apiUrl}/api/artists/${artistId}/tour-dates`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const newTourDate: ArtistTourDate = await response.json();
+        setTourDates([...tourDates, newTourDate].sort(
+          (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+        ));
+        setIsAddModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to add tour date:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTourDate = async (tourDateId: number) => {
+    if (!artistId) return;
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      const response = await fetch(
+        `${apiUrl}/api/artists/${artistId}/tour-dates/${tourDateId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.ok) {
+        setTourDates(tourDates.filter((td) => td.id !== tourDateId));
+      }
+    } catch (error) {
+      console.error("Failed to delete tour date:", error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
@@ -337,7 +608,7 @@ export default function ArtistDashboardPage() {
 
       {/* Stats */}
       <div className="container-default py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <div className="card p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -375,6 +646,17 @@ export default function ArtistDashboardPage() {
           </div>
           <div className="card p-4">
             <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                <MapPin size={20} className="text-violet-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{tourDates.length}</p>
+                <p className="text-sm text-slate-500">Tour Dates</p>
+              </div>
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center">
                 <DollarSign size={20} className="text-accent-600" />
               </div>
@@ -389,7 +671,7 @@ export default function ArtistDashboardPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           <button
             onClick={() => setActiveTab("suggestions")}
             className={`px-4 py-2 rounded-xl font-medium transition-colors ${
@@ -419,6 +701,16 @@ export default function ArtistDashboardPage() {
             }`}
           >
             Requests ({pendingBookings.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("tourDates")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeTab === "tourDates"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Tour Dates ({tourDates.length})
           </button>
         </div>
 
@@ -488,7 +780,64 @@ export default function ArtistDashboardPage() {
             )}
           </div>
         )}
+
+        {activeTab === "tourDates" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-lg text-slate-900">Your Tour Dates</h3>
+                <p className="text-sm text-slate-500">
+                  Announce where you&apos;ll be touring so nearby communities can find you
+                </p>
+              </div>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="btn-primary"
+              >
+                <Plus size={18} />
+                Add Tour Date
+              </button>
+            </div>
+
+            {tourDates.length === 0 ? (
+              <div className="card p-8 text-center">
+                <MapPin size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">
+                  No Tour Dates Announced
+                </h3>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  Let communities know when you&apos;ll be in their area. When you add tour dates,
+                  nearby communities will see you in their &quot;Events in Your Area&quot; section.
+                </p>
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="btn-primary mx-auto"
+                >
+                  <Plus size={18} />
+                  Add Your First Tour Date
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {tourDates.map((tourDate) => (
+                  <TourDateCard
+                    key={tourDate.id}
+                    tourDate={tourDate}
+                    onDelete={handleDeleteTourDate}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      <AddTourDateModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleAddTourDate}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

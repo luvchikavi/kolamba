@@ -7,6 +7,7 @@ from app.models.community import Community
 from app.models.category import Category, ArtistCategory
 from app.models.booking import Booking
 from app.models.tour import Tour, TourBooking
+from app.models.artist_tour_date import ArtistTourDate
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "Booking",
     "Tour",
     "TourBooking",
+    "ArtistTourDate",
 ]

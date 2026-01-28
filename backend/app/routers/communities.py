@@ -6,12 +6,18 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
+from datetime import date
+
 from app.database import get_db
 from app.models.community import Community, COMMUNITY_TYPES, EVENT_TYPES, CONTACT_ROLES
 from app.models.user import User
+from app.models.artist_tour_date import ArtistTourDate
+from app.models.artist import Artist
 from app.schemas.community import CommunityCreate, CommunityUpdate, CommunityResponse
 from app.schemas.tour import NearbyTourResponse
-from app.services.tour_grouping import find_nearby_tours
+from app.schemas.artist_tour_date import NearbyTouringArtist, ArtistTourDateResponse
+from app.services.tour_grouping import find_nearby_tours, haversine_distance
+from app.services.geocoding import geocode_location
 
 router = APIRouter()
 
@@ -168,6 +174,82 @@ async def get_community_tour_opportunities(
     return opportunities
 
 
+@router.get("/{community_id}/nearby-touring-artists", response_model=list[NearbyTouringArtist])
+async def get_nearby_touring_artists(
+    community_id: int,
+    radius_km: float = Query(200, description="Search radius in kilometers"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get artists who are touring within the specified radius of the community.
+
+    Returns artists with announced tour dates near the community's location.
+    Default radius is 200km.
+    """
+    # Get the community
+    result = await db.execute(
+        select(Community).where(Community.id == community_id)
+    )
+    community = result.scalar_one_or_none()
+
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    if community.latitude is None or community.longitude is None:
+        return []
+
+    community_lat = float(community.latitude)
+    community_lng = float(community.longitude)
+
+    # Get all upcoming tour dates with artist info
+    tour_dates_result = await db.execute(
+        select(ArtistTourDate, Artist)
+        .join(Artist, ArtistTourDate.artist_id == Artist.id)
+        .where(
+            ArtistTourDate.start_date >= date.today(),
+            ArtistTourDate.latitude.isnot(None),
+            ArtistTourDate.longitude.isnot(None),
+            Artist.status == "active",
+        )
+        .order_by(ArtistTourDate.start_date)
+    )
+    tour_dates_with_artists = tour_dates_result.all()
+
+    nearby_artists = []
+
+    for tour_date, artist in tour_dates_with_artists:
+        # Calculate distance
+        distance = haversine_distance(
+            community_lat, community_lng,
+            float(tour_date.latitude), float(tour_date.longitude)
+        )
+
+        if distance <= radius_km:
+            nearby_artists.append(NearbyTouringArtist(
+                artist_id=artist.id,
+                artist_name=artist.name_en or artist.name_he,
+                profile_image=artist.profile_image,
+                tour_date=ArtistTourDateResponse(
+                    id=tour_date.id,
+                    artist_id=tour_date.artist_id,
+                    location=tour_date.location,
+                    latitude=float(tour_date.latitude) if tour_date.latitude else None,
+                    longitude=float(tour_date.longitude) if tour_date.longitude else None,
+                    start_date=tour_date.start_date,
+                    end_date=tour_date.end_date,
+                    description=tour_date.description,
+                    is_booked=tour_date.is_booked,
+                    created_at=tour_date.created_at,
+                ),
+                distance_km=round(distance, 1),
+            ))
+
+    # Sort by distance
+    nearby_artists.sort(key=lambda x: x.distance_km)
+
+    return nearby_artists
+
+
 @router.get("/{community_id}", response_model=CommunityResponse)
 async def get_community(community_id: int, db: AsyncSession = Depends(get_db)):
     """Get community profile by ID."""
@@ -215,14 +297,22 @@ async def create_community(
     db.add(user)
     await db.flush()  # Get user ID
 
+    # Geocode location if lat/long not provided
+    latitude = request.latitude
+    longitude = request.longitude
+    if latitude is None or longitude is None:
+        coords = await geocode_location(request.location)
+        if coords:
+            latitude, longitude = coords
+
     # Create community profile
     community = Community(
         user_id=user.id,
         name=request.community_name,
         community_type=request.community_type,
         location=request.location,
-        latitude=request.latitude,
-        longitude=request.longitude,
+        latitude=latitude,
+        longitude=longitude,
         member_count_min=request.member_count_min,
         member_count_max=request.member_count_max,
         event_types=request.event_types,

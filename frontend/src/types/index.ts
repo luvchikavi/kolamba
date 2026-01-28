@@ -75,3 +75,24 @@ export interface TourSuggestion {
     distanceFromPrevious: number;
   }>;
 }
+
+export interface ArtistTourDate {
+  id: number;
+  artistId: number;
+  location: string;
+  latitude?: number;
+  longitude?: number;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+  isBooked: boolean;
+  createdAt: string;
+}
+
+export interface NearbyTouringArtist {
+  artistId: number;
+  artistName: string;
+  profileImage?: string;
+  tourDate: ArtistTourDate;
+  distanceKm: number;
+}
