@@ -173,7 +173,7 @@ async def register_artist(
         password_hash=get_password_hash(temp_password),
         name=request.name,
         role="artist",
-        status="pending",  # Artists need approval
+        status="active",  # MVP: Auto-approve artists
         is_active=True,
     )
     db.add(user)
@@ -208,7 +208,7 @@ async def register_artist(
         website=request.website,
         instagram=request.instagram,
         youtube=request.youtube,
-        status="pending",
+        status="active",  # MVP: Auto-approve artists
     )
 
     # Link categories

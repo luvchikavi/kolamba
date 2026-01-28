@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2 } from "lucide-react";
 
-// Mock artist data
-const mockArtists: Record<string, { name: string; category: string }> = {
-  "1": { name: "Tuna", category: "Music" },
-  "2": { name: "Noga Erez", category: "Music" },
-  "3": { name: "Etgar Keret", category: "Literature" },
-};
+interface ArtistInfo {
+  id: number;
+  name_en: string;
+  name_he: string;
+  categories: { name_en: string }[];
+}
 
 const eventTypes = [
   "Concert",
@@ -63,11 +63,34 @@ export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
   const artistId = params.artistId as string;
-  const artist = mockArtists[artistId] || { name: "Artist", category: "Performance" };
 
+  const [artist, setArtist] = useState<{ name: string; category: string }>({ name: "Loading...", category: "" });
+  const [isLoadingArtist, setIsLoadingArtist] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchArtist = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await fetch(`${apiUrl}/api/artists/${artistId}`);
+        if (response.ok) {
+          const data: ArtistInfo = await response.json();
+          setArtist({
+            name: data.name_en || data.name_he,
+            category: data.categories?.[0]?.name_en || "Performance",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch artist:", error);
+      } finally {
+        setIsLoadingArtist(false);
+      }
+    };
+    fetchArtist();
+  }, [artistId]);
 
   const [bookingData, setBookingData] = useState<BookingData>({
     eventType: "",
@@ -100,10 +123,57 @@ export default function BookingPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // TODO: Submit to API
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    setSubmitError(null);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const token = localStorage.getItem("access_token");
+
+      // Parse budget to get a numeric value
+      let budgetValue: number | undefined;
+      if (bookingData.budget) {
+        const budgetMatch = bookingData.budget.match(/\d+/);
+        if (budgetMatch) {
+          budgetValue = parseInt(budgetMatch[0], 10);
+        }
+      }
+
+      const response = await fetch(`${apiUrl}/api/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          artist_id: parseInt(artistId, 10),
+          requested_date: bookingData.date || null,
+          location: bookingData.venueAddress || null,
+          budget: budgetValue || null,
+          notes: [
+            `Event Type: ${bookingData.eventType}`,
+            bookingData.eventDescription ? `Description: ${bookingData.eventDescription}` : "",
+            `Venue: ${bookingData.venueType}`,
+            bookingData.venueCapacity ? `Capacity: ${bookingData.venueCapacity}` : "",
+            bookingData.flexibleDates && bookingData.alternateDate ? `Alternate Date: ${bookingData.alternateDate}` : "",
+            bookingData.specialRequirements ? `Special Requirements: ${bookingData.specialRequirements}` : "",
+            `Contact: ${bookingData.contactName} (${bookingData.contactEmail})`,
+            bookingData.contactPhone ? `Phone: ${bookingData.contactPhone}` : "",
+            bookingData.communityName ? `Organization: ${bookingData.communityName}` : "",
+          ].filter(Boolean).join("\n"),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit booking request");
+      }
+
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Booking submission failed:", error);
+      setSubmitError("Failed to submit booking request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -440,6 +510,13 @@ export default function BookingPage() {
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {submitError && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+                {submitError}
               </div>
             )}
 

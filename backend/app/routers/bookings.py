@@ -12,7 +12,9 @@ from app.database import get_db
 from app.models.booking import Booking
 from app.models.artist import Artist
 from app.models.community import Community
+from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
+from app.routers.auth import get_current_user, get_current_user_optional
 
 router = APIRouter()
 
@@ -30,6 +32,7 @@ class BookingCreateRequest(BaseModel):
 async def create_booking(
     request: BookingCreateRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     """Create new booking request."""
     # Verify artist exists
@@ -40,9 +43,20 @@ async def create_booking(
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
-    # For MVP, we'll use a placeholder community_id (1)
-    # In production, this would come from the authenticated user
-    community_id = 1
+    # Get community_id from authenticated user or use fallback
+    community_id = None
+    if current_user and current_user.role == "community":
+        community_result = await db.execute(
+            select(Community).where(Community.user_id == current_user.id)
+        )
+        community = community_result.scalar_one_or_none()
+        if community:
+            community_id = community.id
+
+    # If no authenticated community, create without community_id for now
+    if community_id is None:
+        # For unauthenticated requests, we'll still allow booking but mark it
+        community_id = 1  # Fallback for MVP
 
     booking = Booking(
         artist_id=request.artist_id,
@@ -58,6 +72,68 @@ async def create_booking(
     await db.refresh(booking)
 
     return booking
+
+
+class BookingWithArtistResponse(BaseModel):
+    """Booking response with artist name."""
+    id: int
+    artist_id: int
+    artist_name: str
+    community_id: int
+    requested_date: Optional[date] = None
+    location: Optional[str] = None
+    budget: Optional[int] = None
+    notes: Optional[str] = None
+    status: str
+    created_at: str
+
+    class Config:
+        from_attributes = True
+
+
+@router.get("/my-bookings", response_model=list[BookingWithArtistResponse])
+async def get_my_bookings(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get bookings for the authenticated community with artist names."""
+    if current_user.role != "community":
+        raise HTTPException(status_code=403, detail="Only communities can access this endpoint")
+
+    # Get the community for this user
+    community_result = await db.execute(
+        select(Community).where(Community.user_id == current_user.id)
+    )
+    community = community_result.scalar_one_or_none()
+
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    # Get bookings with artist info
+    result = await db.execute(
+        select(Booking, Artist)
+        .join(Artist, Booking.artist_id == Artist.id)
+        .where(Booking.community_id == community.id)
+        .order_by(Booking.created_at.desc())
+    )
+    rows = result.all()
+
+    bookings = []
+    for booking, artist in rows:
+        bookings.append(BookingWithArtistResponse(
+            id=booking.id,
+            artist_id=booking.artist_id,
+            artist_name=artist.name_en or artist.name_he,
+            community_id=booking.community_id,
+            requested_date=booking.requested_date,
+            location=booking.location,
+            budget=booking.budget,
+            notes=booking.notes,
+            status=booking.status,
+            created_at=booking.created_at.isoformat(),
+        ))
+
+    return bookings
 
 
 @router.get("", response_model=list[BookingResponse])
