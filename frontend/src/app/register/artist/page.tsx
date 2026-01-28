@@ -218,6 +218,18 @@ export default function ArtistRegistrationPage() {
   // Helper to detect Hebrew characters
   const containsHebrew = (text: string) => /[\u0590-\u05FF]/.test(text);
 
+  // Helper to format number with commas
+  const formatNumberWithCommas = (value: string) => {
+    const num = value.replace(/,/g, "").replace(/[^0-9]/g, "");
+    if (!num) return "";
+    return parseInt(num).toLocaleString("en-US");
+  };
+
+  // Helper to parse number from formatted string
+  const parseFormattedNumber = (value: string) => {
+    return value.replace(/,/g, "");
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.artistName || formData.artistName.length < 2) {
@@ -617,19 +629,19 @@ export default function ArtistRegistrationPage() {
                 </label>
                 <div className="flex items-center gap-3">
                   <input
-                    type="number"
-                    value={formData.priceRangeMin}
-                    onChange={(e) => setFormData({ ...formData, priceRangeMin: e.target.value })}
+                    type="text"
+                    value={formData.priceRangeMin ? formatNumberWithCommas(formData.priceRangeMin) : ""}
+                    onChange={(e) => setFormData({ ...formData, priceRangeMin: parseFormattedNumber(e.target.value) })}
                     placeholder="500"
-                    className="w-28 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    className="w-32 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
                   <span className="text-slate-600">to</span>
                   <input
-                    type="number"
-                    value={formData.priceRangeMax}
-                    onChange={(e) => setFormData({ ...formData, priceRangeMax: e.target.value })}
-                    placeholder="2000"
-                    className="w-28 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    type="text"
+                    value={formData.priceRangeMax ? formatNumberWithCommas(formData.priceRangeMax) : ""}
+                    onChange={(e) => setFormData({ ...formData, priceRangeMax: parseFormattedNumber(e.target.value) })}
+                    placeholder="2,000"
+                    className="w-32 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
                   <span className="text-slate-600">USD</span>
                 </div>
