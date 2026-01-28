@@ -2,59 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Play, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
-
-const heroSlides = [
-  {
-    id: 1,
-    video: "/hero-video.mp4",
-    poster: "/hero-poster.jpg",
-  },
-  {
-    id: 2,
-    video: "/hero-video-2.mp4",
-    poster: "/hero-poster-2.jpg",
-  },
-  {
-    id: 3,
-    video: "/hero-video-3.mp4",
-    poster: "/hero-poster-3.jpg",
-  },
-];
+import { Play } from "lucide-react";
+import { useState } from "react";
 
 export default function HeroSection() {
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-
-  const goToSlide = useCallback((index: number) => {
-    setIsVideoLoaded(false);
-    if (index < 0) {
-      setCurrentSlide(heroSlides.length - 1);
-    } else if (index >= heroSlides.length) {
-      setCurrentSlide(0);
-    } else {
-      setCurrentSlide(index);
-    }
-  }, []);
-
-  const goToPrevious = useCallback(() => {
-    goToSlide(currentSlide - 1);
-  }, [currentSlide, goToSlide]);
-
-  const goToNext = useCallback(() => {
-    goToSlide(currentSlide + 1);
-  }, [currentSlide, goToSlide]);
-
-  // Auto-advance slides every 8 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      goToNext();
-    }, 8000);
-    return () => clearInterval(timer);
-  }, [goToNext]);
-
-  const currentSlideData = heroSlides[currentSlide];
 
   return (
     <section className="relative h-screen flex items-end justify-center overflow-hidden">
@@ -69,7 +21,6 @@ export default function HeroSection() {
 
         {/* Video element */}
         <video
-          key={currentSlideData.id}
           autoPlay
           muted
           loop
@@ -78,9 +29,9 @@ export default function HeroSection() {
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
             isVideoLoaded ? "opacity-100" : "opacity-0"
           }`}
-          poster={currentSlideData.poster}
+          poster="/hero-poster.jpg"
         >
-          <source src={currentSlideData.video} type="video/mp4" />
+          <source src="/hero-video.mp4" type="video/mp4" />
         </video>
 
         {/* Subtle dark overlay at bottom for text readability */}
@@ -122,37 +73,6 @@ export default function HeroSection() {
           </Link>
         </div>
 
-        {/* Navigation Arrows and Dots */}
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={goToPrevious}
-            className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center hover:border-white hover:bg-white/10 transition-all duration-200"
-          >
-            <ChevronLeft size={20} className="text-white" />
-          </button>
-
-          {/* Slide Indicators */}
-          <div className="flex items-center gap-2">
-            {heroSlides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  index === currentSlide
-                    ? "bg-white w-6"
-                    : "bg-white/50 hover:bg-white/70"
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            onClick={goToNext}
-            className="w-10 h-10 rounded-full border-2 border-white/50 flex items-center justify-center hover:border-white hover:bg-white/10 transition-all duration-200"
-          >
-            <ChevronRight size={20} className="text-white" />
-          </button>
-        </div>
       </div>
     </section>
   );
