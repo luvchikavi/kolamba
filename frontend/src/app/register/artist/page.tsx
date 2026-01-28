@@ -306,7 +306,7 @@ export default function ArtistRegistrationPage() {
               {/* Additional Categories */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Additional Categories
+                  Additional Categories <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <div className="relative">
                   <input
