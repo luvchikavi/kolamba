@@ -130,8 +130,10 @@ export default function ArtistRegistrationPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [isAgent, setIsAgent] = useState(false);
+  const [submittedArtistsCount, setSubmittedArtistsCount] = useState(0);
 
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     artistName: "",
     realName: "",
     email: "",
@@ -153,6 +155,16 @@ export default function ArtistRegistrationPage() {
     twitter: "",
     linkedin: "",
     acceptTerms: false,
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+
+  // Store agent contact info to preserve when adding more artists
+  const [agentContactInfo, setAgentContactInfo] = useState({
+    realName: "",
+    email: "",
+    phone: "",
+    phoneCountryCode: "+972",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -230,6 +242,20 @@ export default function ArtistRegistrationPage() {
     return value.replace(/,/g, "");
   };
 
+  // Reset form for adding another artist (agent mode)
+  const resetFormForNextArtist = () => {
+    setFormData({
+      ...initialFormData,
+      // Preserve agent's contact info
+      realName: agentContactInfo.realName,
+      email: agentContactInfo.email,
+      phone: agentContactInfo.phone,
+      phoneCountryCode: agentContactInfo.phoneCountryCode,
+    });
+    setCategorySearch("");
+    setIsSubmitted(false);
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.artistName || formData.artistName.length < 2) {
@@ -286,6 +312,7 @@ export default function ArtistRegistrationPage() {
             facebook: formData.facebook || null,
             twitter: formData.twitter || null,
             linkedin: formData.linkedin || null,
+            is_agent_submission: isAgent,
           }),
         }
       );
@@ -295,6 +322,17 @@ export default function ArtistRegistrationPage() {
         throw new Error(data.detail || "Registration failed");
       }
 
+      // Store agent contact info for subsequent submissions
+      if (isAgent && submittedArtistsCount === 0) {
+        setAgentContactInfo({
+          realName: formData.realName,
+          email: formData.email,
+          phone: formData.phone,
+          phoneCountryCode: formData.phoneCountryCode,
+        });
+      }
+
+      setSubmittedArtistsCount((prev) => prev + 1);
       setIsSubmitted(true);
     } catch (error) {
       setErrors({
@@ -313,12 +351,25 @@ export default function ArtistRegistrationPage() {
             <CheckCircle className="text-teal-600" size={40} />
           </div>
           <h1 className="text-3xl font-serif font-bold text-slate-900 mb-2">
-            Welcome to Kolamba!
+            {isAgent ? "Artist Submitted!" : "Welcome to Kolamba!"}
           </h1>
+          <p className="text-slate-600 mb-2">
+            {isAgent
+              ? `Artist profile #${submittedArtistsCount} has been created.`
+              : "Your artist profile has been created."}
+          </p>
           <p className="text-slate-600 mb-6">
-            Your artist profile has been created. We&apos;ll review your application and get back to you soon.
+            We&apos;ll review the application and get back to you soon.
           </p>
           <div className="flex flex-col gap-3">
+            {isAgent && (
+              <button
+                onClick={resetFormForNextArtist}
+                className="px-6 py-3 bg-teal-600 text-white rounded-full font-semibold hover:bg-teal-700 transition-colors"
+              >
+                Add Another Artist
+              </button>
+            )}
             <Link
               href="/login"
               className="px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors"
@@ -344,6 +395,32 @@ export default function ArtistRegistrationPage() {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {/* Agent Mode Toggle */}
+          <div className="mb-8 p-4 bg-slate-50 rounded-xl border-2 border-slate-200">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isAgent}
+                onChange={(e) => setIsAgent(e.target.checked)}
+                className="mt-1 w-5 h-5 text-teal-500 border-2 border-slate-300 rounded focus:ring-teal-400"
+              />
+              <div>
+                <span className="font-medium text-slate-900">I am an agent representing multiple artists</span>
+                <p className="text-sm text-slate-500 mt-1">
+                  Check this box if you manage multiple artists and want to submit their profiles. After submitting each artist, you&apos;ll be able to add more.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          {submittedArtistsCount > 0 && isAgent && (
+            <div className="mb-6 p-3 bg-teal-50 rounded-lg border border-teal-200">
+              <p className="text-teal-700 text-sm font-medium">
+                You&apos;ve submitted {submittedArtistsCount} artist{submittedArtistsCount > 1 ? "s" : ""} so far. Continue adding more below.
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-8">
             {/* Left Column - Artist Details */}
             <div className="space-y-6">
