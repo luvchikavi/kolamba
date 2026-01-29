@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface UserInfo {
   name: string | null;
@@ -31,7 +32,7 @@ export default function Header() {
     // Check for logged-in user
     const token = localStorage.getItem("access_token");
     if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`, {
+      fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => (res.ok ? res.json() : null))

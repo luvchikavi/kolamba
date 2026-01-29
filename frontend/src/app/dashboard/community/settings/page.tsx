@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, CheckCircle, ChevronDown } from "lucide-react";
-
-// Normalize API URL - ensure it ends with /api
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
+import { API_URL } from "@/lib/api";
 
 interface CommunityProfile {
   id: number;

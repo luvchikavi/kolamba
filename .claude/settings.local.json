@@ -60,7 +60,16 @@
       "Bash(open \"https://kolamba.vercel.app/login\")",
       "Bash(sips:*)",
       "Bash(gh api:*)",
-      "WebFetch(domain:api.vercel.com)"
+      "WebFetch(domain:api.vercel.com)",
+      "Bash(xargs ls:*)",
+      "Bash(tree:*)",
+      "Bash(python3:*)",
+      "Bash(wc:*)",
+      "Bash(git remote:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git rm:*)",
+      "WebFetch(domain:kolamba.vercel.app)",
+      "Bash(git reset:*)"
     ]
   }
 }

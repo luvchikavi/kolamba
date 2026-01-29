@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface TourArtist {
   id: number;
@@ -71,7 +72,7 @@ export default function TourOpportunityCard({
     setIsRequesting(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/tours/${tour.tour_id}/join-request`,
+        `${API_URL}/tours/${tour.tour_id}/join-request`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

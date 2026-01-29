@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { CheckCircle, Search, ChevronDown, X } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface CommunityOptions {
   community_types: string[];
@@ -101,7 +102,7 @@ export default function CommunityRegistrationPage() {
     const fetchOptions = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/communities/options`
+          `${API_URL}/communities/options`
         );
         if (response.ok) {
           const data = await response.json();
@@ -137,7 +138,7 @@ export default function CommunityRegistrationPage() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/communities/check-name?name=${encodeURIComponent(name)}`
+        `${API_URL}/communities/check-name?name=${encodeURIComponent(name)}`
       );
       if (response.ok) {
         const data = await response.json();
@@ -222,7 +223,7 @@ export default function CommunityRegistrationPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/communities`,
+        `${API_URL}/communities`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

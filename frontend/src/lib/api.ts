@@ -4,7 +4,7 @@
 
 // Normalize API URL - ensure it ends with /api
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
+export const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
 
 interface RequestOptions extends RequestInit {
   token?: string;

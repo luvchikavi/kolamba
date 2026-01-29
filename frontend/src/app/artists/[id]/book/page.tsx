@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Calendar, MapPin, DollarSign, MessageSquare, CheckCircle } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 export default function BookingPage({ params }: { params: { id: string } }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -39,7 +40,7 @@ export default function BookingPage({ params }: { params: { id: string } }) {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/bookings`,
+        `${API_URL}/bookings`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

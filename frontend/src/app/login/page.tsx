@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function LoginPage() {
       formBody.append("password", formData.password);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/login`,
+        `${API_URL}/auth/login`,
         {
           method: "POST",
           headers: {
@@ -46,7 +47,7 @@ export default function LoginPage() {
       localStorage.setItem("refresh_token", data.refresh_token);
 
       const meResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/me`,
+        `${API_URL}/auth/me`,
         {
           headers: {
             Authorization: `Bearer ${data.access_token}`,

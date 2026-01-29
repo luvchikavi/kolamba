@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle, ChevronDown, X, Search } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 const categories = [
   "Music",
@@ -288,7 +289,7 @@ export default function ArtistRegistrationPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/register/artist`,
+        `${API_URL}/auth/register/artist`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

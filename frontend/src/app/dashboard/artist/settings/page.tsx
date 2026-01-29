@@ -3,10 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2, CheckCircle, X } from "lucide-react";
-
-// Normalize API URL - ensure it ends with /api
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
+import { API_URL } from "@/lib/api";
 
 const categories = [
   { id: 1, name: "Music", slug: "music" },

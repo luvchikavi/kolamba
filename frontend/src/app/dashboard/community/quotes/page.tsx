@@ -14,6 +14,7 @@ import {
   Loader2,
   MessageSquare,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface Booking {
   id: number;
@@ -63,8 +64,7 @@ export default function CommunityQuotesPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const response = await fetch(`${apiUrl}/api/bookings/my-bookings`, {
+      const response = await fetch(`${API_URL}/bookings/my-bookings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
