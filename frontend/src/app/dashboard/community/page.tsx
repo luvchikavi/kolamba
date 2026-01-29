@@ -16,6 +16,7 @@ import {
   Loader2,
   MapPin,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface TourDate {
   id: number;
@@ -163,11 +164,10 @@ export default function CommunityDashboardPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const headers = { Authorization: `Bearer ${token}` };
 
       // Get community profile
-      const profileRes = await fetch(`${apiUrl}/api/auth/me`, { headers });
+      const profileRes = await fetch(`${API_URL}/auth/me`, { headers });
       if (profileRes.status === 401) {
         window.location.href = "/login";
         return;
@@ -177,14 +177,21 @@ export default function CommunityDashboardPage() {
         const userData = await profileRes.json();
         setUserName(userData.name || "Friend");
 
-        // Get community details
-        if (userData.community) {
-          setCommunityId(userData.community.id);
-          setCommunityName(userData.community.name);
+        // Get community details using community_id from auth/me response
+        const commId = userData.community_id;
+        if (commId) {
+          setCommunityId(commId);
+
+          // Fetch community profile to get name
+          const communityRes = await fetch(`${API_URL}/communities/${commId}`, { headers });
+          if (communityRes.ok) {
+            const communityData = await communityRes.json();
+            setCommunityName(communityData.name);
+          }
 
           // Fetch nearby touring artists
           const nearbyRes = await fetch(
-            `${apiUrl}/api/communities/${userData.community.id}/nearby-touring-artists?radius_km=200`,
+            `${API_URL}/communities/${commId}/nearby-touring-artists?radius_km=200`,
             { headers }
           );
 

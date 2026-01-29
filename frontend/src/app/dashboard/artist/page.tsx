@@ -17,6 +17,7 @@ import {
   X,
   Trash2,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface TourSuggestion {
   region: string;
@@ -432,11 +433,10 @@ export default function ArtistDashboardPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const headers = { Authorization: `Bearer ${token}` };
 
       // Get artist profile first
-      const profileRes = await fetch(`${apiUrl}/api/artists/me`, { headers });
+      const profileRes = await fetch(`${API_URL}/artists/me`, { headers });
       if (profileRes.status === 401) {
         window.location.href = "/login";
         return;
@@ -449,10 +449,10 @@ export default function ArtistDashboardPage() {
 
       // Fetch bookings, tours, suggestions, and tour dates in parallel
       const [bookingsRes, toursRes, suggestionsRes, tourDatesRes] = await Promise.all([
-        fetch(`${apiUrl}/api/bookings?artist_id=${profile.id}`, { headers }),
-        fetch(`${apiUrl}/api/tours?artist_id=${profile.id}`, { headers }),
-        fetch(`${apiUrl}/api/tours/suggestions?artist_id=${profile.id}`, { headers }),
-        fetch(`${apiUrl}/api/artists/${profile.id}/tour-dates`, { headers }),
+        fetch(`${API_URL}/bookings?artist_id=${profile.id}`, { headers }),
+        fetch(`${API_URL}/tours?artist_id=${profile.id}`, { headers }),
+        fetch(`${API_URL}/tours/suggestions?artist_id=${profile.id}`, { headers }),
+        fetch(`${API_URL}/artists/${profile.id}/tour-dates`, { headers }),
       ]);
 
       if (bookingsRes.ok) {
@@ -487,9 +487,8 @@ export default function ArtistDashboardPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      const response = await fetch(`${apiUrl}/api/tours`, {
+      const response = await fetch(`${API_URL}/tours`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -526,9 +525,8 @@ export default function ArtistDashboardPage() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      const response = await fetch(`${apiUrl}/api/artists/${artistId}/tour-dates`, {
+      const response = await fetch(`${API_URL}/artists/${artistId}/tour-dates`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -556,10 +554,9 @@ export default function ArtistDashboardPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const response = await fetch(
-        `${apiUrl}/api/artists/${artistId}/tour-dates/${tourDateId}`,
+        `${API_URL}/artists/${artistId}/tour-dates/${tourDateId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
