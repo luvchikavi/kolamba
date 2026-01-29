@@ -172,8 +172,12 @@ export default function AboutPage() {
 
               {/* Avi */}
               <div className="text-center">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-teal-600">AL</span>
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
+                  <img
+                    src="/team/avi-luvchik.jpeg"
+                    alt="Avi Luvchik"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Avi Luvchik</h3>
                 <p className="text-primary-600 font-medium mb-3">Head of Technology</p>
