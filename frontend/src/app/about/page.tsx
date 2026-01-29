@@ -159,8 +159,12 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Avital */}
               <div className="text-center">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-primary-600">AI</span>
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
+                  <img
+                    src="/team/avital-indig.jpg"
+                    alt="Avital Indig"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Avital Indig</h3>
                 <p className="text-primary-600 font-medium mb-3">Founder & CEO</p>
@@ -191,8 +195,12 @@ export default function AboutPage() {
 
               {/* Einat */}
               <div className="text-center">
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-violet-600">EK</span>
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
+                  <img
+                    src="/team/einat-kapach.jpg"
+                    alt="Einat Kapach"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Einat Kapach</h3>
                 <p className="text-primary-600 font-medium mb-3">Content Development Manager</p>

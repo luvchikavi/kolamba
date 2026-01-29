@@ -259,7 +259,7 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50">
+                  <tr key={user.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => setEditingUser(user)}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
@@ -268,7 +268,7 @@ export default function UsersPage() {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-slate-900">
+                          <p className="font-medium text-slate-900 hover:text-primary-600 transition-colors">
                             {user.name || "—"}
                             {user.is_superuser && (
                               <Shield size={14} className="inline ml-1 text-violet-500" />
@@ -287,7 +287,7 @@ export default function UsersPage() {
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setEditingUser(user)}
