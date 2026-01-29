@@ -1,51 +1,81 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, MapPin, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Calendar, Loader2 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
-// Sample tours data - will be connected to real API
-const sampleTours = [
-  {
-    id: 1,
-    artistName: "Noga Erez",
-    title: "European Tour 2026",
-    regions: ["Germany", "France", "UK"],
-    startDate: "March 2026",
-    spotsLeft: 3,
-    image: "/artists/noga-erez.jpg",
-  },
-  {
-    id: 2,
-    artistName: "Tuna",
-    title: "US East Coast Tour",
-    regions: ["New York", "New Jersey", "Florida"],
-    startDate: "April 2026",
-    spotsLeft: 5,
-    image: "/artists/tuna.jpg",
-  },
-  {
-    id: 3,
-    artistName: "Eden Ben Zaken",
-    title: "South America Tour",
-    regions: ["Argentina", "Brazil", "Chile"],
-    startDate: "May 2026",
-    spotsLeft: 2,
-    image: "/artists/eden-ben-zaken.jpg",
-  },
-  {
-    id: 4,
-    artistName: "Jasmin Moallem",
-    title: "Canada Tour",
-    regions: ["Toronto", "Montreal", "Vancouver"],
-    startDate: "June 2026",
-    spotsLeft: 4,
-    image: "/artists/jasmin-moallem.jpg",
-  },
-];
+interface TourDate {
+  id: number;
+  artist_id: number;
+  location: string;
+  start_date: string;
+  end_date: string | null;
+  description: string | null;
+}
+
+interface Artist {
+  id: number;
+  name_en: string | null;
+  name_he: string | null;
+  profile_image: string | null;
+}
+
+interface TourWithArtist {
+  tour_date: TourDate;
+  artist: Artist;
+}
 
 export default function NewTours() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [tours, setTours] = useState<TourWithArtist[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTours();
+  }, []);
+
+  const fetchTours = async () => {
+    try {
+      // Fetch featured/active artists first
+      const artistsRes = await fetch(`${API_URL}/artists/featured?limit=10`);
+      if (!artistsRes.ok) return;
+
+      const artists: Artist[] = await artistsRes.json();
+
+      // Fetch tour dates for each artist
+      const toursWithArtists: TourWithArtist[] = [];
+
+      for (const artist of artists) {
+        try {
+          const tourDatesRes = await fetch(`${API_URL}/artists/${artist.id}/tour-dates`);
+          if (tourDatesRes.ok) {
+            const tourDates: TourDate[] = await tourDatesRes.json();
+            // Add upcoming tour dates
+            const upcomingDates = tourDates.filter(
+              td => new Date(td.start_date) >= new Date()
+            );
+            for (const td of upcomingDates) {
+              toursWithArtists.push({ tour_date: td, artist });
+            }
+          }
+        } catch {
+          // Skip this artist if there's an error
+        }
+      }
+
+      // Sort by start date
+      toursWithArtists.sort((a, b) =>
+        new Date(a.tour_date.start_date).getTime() - new Date(b.tour_date.start_date).getTime()
+      );
+
+      setTours(toursWithArtists.slice(0, 8)); // Limit to 8 tours
+    } catch (error) {
+      console.error("Failed to fetch tours:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -56,6 +86,18 @@ export default function NewTours() {
       });
     }
   };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Don't render section if no tours
+  if (!isLoading && tours.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 bg-slate-50">
@@ -68,86 +110,105 @@ export default function NewTours() {
             <span className="text-lg">,</span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight">
-            NEW TOURS
+            UPCOMING TOURS
           </h2>
           <div className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-2 flex items-center gap-2 text-teal-400 opacity-60">
             <span className="text-lg">~</span>
           </div>
         </div>
 
-        {/* Tours Carousel */}
-        <div className="relative">
-          {/* Navigation Buttons */}
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors hidden md:flex"
-          >
-            <ChevronLeft size={24} className="text-slate-600" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors hidden md:flex"
-          >
-            <ChevronRight size={24} className="text-slate-600" />
-          </button>
-
-          {/* Scrollable Container */}
-          <div
-            ref={scrollRef}
-            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            {sampleTours.map((tour) => (
-              <Link
-                key={tour.id}
-                href={`/tours/${tour.id}`}
-                className="flex-shrink-0 w-72 snap-start group"
-              >
-                <div className="card card-hover overflow-hidden">
-                  {/* Tour Image */}
-                  <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 relative">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-5xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
-                        {tour.artistName.charAt(0)}
-                      </span>
-                    </div>
-                    {/* Spots Badge */}
-                    <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-medium text-slate-700">
-                      {tour.spotsLeft} spots left
-                    </div>
-                  </div>
-
-                  {/* Tour Info */}
-                  <div className="p-5">
-                    <p className="text-sm text-primary-600 font-medium mb-1">{tour.artistName}</p>
-                    <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-3">
-                      {tour.title}
-                    </h3>
-                    <div className="flex items-center gap-1 text-slate-500 text-sm mb-2">
-                      <MapPin size={14} />
-                      <span>{tour.regions.join(", ")}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-slate-500 text-sm">
-                      <Calendar size={14} />
-                      <span>{tour.startDate}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 size={32} className="animate-spin text-primary-500" />
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Tours Carousel */}
+            <div className="relative">
+              {/* Navigation Buttons */}
+              {tours.length > 3 && (
+                <>
+                  <button
+                    onClick={() => scroll("left")}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors hidden md:flex"
+                  >
+                    <ChevronLeft size={24} className="text-slate-600" />
+                  </button>
+                  <button
+                    onClick={() => scroll("right")}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 transition-colors hidden md:flex"
+                  >
+                    <ChevronRight size={24} className="text-slate-600" />
+                  </button>
+                </>
+              )}
 
-        {/* View All Tours Link */}
-        <div className="text-center mt-8">
-          <Link
-            href="/tours"
-            className="inline-flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
-          >
-            View All Tours
-            <ChevronRight size={18} />
-          </Link>
-        </div>
+              {/* Scrollable Container */}
+              <div
+                ref={scrollRef}
+                className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {tours.map((tour) => {
+                  const artistName = tour.artist.name_en || tour.artist.name_he || "Artist";
+                  return (
+                    <Link
+                      key={`${tour.artist.id}-${tour.tour_date.id}`}
+                      href={`/artists/${tour.artist.id}`}
+                      className="flex-shrink-0 w-72 snap-start group"
+                    >
+                      <div className="card card-hover overflow-hidden">
+                        {/* Tour Image */}
+                        <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 relative overflow-hidden">
+                          {tour.artist.profile_image ? (
+                            <img
+                              src={tour.artist.profile_image}
+                              alt={artistName}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-5xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
+                                {artistName.charAt(0)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Tour Info */}
+                        <div className="p-5">
+                          <p className="text-sm text-primary-600 font-medium mb-1">{artistName}</p>
+                          <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-3">
+                            {tour.tour_date.description || "On Tour"}
+                          </h3>
+                          <div className="flex items-center gap-1 text-slate-500 text-sm mb-2">
+                            <MapPin size={14} />
+                            <span>{tour.tour_date.location}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-slate-500 text-sm">
+                            <Calendar size={14} />
+                            <span>{formatDate(tour.tour_date.start_date)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* View All Artists Link */}
+            <div className="text-center mt-8">
+              <Link
+                href="/search"
+                className="inline-flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+              >
+                Browse All Artists
+                <ChevronRight size={18} />
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
