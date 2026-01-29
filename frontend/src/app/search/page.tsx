@@ -10,8 +10,12 @@ const categories = [
   { slug: "music", name: "Music" },
   { slug: "literature", name: "Literature" },
   { slug: "journalism", name: "Journalism" },
+  { slug: "film", name: "Film" },
+  { slug: "television", name: "Television" },
+  { slug: "religion", name: "Religion" },
   { slug: "judaism", name: "Judaism" },
   { slug: "comedy", name: "Comedy" },
+  { slug: "culinary", name: "Culinary Arts" },
   { slug: "inspiration", name: "Inspiration" },
 ];
 
