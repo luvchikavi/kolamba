@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { CheckCircle, ChevronDown, X, Search } from "lucide-react";
 import { API_URL } from "@/lib/api";
@@ -9,8 +9,12 @@ const categories = [
   "Music",
   "Literature",
   "Journalism",
+  "Film",
+  "Television",
+  "Religion",
   "Judaism",
   "Comedy",
+  "Culinary",
   "Inspiration",
 ];
 
@@ -78,6 +82,42 @@ const subcategories: Record<string, string[]> = {
     "Wellness / Mindfulness",
     "Storytelling",
   ],
+  Film: [
+    "Director",
+    "Screenwriter",
+    "Documentary",
+    "Actor",
+    "Producer",
+    "Film Critic",
+    "Animation",
+    "Short Films",
+  ],
+  Television: [
+    "TV Host",
+    "News Anchor",
+    "Talk Show",
+    "Documentary Series",
+    "Reality TV",
+    "Drama Series",
+    "Comedy Series",
+  ],
+  Religion: [
+    "Rabbi",
+    "Cantor",
+    "Torah Scholar",
+    "Interfaith Speaker",
+    "Religious Education",
+    "Spiritual Guidance",
+  ],
+  Culinary: [
+    "Chef",
+    "Food Writer",
+    "Cooking Demonstrations",
+    "Food Historian",
+    "Kosher Cuisine",
+    "Mediterranean Cooking",
+    "Baking / Pastry",
+  ],
 };
 
 const languages = [
@@ -133,6 +173,19 @@ export default function ArtistRegistrationPage() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [isAgent, setIsAgent] = useState(false);
   const [submittedArtistsCount, setSubmittedArtistsCount] = useState(0);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const initialFormData = {
     artistName: "",
@@ -513,7 +566,7 @@ export default function ArtistRegistrationPage() {
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Additional Categories <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
-                <div className="relative">
+                <div className="relative" ref={categoryDropdownRef}>
                   <input
                     type="text"
                     value={categorySearch}
