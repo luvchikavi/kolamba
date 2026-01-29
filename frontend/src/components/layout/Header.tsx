@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -15,10 +15,14 @@ interface UserInfo {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+
+  // Don't render header on dashboard pages (they have their own headers)
+  const isDashboard = pathname?.startsWith("/dashboard");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,6 +61,11 @@ export default function Header() {
     if (user?.role === "community") return "/dashboard/community";
     return "/";
   };
+
+  // Don't render on dashboard pages - they have their own headers
+  if (isDashboard) {
+    return null;
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">

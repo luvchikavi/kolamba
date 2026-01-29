@@ -11,6 +11,7 @@ import {
   X,
   Check,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface User {
   id: number;
@@ -82,14 +83,13 @@ export default function UsersPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const params = new URLSearchParams();
+            const params = new URLSearchParams();
       if (searchQuery) params.set("search", searchQuery);
       if (roleFilter) params.set("role", roleFilter);
       if (statusFilter) params.set("status", statusFilter);
 
       const response = await fetch(
-        `${apiUrl}/api/admin/users?${params.toString()}`,
+        `${API_URL}/admin/users?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -117,9 +117,8 @@ export default function UsersPage() {
   const handleUpdateUser = async (userId: number, updates: Partial<User>) => {
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-      const response = await fetch(`${apiUrl}/api/admin/users/${userId}`, {
+      
+      const response = await fetch(`${API_URL}/admin/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -143,9 +142,8 @@ export default function UsersPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-      const response = await fetch(`${apiUrl}/api/admin/users/${userId}`, {
+      
+      const response = await fetch(`${API_URL}/admin/users/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface ArtistInfo {
   id: number;
@@ -74,8 +75,7 @@ export default function BookingPage() {
   useEffect(() => {
     const fetchArtist = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await fetch(`${apiUrl}/api/artists/${artistId}`);
+                const response = await fetch(`${API_URL}/artists/${artistId}`);
         if (response.ok) {
           const data: ArtistInfo = await response.json();
           setArtist({
@@ -126,8 +126,7 @@ export default function BookingPage() {
     setSubmitError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const token = localStorage.getItem("access_token");
+            const token = localStorage.getItem("access_token");
 
       // Parse budget to get a numeric value
       let budgetValue: number | undefined;
@@ -138,7 +137,7 @@ export default function BookingPage() {
         }
       }
 
-      const response = await fetch(`${apiUrl}/api/bookings`, {
+      const response = await fetch(`${API_URL}/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

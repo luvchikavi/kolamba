@@ -11,6 +11,8 @@ from app.database import get_db
 from app.models.user import User
 from app.models.artist import Artist
 from app.models.community import Community
+from app.models.booking import Booking
+from app.models.artist_tour_date import ArtistTourDate
 from app.routers.auth import get_current_active_user
 from app.utils.security import get_password_hash
 from app.config import get_settings
@@ -77,6 +79,10 @@ class StatsResponse(BaseModel):
     pending_artists: int
     active_artists: int
     active_communities: int
+    total_bookings: int
+    pending_bookings: int
+    total_tour_dates: int
+    upcoming_tour_dates: int
 
 
 @router.get("/stats", response_model=StatsResponse)
@@ -115,6 +121,27 @@ async def get_admin_stats(
     )
     active_communities = active_communities_result.scalar()
 
+    # Total bookings
+    total_bookings_result = await db.execute(select(func.count(Booking.id)))
+    total_bookings = total_bookings_result.scalar()
+
+    # Pending bookings
+    pending_bookings_result = await db.execute(
+        select(func.count(Booking.id)).where(Booking.status == "pending")
+    )
+    pending_bookings = pending_bookings_result.scalar()
+
+    # Total tour dates
+    total_tour_dates_result = await db.execute(select(func.count(ArtistTourDate.id)))
+    total_tour_dates = total_tour_dates_result.scalar()
+
+    # Upcoming tour dates
+    from datetime import date
+    upcoming_tour_dates_result = await db.execute(
+        select(func.count(ArtistTourDate.id)).where(ArtistTourDate.start_date >= date.today())
+    )
+    upcoming_tour_dates = upcoming_tour_dates_result.scalar()
+
     return StatsResponse(
         total_users=total_users or 0,
         total_artists=total_artists or 0,
@@ -122,6 +149,10 @@ async def get_admin_stats(
         pending_artists=pending_artists or 0,
         active_artists=active_artists or 0,
         active_communities=active_communities or 0,
+        total_bookings=total_bookings or 0,
+        pending_bookings=pending_bookings or 0,
+        total_tour_dates=total_tour_dates or 0,
+        upcoming_tour_dates=upcoming_tour_dates or 0,
     )
 
 
@@ -408,3 +439,114 @@ async def seed_superusers(
         "created": created,
         "updated": updated,
     }
+
+
+@router.get("/bookings")
+async def list_bookings_admin(
+    status: Optional[str] = Query(None, description="Filter by status"),
+    limit: int = Query(50, le=100),
+    offset: int = Query(0),
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all bookings for admin management with artist and community names."""
+    query = (
+        select(Booking, Artist, Community)
+        .join(Artist, Booking.artist_id == Artist.id)
+        .join(Community, Booking.community_id == Community.id)
+        .order_by(Booking.created_at.desc())
+    )
+
+    if status:
+        query = query.where(Booking.status == status)
+
+    query = query.offset(offset).limit(limit)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    return [
+        {
+            "id": booking.id,
+            "artist_id": booking.artist_id,
+            "artist_name": artist.name_en or artist.name_he or "Unknown",
+            "community_id": booking.community_id,
+            "community_name": community.name or "Unknown",
+            "requested_date": booking.requested_date.isoformat() if booking.requested_date else None,
+            "location": booking.location,
+            "budget": booking.budget,
+            "status": booking.status,
+            "created_at": booking.created_at.isoformat(),
+        }
+        for booking, artist, community in rows
+    ]
+
+
+@router.put("/bookings/{booking_id}/status")
+async def update_booking_status(
+    booking_id: int,
+    status: str = Query(..., description="New status: pending, confirmed, rejected, cancelled"),
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update booking status."""
+    valid_statuses = ["pending", "confirmed", "rejected", "cancelled"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+
+    result = await db.execute(select(Booking).where(Booking.id == booking_id))
+    booking = result.scalar_one_or_none()
+
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    booking.status = status
+    await db.commit()
+
+    return {
+        "id": booking.id,
+        "status": booking.status,
+        "message": f"Booking status updated to {status}",
+    }
+
+
+@router.get("/tour-dates")
+async def list_tour_dates_admin(
+    upcoming_only: bool = Query(True, description="Only show upcoming tour dates"),
+    limit: int = Query(50, le=100),
+    offset: int = Query(0),
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all tour dates for admin management with artist names."""
+    from datetime import date as date_type
+    from sqlalchemy.orm import selectinload
+
+    query = (
+        select(ArtistTourDate)
+        .options(selectinload(ArtistTourDate.artist))
+        .order_by(ArtistTourDate.start_date)
+    )
+
+    if upcoming_only:
+        query = query.where(ArtistTourDate.start_date >= date_type.today())
+
+    query = query.offset(offset).limit(limit)
+
+    result = await db.execute(query)
+    tour_dates = result.scalars().all()
+
+    return [
+        {
+            "id": td.id,
+            "artist_id": td.artist_id,
+            "artist_name": td.artist.name_en or td.artist.name_he or "Unknown",
+            "location": td.location,
+            "start_date": td.start_date.isoformat(),
+            "end_date": td.end_date.isoformat() if td.end_date else None,
+            "description": td.description,
+            "is_booked": td.is_booked,
+            "created_at": td.created_at.isoformat(),
+        }
+        for td in tour_dates
+    ]

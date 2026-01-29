@@ -1,119 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MapPin, Star, Search, Filter, ChevronDown } from "lucide-react";
+import { MapPin, Star, Search, Filter, Loader2 } from "lucide-react";
+import { API_URL } from "@/lib/api";
+
+interface Category {
+  id: number;
+  name_en: string;
+  name_he: string;
+  slug: string;
+}
 
 interface Artist {
   id: number;
-  name: string;
-  price: number;
-  city: string;
-  country: string;
-  rating: number;
-  isFeatured: boolean;
-  categories: { name: string; slug: string }[];
+  name_en: string | null;
+  name_he: string | null;
+  profile_image: string | null;
+  price_single: number | null;
+  city: string | null;
+  country: string | null;
+  is_featured: boolean;
+  categories: Category[];
 }
 
-// Sample artists data
-const artists: Artist[] = [
-  {
-    id: 1,
-    name: "David Cohen",
-    price: 800,
-    city: "Tel Aviv",
-    country: "Israel",
-    rating: 4.9,
-    isFeatured: true,
-    categories: [
-      { name: "Music", slug: "music" },
-      { name: "Cantorial", slug: "cantorial" },
-    ],
-  },
-  {
-    id: 2,
-    name: "Sarah Levy",
-    price: 600,
-    city: "Jerusalem",
-    country: "Israel",
-    rating: 4.8,
-    isFeatured: true,
-    categories: [{ name: "Theater", slug: "theater" }],
-  },
-  {
-    id: 3,
-    name: "Yossi Mizrachi",
-    price: 500,
-    city: "Haifa",
-    country: "Israel",
-    rating: 4.7,
-    isFeatured: false,
-    categories: [
-      { name: "Comedy", slug: "comedy" },
-      { name: "Stand-up", slug: "standup" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Miri Golan",
-    price: 700,
-    city: "Tel Aviv",
-    country: "Israel",
-    rating: 4.9,
-    isFeatured: true,
-    categories: [{ name: "Dance", slug: "dance" }],
-  },
-  {
-    id: 5,
-    name: "Avi Ben-David",
-    price: 450,
-    city: "Be'er Sheva",
-    country: "Israel",
-    rating: 4.6,
-    isFeatured: false,
-    categories: [{ name: "Lectures", slug: "lectures" }],
-  },
-  {
-    id: 6,
-    name: "Rachel Singer",
-    price: 550,
-    city: "Netanya",
-    country: "Israel",
-    rating: 4.8,
-    isFeatured: false,
-    categories: [
-      { name: "Music", slug: "music" },
-      { name: "Workshops", slug: "workshops" },
-    ],
-  },
-  {
-    id: 7,
-    name: "Michael Stern",
-    price: 900,
-    city: "Tel Aviv",
-    country: "Israel",
-    rating: 5.0,
-    isFeatured: true,
-    categories: [{ name: "Film", slug: "film" }],
-  },
-  {
-    id: 8,
-    name: "Noa Shapiro",
-    price: 400,
-    city: "Eilat",
-    country: "Israel",
-    rating: 4.5,
-    isFeatured: false,
-    categories: [{ name: "Visual Arts", slug: "visual-arts" }],
-  },
-];
-
 export default function ArtistsPage() {
+  const [artists, setArtists] = useState<Artist[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredArtists = artists.filter((artist) =>
-    artist.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const res = await fetch(`${API_URL}/artists`);
+        if (res.ok) {
+          const data = await res.json();
+          setArtists(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch artists:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchArtists();
+  }, []);
+
+  const filteredArtists = artists.filter((artist) => {
+    const name = artist.name_en || artist.name_he || "";
+    return name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
@@ -168,66 +104,89 @@ export default function ArtistsPage() {
 
       {/* Artists Grid */}
       <div className="container-default py-10">
-        <p className="text-slate-600 mb-6">
-          Found <span className="font-semibold text-slate-900">{filteredArtists.length}</span> artists
-        </p>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 size={40} className="animate-spin text-primary-500" />
+          </div>
+        ) : (
+          <>
+            <p className="text-slate-600 mb-6">
+              Found <span className="font-semibold text-slate-900">{filteredArtists.length}</span> artists
+            </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredArtists.map((artist) => (
-            <Link
-              key={artist.id}
-              href={`/artists/${artist.id}`}
-              className="group card card-hover overflow-hidden"
-            >
-              {/* Image / Avatar */}
-              <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
-                <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
-                  {artist.name.charAt(0)}
-                </span>
-                {artist.isFeatured && (
-                  <div className="absolute top-3 left-3">
-                    <span className="badge-accent text-xs">Featured</span>
-                  </div>
-                )}
+            {filteredArtists.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-5xl mb-4">😕</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">No artists found</h3>
+                <p className="text-slate-600">Try a different search term</p>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filteredArtists.map((artist) => {
+                  const artistName = artist.name_en || artist.name_he || "Artist";
+                  return (
+                    <Link
+                      key={artist.id}
+                      href={`/artists/${artist.id}`}
+                      className="group card card-hover overflow-hidden"
+                    >
+                      {/* Image / Avatar */}
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
+                        {artist.profile_image ? (
+                          <img
+                            src={artist.profile_image}
+                            alt={artistName}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
+                            {artistName.charAt(0)}
+                          </span>
+                        )}
+                        {artist.is_featured && (
+                          <div className="absolute top-3 left-3">
+                            <span className="badge-accent text-xs">Featured</span>
+                          </div>
+                        )}
+                      </div>
 
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
-                    {artist.name}
-                  </h3>
-                  <div className="flex items-center gap-1 text-amber-500">
-                    <Star size={14} fill="currentColor" />
-                    <span className="text-sm font-medium text-slate-700">
-                      {artist.rating}
-                    </span>
-                  </div>
-                </div>
+                      {/* Content */}
+                      <div className="p-5">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+                            {artistName}
+                          </h3>
+                        </div>
 
-                {/* Categories */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {artist.categories.slice(0, 2).map((cat) => (
-                    <span key={cat.slug} className="badge-primary text-xs">
-                      {cat.name}
-                    </span>
-                  ))}
-                </div>
+                        {/* Categories */}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {artist.categories?.slice(0, 2).map((cat) => (
+                            <span key={cat.slug} className="badge-primary text-xs">
+                              {cat.name_en}
+                            </span>
+                          ))}
+                        </div>
 
-                {/* Location & Price */}
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-slate-500">
-                    <MapPin size={14} />
-                    <span>{artist.city}</span>
-                  </div>
-                  <div className="font-semibold text-slate-900">
-                    From ${artist.price}
-                  </div>
-                </div>
+                        {/* Location & Price */}
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1 text-slate-500">
+                            <MapPin size={14} />
+                            <span>{artist.city || artist.country || "Israel"}</span>
+                          </div>
+                          {artist.price_single && (
+                            <div className="font-semibold text-slate-900">
+                              From ${artist.price_single}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            </Link>
-          ))}
-        </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

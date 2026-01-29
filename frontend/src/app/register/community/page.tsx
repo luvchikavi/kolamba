@@ -207,7 +207,9 @@ export default function CommunityRegistrationPage() {
       newErrors.email = "Valid email is required";
     }
     if (!formData.phone || formData.phone.length < 6) {
-      newErrors.phone = "Phone number is required";
+      newErrors.phone = "Please enter a valid phone number (at least 6 digits)";
+    } else if (formData.phone.length > 15) {
+      newErrors.phone = "Phone number is too long";
     }
     if (!formData.acceptTerms) {
       newErrors.acceptTerms = "You must accept the Terms of Service";
@@ -575,10 +577,13 @@ export default function CommunityRegistrationPage() {
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    placeholder=""
+                    onChange={(e) => {
+                      // Only allow digits
+                      const digits = e.target.value.replace(/\D/g, "");
+                      setFormData({ ...formData, phone: digits });
+                    }}
+                    placeholder="1234567890"
+                    maxLength={15}
                     className={`flex-1 px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
                       errors.phone
                         ? "border-red-300 focus:border-red-400"

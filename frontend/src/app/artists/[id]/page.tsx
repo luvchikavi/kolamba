@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Loader2,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface Category {
   id: number;
@@ -53,10 +54,7 @@ export default function ArtistDetailPage({
   useEffect(() => {
     const fetchArtist = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const normalizedUrl = apiUrl.endsWith("/api") ? apiUrl : `${apiUrl}/api`;
-
-        const response = await fetch(`${normalizedUrl}/artists/${params.id}`);
+        const response = await fetch(`${API_URL}/artists/${params.id}`);
         if (!response.ok) {
           throw new Error("Artist not found");
         }

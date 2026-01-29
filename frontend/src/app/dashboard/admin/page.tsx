@@ -12,7 +12,12 @@ import {
   AlertCircle,
   ChevronRight,
   Loader2,
+  CalendarCheck,
+  FileText,
+  MapPin,
+  Plane,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface Stats {
   total_users: number;
@@ -21,6 +26,10 @@ interface Stats {
   pending_artists: number;
   active_artists: number;
   active_communities: number;
+  total_bookings: number;
+  pending_bookings: number;
+  total_tour_dates: number;
+  upcoming_tour_dates: number;
 }
 
 interface RecentUser {
@@ -38,6 +47,29 @@ interface PendingArtist {
   email: string;
   city: string | null;
   created_at: string;
+}
+
+interface RecentBooking {
+  id: number;
+  artist_id: number;
+  artist_name: string;
+  community_id: number;
+  community_name: string;
+  requested_date: string | null;
+  location: string | null;
+  status: string;
+  created_at: string;
+}
+
+interface RecentTourDate {
+  id: number;
+  artist_id: number;
+  artist_name: string;
+  location: string;
+  start_date: string;
+  end_date: string | null;
+  description: string | null;
+  is_booked: boolean;
 }
 
 function StatCard({
@@ -79,6 +111,8 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [pendingArtists, setPendingArtists] = useState<PendingArtist[]>([]);
+  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
+  const [recentTourDates, setRecentTourDates] = useState<RecentTourDate[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -93,11 +127,10 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const headers = { Authorization: `Bearer ${token}` };
 
       // Check if user is superuser
-      const meRes = await fetch(`${apiUrl}/api/auth/me`, { headers });
+      const meRes = await fetch(`${API_URL}/auth/me`, { headers });
       if (!meRes.ok) {
         router.push("/login");
         return;
@@ -108,11 +141,13 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      // Fetch stats, recent users, and pending artists in parallel
-      const [statsRes, usersRes, artistsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/admin/stats`, { headers }),
-        fetch(`${apiUrl}/api/admin/users?limit=5`, { headers }),
-        fetch(`${apiUrl}/api/admin/artists?status=pending&limit=5`, { headers }),
+      // Fetch stats, recent users, pending artists, bookings, and tour dates in parallel
+      const [statsRes, usersRes, artistsRes, bookingsRes, tourDatesRes] = await Promise.all([
+        fetch(`${API_URL}/admin/stats`, { headers }),
+        fetch(`${API_URL}/admin/users?limit=5`, { headers }),
+        fetch(`${API_URL}/admin/artists?status=pending&limit=5`, { headers }),
+        fetch(`${API_URL}/admin/bookings?limit=5`, { headers }),
+        fetch(`${API_URL}/admin/tour-dates?limit=5`, { headers }),
       ]);
 
       if (statsRes.ok) {
@@ -129,6 +164,16 @@ export default function AdminDashboardPage() {
         const artistsData = await artistsRes.json();
         setPendingArtists(artistsData);
       }
+
+      if (bookingsRes.ok) {
+        const bookingsData = await bookingsRes.json();
+        setRecentBookings(bookingsData);
+      }
+
+      if (tourDatesRes.ok) {
+        const tourDatesData = await tourDatesRes.json();
+        setRecentTourDates(tourDatesData);
+      }
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
       setError("Failed to load dashboard data");
@@ -140,10 +185,9 @@ export default function AdminDashboardPage() {
   const handleApproveArtist = async (artistId: number) => {
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const response = await fetch(
-        `${apiUrl}/api/admin/artists/${artistId}/status?status=active`,
+        `${API_URL}/admin/artists/${artistId}/status?status=active`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -199,7 +243,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Users"
           value={stats?.total_users || 0}
@@ -221,15 +265,41 @@ export default function AdminDashboardPage() {
           color="bg-emerald-500"
         />
         <StatCard
-          title="Pending Approvals"
+          title="Pending Artists"
           value={stats?.pending_artists || 0}
           icon={Clock}
           color="bg-amber-500"
           href="/dashboard/admin/artists?status=pending"
         />
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Total Bookings"
+          value={stats?.total_bookings || 0}
+          icon={CalendarCheck}
+          color="bg-pink-500"
+        />
+        <StatCard
+          title="Pending Bookings"
+          value={stats?.pending_bookings || 0}
+          icon={FileText}
+          color="bg-orange-500"
+        />
+        <StatCard
+          title="Total Tour Dates"
+          value={stats?.total_tour_dates || 0}
+          icon={MapPin}
+          color="bg-cyan-500"
+        />
+        <StatCard
+          title="Upcoming Tours"
+          value={stats?.upcoming_tour_dates || 0}
+          icon={Plane}
+          color="bg-indigo-500"
+        />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
         {/* Pending Artists */}
         <div className="card">
           <div className="p-6 border-b border-slate-100">
@@ -318,6 +388,105 @@ export default function AdminDashboardPage() {
                       {user.role}
                     </span>
                     <ChevronRight size={16} className="text-slate-400" />
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recent Bookings */}
+        <div className="card">
+          <div className="p-6 border-b border-slate-100">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Recent Bookings</h2>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {recentBookings.length === 0 ? (
+              <div className="p-6 text-center text-slate-500">
+                <CalendarCheck size={32} className="text-slate-300 mx-auto mb-2" />
+                <p>No bookings yet</p>
+              </div>
+            ) : (
+              recentBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="p-4 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-slate-900 truncate">
+                        {booking.artist_name}
+                      </p>
+                      <p className="text-sm text-slate-500 truncate">
+                        {booking.community_name}
+                      </p>
+                      {booking.requested_date && (
+                        <p className="text-xs text-slate-400">
+                          {new Date(booking.requested_date).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <span
+                      className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap ${
+                        booking.status === "confirmed"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : booking.status === "pending"
+                          ? "bg-amber-100 text-amber-700"
+                          : booking.status === "rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {booking.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Upcoming Tour Dates */}
+        <div className="card">
+          <div className="p-6 border-b border-slate-100">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Upcoming Tour Dates</h2>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {recentTourDates.length === 0 ? (
+              <div className="p-6 text-center text-slate-500">
+                <MapPin size={32} className="text-slate-300 mx-auto mb-2" />
+                <p>No upcoming tour dates</p>
+              </div>
+            ) : (
+              recentTourDates.map((tourDate) => (
+                <Link
+                  key={tourDate.id}
+                  href={`/artists/${tourDate.artist_id}`}
+                  className="p-4 hover:bg-slate-50 transition-colors block"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-slate-900 truncate">
+                        {tourDate.artist_name}
+                      </p>
+                      <div className="flex items-center gap-1 text-sm text-slate-500">
+                        <MapPin size={12} />
+                        <span className="truncate">{tourDate.location}</span>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        {new Date(tourDate.start_date).toLocaleDateString()}
+                        {tourDate.end_date && ` - ${new Date(tourDate.end_date).toLocaleDateString()}`}
+                      </p>
+                    </div>
+                    {tourDate.is_booked && (
+                      <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                        Booked
+                      </span>
+                    )}
                   </div>
                 </Link>
               ))

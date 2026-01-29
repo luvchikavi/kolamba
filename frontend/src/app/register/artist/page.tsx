@@ -5,17 +5,18 @@ import Link from "next/link";
 import { CheckCircle, ChevronDown, X, Search } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
+// The 10 official categories matching the database
 const categories = [
   "Music",
+  "Dance",
+  "Comedy",
+  "Theater",
+  "Visual Arts",
   "Literature",
-  "Journalism",
   "Film",
   "Television",
   "Religion",
-  "Judaism",
-  "Comedy",
   "Culinary",
-  "Inspiration",
 ];
 
 const subcategories: Record<string, string[]> = {
@@ -35,34 +36,15 @@ const subcategories: Record<string, string[]> = {
     "A Cappella",
     "Children's Music",
   ],
-  Literature: [
-    "Poetry",
-    "Fiction",
-    "Non-Fiction",
-    "Playwriting",
-    "Screenwriting",
-    "Children's Literature",
-    "Storytelling",
-    "Spoken Word",
-  ],
-  Journalism: [
-    "Print",
-    "Broadcast",
-    "Digital",
-    "Investigative",
-    "Political Analysis",
-    "War Correspondence",
-    "Cultural Reporting",
-  ],
-  Judaism: [
-    "Torah Study",
-    "Jewish History",
-    "Jewish Philosophy",
-    "Kabbalah / Mysticism",
-    "Halacha",
-    "Israel Education",
-    "Holocaust Education",
-    "Interfaith Dialogue",
+  Dance: [
+    "Israeli Folk Dance",
+    "Contemporary",
+    "Ballet",
+    "Hip Hop",
+    "Ballroom",
+    "Modern",
+    "Choreography",
+    "Dance Instruction",
   ],
   Comedy: [
     "Stand-up",
@@ -73,14 +55,35 @@ const subcategories: Record<string, string[]> = {
     "Physical Comedy",
     "Family-Friendly",
   ],
-  Inspiration: [
-    "Motivational Speaking",
-    "Life Coaching",
-    "Leadership",
-    "Personal Development",
-    "Entrepreneurship",
-    "Wellness / Mindfulness",
+  Theater: [
+    "Acting",
+    "Directing",
+    "Playwriting",
+    "Musical Theater",
+    "Drama",
+    "Children's Theater",
+    "Puppetry",
     "Storytelling",
+  ],
+  "Visual Arts": [
+    "Painting",
+    "Sculpture",
+    "Photography",
+    "Digital Art",
+    "Installation Art",
+    "Art Workshops",
+    "Judaica Art",
+    "Calligraphy",
+  ],
+  Literature: [
+    "Poetry",
+    "Fiction",
+    "Non-Fiction",
+    "Screenwriting",
+    "Children's Literature",
+    "Storytelling",
+    "Spoken Word",
+    "Journalism",
   ],
   Film: [
     "Director",
@@ -108,6 +111,8 @@ const subcategories: Record<string, string[]> = {
     "Interfaith Speaker",
     "Religious Education",
     "Spiritual Guidance",
+    "Jewish History",
+    "Holocaust Education",
   ],
   Culinary: [
     "Chef",
@@ -746,8 +751,13 @@ export default function ArtistRegistrationPage() {
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="50-123-4567"
+                    onChange={(e) => {
+                      // Only allow digits
+                      const digits = e.target.value.replace(/\D/g, "");
+                      setFormData({ ...formData, phone: digits });
+                    }}
+                    placeholder="501234567"
+                    maxLength={15}
                     className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
                 </div>

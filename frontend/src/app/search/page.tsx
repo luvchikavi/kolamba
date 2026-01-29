@@ -5,19 +5,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Search, Filter, X, MapPin, Star, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchArtists } from "@/hooks/useArtists";
+import { API_URL } from "@/lib/api";
 
-const categories = [
-  { slug: "music", name: "Music" },
-  { slug: "literature", name: "Literature" },
-  { slug: "journalism", name: "Journalism" },
-  { slug: "film", name: "Film" },
-  { slug: "television", name: "Television" },
-  { slug: "religion", name: "Religion" },
-  { slug: "judaism", name: "Judaism" },
-  { slug: "comedy", name: "Comedy" },
-  { slug: "culinary", name: "Culinary Arts" },
-  { slug: "inspiration", name: "Inspiration" },
-];
+interface Category {
+  id: number;
+  name_en: string;
+  name_he: string;
+  slug: string;
+}
 
 const languages = [
   "Hebrew",
@@ -36,6 +31,7 @@ function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [categories, setCategories] = useState<Category[]>([]);
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
   const [minPrice, setMinPrice] = useState(searchParams.get("min_price") || "");
@@ -44,6 +40,22 @@ function SearchContent() {
   const [sortBy, setSortBy] = useState(searchParams.get("sort_by") || "name");
   const [sortOrder, setSortOrder] = useState(searchParams.get("sort_order") || "asc");
   const [showFilters, setShowFilters] = useState(false);
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_URL}/categories`);
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Build search params for API
   const apiParams = {
@@ -168,7 +180,7 @@ function SearchContent() {
                         onChange={() => setSelectedCategory(cat.slug)}
                         className="text-primary-500 focus:ring-primary-400"
                       />
-                      <span className="text-sm text-slate-600">{cat.name}</span>
+                      <span className="text-sm text-slate-600">{cat.name_en}</span>
                     </label>
                   ))}
                 </div>
@@ -250,7 +262,7 @@ function SearchContent() {
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedCategory && (
                   <span className="badge-primary flex items-center gap-1">
-                    {categories.find((c) => c.slug === selectedCategory)?.name}
+                    {categories.find((c) => c.slug === selectedCategory)?.name_en || selectedCategory}
                     <button onClick={() => setSelectedCategory("")}><X size={14} /></button>
                   </span>
                 )}

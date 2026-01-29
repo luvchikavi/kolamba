@@ -16,6 +16,7 @@ import {
   ExternalLink,
   X,
 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 interface Artist {
   id: number;
@@ -150,13 +151,12 @@ export default function ArtistsPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const params = new URLSearchParams();
+            const params = new URLSearchParams();
       if (searchQuery) params.set("search", searchQuery);
       if (statusFilter) params.set("status", statusFilter);
 
       const response = await fetch(
-        `${apiUrl}/api/admin/artists?${params.toString()}`,
+        `${API_URL}/admin/artists?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -184,9 +184,8 @@ export default function ArtistsPage() {
   const handleUpdateStatus = async (artistId: number, newStatus: string, reason?: string) => {
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-      const url = new URL(`${apiUrl}/api/admin/artists/${artistId}/status`);
+      
+      const url = new URL(`${API_URL}/admin/artists/${artistId}/status`);
       url.searchParams.set("status", newStatus);
       if (reason) {
         url.searchParams.set("reason", reason);
@@ -221,10 +220,9 @@ export default function ArtistsPage() {
   const handleToggleFeatured = async (artistId: number, isFeatured: boolean) => {
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
+      
       const response = await fetch(
-        `${apiUrl}/api/admin/artists/${artistId}/featured?is_featured=${!isFeatured}`,
+        `${API_URL}/admin/artists/${artistId}/featured?is_featured=${!isFeatured}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
