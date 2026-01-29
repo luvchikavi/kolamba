@@ -18,6 +18,7 @@ from app.schemas.tour import NearbyTourResponse
 from app.schemas.artist_tour_date import NearbyTouringArtist, ArtistTourDateResponse
 from app.services.tour_grouping import find_nearby_tours, haversine_distance
 from app.services.geocoding import geocode_location
+from app.routers.auth import get_current_active_user
 
 router = APIRouter()
 
@@ -74,6 +75,70 @@ async def get_community_options():
         contact_roles=CONTACT_ROLES,
         languages=["English", "Hebrew", "French", "Spanish", "Russian", "German", "Portuguese"],
     )
+
+
+@router.get("/me", response_model=CommunityResponse)
+async def get_my_community_profile(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get current user's community profile."""
+    if current_user.role != "community":
+        raise HTTPException(status_code=403, detail="Not a community account")
+
+    result = await db.execute(
+        select(Community).where(Community.user_id == current_user.id)
+    )
+    community = result.scalar_one_or_none()
+
+    if not community:
+        raise HTTPException(status_code=404, detail="Community profile not found")
+
+    return community
+
+
+@router.put("/me", response_model=CommunityResponse)
+async def update_my_community_profile(
+    update_data: CommunityUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update current user's community profile."""
+    if current_user.role != "community":
+        raise HTTPException(status_code=403, detail="Not a community account")
+
+    result = await db.execute(
+        select(Community).where(Community.user_id == current_user.id)
+    )
+    community = result.scalar_one_or_none()
+
+    if not community:
+        raise HTTPException(status_code=404, detail="Community profile not found")
+
+    # If name is being updated, check for duplicates
+    if update_data.name and update_data.name.lower() != community.name.lower():
+        existing = await db.execute(
+            select(Community).where(
+                func.lower(Community.name) == update_data.name.lower(),
+                Community.id != community.id
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=400,
+                detail="A community with this name already exists."
+            )
+
+    # Update fields
+    update_dict = update_data.model_dump(exclude_unset=True)
+    for field, value in update_dict.items():
+        if hasattr(community, field):
+            setattr(community, field, value)
+
+    await db.commit()
+    await db.refresh(community)
+
+    return community
 
 
 @router.get("/check-name", response_model=DuplicateCheckResponse)

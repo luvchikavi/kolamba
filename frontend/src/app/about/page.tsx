@@ -9,7 +9,7 @@ export default function AboutPage() {
       {/* Hero */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
         <div className="container-default py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Kolamba</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">כל העולם במה | All The World&apos;s a Stage</h1>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto">
             The Jewish Culture Club - Connecting Israeli artists with Jewish communities worldwide
           </p>
@@ -124,24 +124,25 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* The Vision */}
+          {/* Future Vision */}
           <section className="card p-8 md:p-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
                 <Globe className="text-white" size={28} />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold">The Vision</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">Future Vision</h2>
             </div>
             <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-teal-400 rounded-full mb-6" />
             <p className="text-slate-300 leading-relaxed text-lg mb-4">
               Following our initial US operations, we plan to expand to encompass global Jewish communities.
-              International travel enriches creators as cultural ambassadors, bringing authentic Israeli and
-              Jewish culture to every corner of the world.
+              Every talent who travels abroad returns home enriched by the diversity of Jewish life, becoming
+              a bridge builder and agent of change within Israeli society itself.
             </p>
             <p className="text-slate-300 leading-relaxed text-lg">
-              Our long-term ambition is to become the <span className="text-white font-semibold">&quot;Google-meets-Airbnb of Jewish culture&quot;</span> -
-              a comprehensive platform featuring digital publications, culinary resources, and annual festivals
-              that strengthen Jewish identity and connection across generations.
+              Our long-term ambition is to serve as the <span className="text-white font-semibold">global hub for Jewish culture</span> and
+              become a comprehensive platform featuring an online culture magazine, culinary guide, and annual festival.
+              Kolamba will transform the Jewish world into a vibrant global village, strengthening Jewish identity
+              and shaping the next generation of Jewish connection.
             </p>
           </section>
 
@@ -162,23 +163,25 @@ export default function AboutPage() {
                   <span className="text-4xl font-bold text-primary-600">AI</span>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Avital Indig</h3>
-                <p className="text-primary-600 font-medium mb-3">Co-Founder</p>
+                <p className="text-primary-600 font-medium mb-3">Founder & CEO</p>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Award-winning journalist and 2025 B&apos;nai B&apos;rith Journalism Award recipient with expertise
-                  in diaspora coverage. Holds an M.A. in American Jewish Studies.
+                  Award-winning journalist with expertise in culture and diaspora coverage.
+                  Holds an M.A. in American Jewish Studies and serves as a delegate to the World Zionist Congress.
                 </p>
               </div>
 
-              {/* Michal */}
+              {/* Avi */}
               <div className="text-center">
                 <div className="w-32 h-32 mx-auto mb-4 rounded-full bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-teal-600">MW</span>
+                  <span className="text-4xl font-bold text-teal-600">AL</span>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-1">Michal Wachtel Halamish</h3>
-                <p className="text-primary-600 font-medium mb-3">Co-Founder</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">Avi Luvchik</h3>
+                <p className="text-primary-600 font-medium mb-3">Head of Technology</p>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Veteran technology executive and Founder/CEO of HaK&apos;vutza nonprofit,
-                  specializing in transparent philanthropic connections.
+                  Tech entrepreneur with expertise in digital transformation and platform development.
+                  With a PhD in Physics from Imperial College London and experience leading technology
+                  initiatives, Avi builds the digital infrastructure connecting Israeli artists with
+                  Jewish communities worldwide.
                 </p>
               </div>
 
@@ -188,7 +191,7 @@ export default function AboutPage() {
                   <span className="text-4xl font-bold text-violet-600">EK</span>
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Einat Kapach</h3>
-                <p className="text-primary-600 font-medium mb-3">Co-Founder</p>
+                <p className="text-primary-600 font-medium mb-3">Content Development Manager</p>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Content creator, screenwriter, and director. Former External Relations Head at
                   Ma&apos;aleh Film School, focusing on cinema and identity education.

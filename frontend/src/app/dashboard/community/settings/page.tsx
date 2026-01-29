@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2, CheckCircle, ChevronDown } from "lucide-react";
 
+// Normalize API URL - ensure it ends with /api
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
+
 interface CommunityProfile {
   id: number;
-  name: string;
-  community_name: string;
+  name: string;  // Community name
   location: string;
-  email: string;
   phone?: string;
   language: string;
   member_count_min?: number;
@@ -41,8 +43,7 @@ export default function CommunitySettingsPage() {
   const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "",
-    community_name: "",
+    name: "",  // Community name
     location: "",
     phone: "",
     language: "English",
@@ -63,8 +64,7 @@ export default function CommunitySettingsPage() {
         return;
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const response = await fetch(`${apiUrl}/api/communities/me`, {
+      const response = await fetch(`${API_URL}/communities/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -80,8 +80,7 @@ export default function CommunitySettingsPage() {
       const data = await response.json();
       setProfile(data);
       setFormData({
-        name: data.name || "",
-        community_name: data.community_name || "",
+        name: data.name || "",  // Community name
         location: data.location || "",
         phone: data.phone || "",
         language: data.language || "English",
@@ -105,17 +104,15 @@ export default function CommunitySettingsPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      const response = await fetch(`${apiUrl}/api/communities/me`, {
+      const response = await fetch(`${API_URL}/communities/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: formData.name,
-          community_name: formData.community_name,
+          name: formData.name,  // Community name
           location: formData.location,
           phone: formData.phone || null,
           language: formData.language,
@@ -180,19 +177,6 @@ export default function CommunitySettingsPage() {
         {/* Profile Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-sm">
           <div className="space-y-6">
-            {/* Contact Name */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Contact Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 transition-colors"
-              />
-            </div>
-
             {/* Community Name */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -200,8 +184,8 @@ export default function CommunitySettingsPage() {
               </label>
               <input
                 type="text"
-                value={formData.community_name}
-                onChange={(e) => setFormData({ ...formData, community_name: e.target.value })}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 transition-colors"
               />
             </div>
