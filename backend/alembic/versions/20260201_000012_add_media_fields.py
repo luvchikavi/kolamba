@@ -26,10 +26,10 @@ def upgrade() -> None:
     op.add_column("artists", sa.Column("linkedin", sa.String(500), nullable=True))
 
     # Add media fields
-    op.add_column("artists", sa.Column("video_urls", ARRAY(sa.String(500)), server_default="{}"))
-    op.add_column("artists", sa.Column("portfolio_images", ARRAY(sa.String(500)), server_default="{}"))
-    op.add_column("artists", sa.Column("spotify_links", ARRAY(sa.String(500)), server_default="{}"))
-    op.add_column("artists", sa.Column("media_links", ARRAY(sa.String(500)), server_default="{}"))
+    op.add_column("artists", sa.Column("video_urls", ARRAY(sa.String(500)), nullable=True))
+    op.add_column("artists", sa.Column("portfolio_images", ARRAY(sa.String(500)), nullable=True))
+    op.add_column("artists", sa.Column("spotify_links", ARRAY(sa.String(500)), nullable=True))
+    op.add_column("artists", sa.Column("media_links", ARRAY(sa.String(500)), nullable=True))
 
 
 def downgrade() -> None:
