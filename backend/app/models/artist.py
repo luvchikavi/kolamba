@@ -84,7 +84,7 @@ class Artist(Base):
     )
 
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="artist")
+    user: Mapped["User"] = relationship("User", back_populates="artist", foreign_keys=[user_id])
     categories: Mapped[list["Category"]] = relationship(
         "Category",
         secondary="artist_categories",

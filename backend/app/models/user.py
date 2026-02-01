@@ -32,7 +32,8 @@ class User(Base):
 
     # Relationships
     artist: Mapped[Optional["Artist"]] = relationship(
-        "Artist", back_populates="user", uselist=False
+        "Artist", back_populates="user", uselist=False,
+        foreign_keys="[Artist.user_id]"
     )
     community: Mapped[Optional["Community"]] = relationship(
         "Community", back_populates="user", uselist=False
