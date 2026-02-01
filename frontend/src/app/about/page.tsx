@@ -9,10 +9,7 @@ export default function AboutPage() {
       {/* Hero */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
         <div className="container-default py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">כל העולם במה | All The World&apos;s a Stage</h1>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            The Jewish Culture Club - Connecting Israeli artists with Jewish communities worldwide
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold">כל העולם במה | All The World&apos;s a Stage</h1>
         </div>
       </div>
 

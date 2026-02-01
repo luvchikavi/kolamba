@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     # Email
     resend_api_key: str = ""
 
+    # Cloudinary (for media uploads)
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+
     # Environment
     env: str = "development"
     debug: bool = True

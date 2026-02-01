@@ -40,9 +40,11 @@ class ArtistRegisterRequest(BaseModel):
     name: str  # Full legal name
     artist_name: str  # Stage name
     category: str  # Primary category name
+    subcategories: list[str] = []  # Subcategories within primary category
     other_categories: list[str] = []  # Additional category names
     bio: Optional[str] = None
     city: Optional[str] = None
+    country: str = "Israel"
     languages: list[str] = ["English"]
     performance_types: list[str] = []
     price_range_min: Optional[int] = None
@@ -51,6 +53,16 @@ class ArtistRegisterRequest(BaseModel):
     website: Optional[str] = None
     instagram: Optional[str] = None
     youtube: Optional[str] = None
+    facebook: Optional[str] = None
+    twitter: Optional[str] = None
+    linkedin: Optional[str] = None
+    # Media fields
+    profile_image: Optional[str] = None  # Profile image URL
+    video_urls: list[str] = []  # Video clip URLs
+    portfolio_images: list[str] = []  # Gallery images URLs
+    spotify_links: list[str] = []  # Spotify track/album links
+    media_links: list[str] = []  # Press/media article links
+    is_agent_submission: bool = False  # Whether this is submitted by an agent
 
 
 async def get_current_user_optional(
@@ -107,10 +119,10 @@ async def register(
 ):
     """Register new user (artist, community, or admin)."""
     # Validate role
-    if request.role not in ["artist", "community", "admin"]:
+    if request.role not in ["artist", "community", "admin", "agent"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Role must be 'artist', 'community', or 'admin'",
+            detail="Role must be 'artist', 'community', 'admin', or 'agent'",
         )
 
     # Check if email already exists
@@ -153,31 +165,83 @@ async def register_artist(
     db: AsyncSession = Depends(get_db),
 ):
     """Register new artist with profile."""
-    # Check if email already exists
-    existing_user = await db.execute(
-        select(User).where(User.email == request.email)
-    )
-    if existing_user.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
-        )
-
-    # Generate a temporary password (artist will need to set it on first login)
     import secrets
-    temp_password = secrets.token_urlsafe(16)
 
-    # Create user with artist role
-    user = User(
-        email=request.email,
-        password_hash=get_password_hash(temp_password),
-        name=request.name,
-        role="artist",
-        status="active",  # MVP: Auto-approve artists
-        is_active=True,
-    )
-    db.add(user)
-    await db.flush()
+    agent_user = None
+
+    if request.is_agent_submission:
+        # Agent mode: Check if agent already exists
+        existing_agent = await db.execute(
+            select(User).where(User.email == request.email, User.role == "agent")
+        )
+        agent_user = existing_agent.scalar_one_or_none()
+
+        if not agent_user:
+            # Check if email exists with different role
+            existing_user = await db.execute(
+                select(User).where(User.email == request.email)
+            )
+            if existing_user.scalar_one_or_none():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered with a different role",
+                )
+
+            # Create agent user
+            temp_password = secrets.token_urlsafe(16)
+            agent_user = User(
+                email=request.email,
+                password_hash=get_password_hash(temp_password),
+                name=request.name,
+                role="agent",
+                status="active",
+                is_active=True,
+            )
+            db.add(agent_user)
+            await db.flush()
+
+        # Generate unique email for the artist (based on stage name + random suffix)
+        artist_email_base = request.artist_name.lower().replace(" ", ".").replace("'", "")
+        artist_email = f"{artist_email_base}.{secrets.token_hex(4)}@artist.kolamba.com"
+
+        # Create artist user account
+        artist_password = secrets.token_urlsafe(16)
+        artist_user = User(
+            email=artist_email,
+            password_hash=get_password_hash(artist_password),
+            name=request.artist_name,
+            role="artist",
+            status="active",
+            is_active=True,
+        )
+        db.add(artist_user)
+        await db.flush()
+        user = artist_user
+    else:
+        # Regular artist registration
+        existing_user = await db.execute(
+            select(User).where(User.email == request.email)
+        )
+        if existing_user.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered",
+            )
+
+        # Generate a temporary password (artist will need to set it on first login)
+        temp_password = secrets.token_urlsafe(16)
+
+        # Create user with artist role
+        user = User(
+            email=request.email,
+            password_hash=get_password_hash(temp_password),
+            name=request.name,
+            role="artist",
+            status="active",  # MVP: Auto-approve artists
+            is_active=True,
+        )
+        db.add(user)
+        await db.flush()
 
     # Get categories by name (case-insensitive matching on name_en)
     all_category_names = [request.category] + request.other_categories
@@ -196,10 +260,12 @@ async def register_artist(
     # Create artist profile
     artist = Artist(
         user_id=user.id,
+        agent_user_id=agent_user.id if agent_user else None,
         name_he=request.artist_name,  # Using artist_name for name_he (primary)
         name_en=request.artist_name,  # Also set English name
         bio_en=request.bio,
         city=request.city,
+        country=request.country,
         languages=request.languages,
         performance_types=request.performance_types,
         price_single=request.price_range_min,
@@ -208,6 +274,15 @@ async def register_artist(
         website=request.website,
         instagram=request.instagram,
         youtube=request.youtube,
+        facebook=request.facebook,
+        twitter=request.twitter,
+        linkedin=request.linkedin,
+        # Media fields
+        profile_image=request.profile_image,
+        video_urls=request.video_urls,
+        portfolio_images=request.portfolio_images,
+        spotify_links=request.spotify_links,
+        media_links=request.media_links,
         status="active",  # MVP: Auto-approve artists
     )
 
@@ -217,11 +292,14 @@ async def register_artist(
 
     db.add(artist)
     await db.commit()
-    await db.refresh(user)
+
+    # Return tokens for agent (if agent mode) or artist user
+    token_user = agent_user if agent_user else user
+    await db.refresh(token_user)
 
     # Create tokens
-    access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
-    refresh_token = create_refresh_token(data={"sub": user.id})
+    access_token = create_access_token(data={"sub": token_user.id, "email": token_user.email, "role": token_user.role})
+    refresh_token = create_refresh_token(data={"sub": token_user.id})
 
     return Token(
         access_token=access_token,

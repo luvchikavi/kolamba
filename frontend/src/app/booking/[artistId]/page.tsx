@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2, ChevronDown } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
 interface ArtistInfo {
@@ -36,6 +36,96 @@ const venueTypes = [
   "Other",
 ];
 
+const countryCodes = [
+  { code: "+1", label: "US/Canada (+1)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+972", label: "Israel (+972)" },
+  { code: "+33", label: "France (+33)" },
+  { code: "+49", label: "Germany (+49)" },
+  { code: "+34", label: "Spain (+34)" },
+  { code: "+39", label: "Italy (+39)" },
+  { code: "+31", label: "Netherlands (+31)" },
+  { code: "+32", label: "Belgium (+32)" },
+  { code: "+41", label: "Switzerland (+41)" },
+  { code: "+43", label: "Austria (+43)" },
+  { code: "+46", label: "Sweden (+46)" },
+  { code: "+47", label: "Norway (+47)" },
+  { code: "+45", label: "Denmark (+45)" },
+  { code: "+7", label: "Russia (+7)" },
+  { code: "+54", label: "Argentina (+54)" },
+  { code: "+55", label: "Brazil (+55)" },
+  { code: "+61", label: "Australia (+61)" },
+  { code: "+27", label: "South Africa (+27)" },
+  { code: "+52", label: "Mexico (+52)" },
+];
+
+// Phone number validation by country code
+const getPhoneValidation = (countryCode: string): { min: number; max: number } => {
+  const validationRules: Record<string, { min: number; max: number }> = {
+    "+1": { min: 10, max: 10 },
+    "+44": { min: 10, max: 11 },
+    "+972": { min: 9, max: 10 },
+    "+33": { min: 9, max: 9 },
+    "+49": { min: 10, max: 11 },
+    "+34": { min: 9, max: 9 },
+    "+39": { min: 9, max: 10 },
+    "+31": { min: 9, max: 9 },
+    "+32": { min: 9, max: 9 },
+    "+41": { min: 9, max: 9 },
+    "+43": { min: 10, max: 11 },
+    "+46": { min: 9, max: 10 },
+    "+47": { min: 8, max: 8 },
+    "+45": { min: 8, max: 8 },
+    "+7": { min: 10, max: 10 },
+    "+54": { min: 10, max: 11 },
+    "+55": { min: 10, max: 11 },
+    "+61": { min: 9, max: 9 },
+    "+27": { min: 9, max: 9 },
+    "+52": { min: 10, max: 10 },
+  };
+  return validationRules[countryCode] || { min: 7, max: 15 };
+};
+
+const validatePhoneNumber = (phone: string, countryCode: string): string | null => {
+  if (!phone) return null; // Phone is optional
+  const { min, max } = getPhoneValidation(countryCode);
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < min || digits.length > max) {
+    if (min === max) {
+      return `Phone must be exactly ${min} digits`;
+    }
+    return `Phone must be ${min}-${max} digits`;
+  }
+  return null;
+};
+
+const countries = [
+  "United States",
+  "Canada",
+  "United Kingdom",
+  "Israel",
+  "France",
+  "Germany",
+  "Spain",
+  "Italy",
+  "Netherlands",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Russia",
+  "Argentina",
+  "Brazil",
+  "Australia",
+  "South Africa",
+  "Mexico",
+  "Poland",
+  "Hungary",
+  "Other",
+];
+
 interface BookingData {
   eventType: string;
   eventDescription: string;
@@ -45,11 +135,13 @@ interface BookingData {
   budget: string;
   venueType: string;
   venueCapacity: string;
-  venueAddress: string;
+  venueCity: string;
+  venueCountry: string;
   specialRequirements: string;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  contactPhoneCountryCode: string;
   communityName: string;
 }
 
@@ -101,19 +193,64 @@ export default function BookingPage() {
     budget: "",
     venueType: "",
     venueCapacity: "",
-    venueAddress: "",
+    venueCity: "",
+    venueCountry: "United States",
     specialRequirements: "",
     contactName: "",
     contactEmail: "",
     contactPhone: "",
+    contactPhoneCountryCode: "+1",
     communityName: "",
   });
 
+  const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
+
   const updateBookingData = (field: keyof BookingData, value: string | boolean) => {
     setBookingData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (stepErrors[field]) {
+      setStepErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateStep3 = () => {
+    const errors: Record<string, string> = {};
+    if (!bookingData.venueCapacity.trim()) {
+      errors.venueCapacity = "Expected audience size is required";
+    }
+    if (!bookingData.venueCity.trim()) {
+      errors.venueCity = "City is required";
+    }
+    setStepErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateStep4 = () => {
+    const errors: Record<string, string> = {};
+    if (!bookingData.contactName.trim()) {
+      errors.contactName = "Full name is required";
+    }
+    if (!bookingData.contactEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.contactEmail)) {
+      errors.contactEmail = "Valid email is required";
+    }
+    // Phone validation (optional but if provided, must be valid)
+    const phoneError = validatePhoneNumber(bookingData.contactPhone, bookingData.contactPhoneCountryCode);
+    if (phoneError) {
+      errors.contactPhone = phoneError;
+    }
+    setStepErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const nextStep = () => {
+    // Validate step 3 before proceeding to step 4
+    if (currentStep === 3) {
+      if (!validateStep3()) return;
+    }
     if (currentStep < 4) setCurrentStep(currentStep + 1);
   };
 
@@ -122,11 +259,14 @@ export default function BookingPage() {
   };
 
   const handleSubmit = async () => {
+    // Validate step 4 before submitting
+    if (!validateStep4()) return;
+
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
-            const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem("access_token");
 
       // Parse budget to get a numeric value
       let budgetValue: number | undefined;
@@ -146,7 +286,7 @@ export default function BookingPage() {
         body: JSON.stringify({
           artist_id: parseInt(artistId, 10),
           requested_date: bookingData.date || null,
-          location: bookingData.venueAddress || null,
+          location: bookingData.venueCity ? `${bookingData.venueCity}, ${bookingData.venueCountry}` : null,
           budget: budgetValue || null,
           notes: [
             `Event Type: ${bookingData.eventType}`,
@@ -156,7 +296,7 @@ export default function BookingPage() {
             bookingData.flexibleDates && bookingData.alternateDate ? `Alternate Date: ${bookingData.alternateDate}` : "",
             bookingData.specialRequirements ? `Special Requirements: ${bookingData.specialRequirements}` : "",
             `Contact: ${bookingData.contactName} (${bookingData.contactEmail})`,
-            bookingData.contactPhone ? `Phone: ${bookingData.contactPhone}` : "",
+            bookingData.contactPhone ? `Phone: ${bookingData.contactPhoneCountryCode} ${bookingData.contactPhone}` : "",
             bookingData.communityName ? `Organization: ${bookingData.communityName}` : "",
           ].filter(Boolean).join("\n"),
         }),
@@ -381,29 +521,60 @@ export default function BookingPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     <Users size={16} className="inline mr-2" />
-                    Expected Audience Size
+                    Expected Audience Size <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={bookingData.venueCapacity}
                     onChange={(e) => updateBookingData("venueCapacity", e.target.value)}
                     placeholder="e.g., 150-200 people"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                      stepErrors.venueCapacity ? "border-red-300 bg-red-50" : "border-slate-200"
+                    }`}
                   />
+                  {stepErrors.venueCapacity && (
+                    <p className="mt-1 text-sm text-red-500">{stepErrors.venueCapacity}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     <MapPin size={16} className="inline mr-2" />
-                    Venue Location
+                    Venue Location <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={bookingData.venueAddress}
-                    onChange={(e) => updateBookingData("venueAddress", e.target.value)}
-                    placeholder="City, State/Country"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <input
+                        type="text"
+                        value={bookingData.venueCity}
+                        onChange={(e) => updateBookingData("venueCity", e.target.value)}
+                        placeholder="City"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                          stepErrors.venueCity ? "border-red-300 bg-red-50" : "border-slate-200"
+                        }`}
+                      />
+                      {stepErrors.venueCity && (
+                        <p className="mt-1 text-sm text-red-500">{stepErrors.venueCity}</p>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={bookingData.venueCountry}
+                        onChange={(e) => updateBookingData("venueCountry", e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white"
+                      >
+                        {countries.map((country) => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -439,7 +610,7 @@ export default function BookingPage() {
                     </div>
                     <div>
                       <p className="text-slate-500">Location</p>
-                      <p className="font-medium">{bookingData.venueAddress || "Not specified"}</p>
+                      <p className="font-medium">{bookingData.venueCity ? `${bookingData.venueCity}, ${bookingData.venueCountry}` : "Not specified"}</p>
                     </div>
                   </div>
                 </div>
@@ -450,15 +621,20 @@ export default function BookingPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Full Name *
+                        Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
                         value={bookingData.contactName}
                         onChange={(e) => updateBookingData("contactName", e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                          stepErrors.contactName ? "border-red-300" : "border-slate-200"
+                        }`}
                       />
+                      {stepErrors.contactName && (
+                        <p className="mt-1 text-sm text-red-500">{stepErrors.contactName}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -473,26 +649,62 @@ export default function BookingPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Email *
+                        Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
                         required
                         value={bookingData.contactEmail}
                         onChange={(e) => updateBookingData("contactEmail", e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                          stepErrors.contactEmail ? "border-red-300" : "border-slate-200"
+                        }`}
                       />
+                      {stepErrors.contactEmail && (
+                        <p className="mt-1 text-sm text-red-500">{stepErrors.contactEmail}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         Phone
                       </label>
-                      <input
-                        type="tel"
-                        value={bookingData.contactPhone}
-                        onChange={(e) => updateBookingData("contactPhone", e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      />
+                      <div className="flex gap-2">
+                        <div className="relative">
+                          <select
+                            value={bookingData.contactPhoneCountryCode}
+                            onChange={(e) => updateBookingData("contactPhoneCountryCode", e.target.value)}
+                            className={`h-full px-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white pr-8 text-sm ${
+                              stepErrors.contactPhone ? "border-red-300" : "border-slate-200"
+                            }`}
+                          >
+                            {countryCodes.map((country) => (
+                              <option key={country.code} value={country.code}>
+                                {country.code}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown
+                            size={14}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                          />
+                        </div>
+                        <input
+                          type="tel"
+                          value={bookingData.contactPhone}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "");
+                            updateBookingData("contactPhone", digits);
+                          }}
+                          placeholder="Phone number"
+                          maxLength={15}
+                          className={`flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+                            stepErrors.contactPhone ? "border-red-300" : "border-slate-200"
+                          }`}
+                        />
+                      </div>
+                      {stepErrors.contactPhone && (
+                        <p className="mt-1 text-sm text-red-500">{stepErrors.contactPhone}</p>
+                      )}
                     </div>
                   </div>
                 </div>

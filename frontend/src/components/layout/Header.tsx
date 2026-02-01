@@ -58,6 +58,7 @@ export default function Header() {
   const getDashboardLink = () => {
     if (user?.is_superuser) return "/dashboard/admin";
     if (user?.role === "artist") return "/dashboard/artist";
+    if (user?.role === "agent") return "/dashboard/agent";
     if (user?.role === "community") return "/dashboard/community";
     return "/";
   };

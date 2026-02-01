@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { CheckCircle, ChevronDown, X, Search } from "lucide-react";
+import { CheckCircle, ChevronDown, X, Search, Upload, Image, Video, Music, FileText, Loader2, Plus, Trash2 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
-// The 10 official categories matching the database
+// The 10 official categories as specified by client
 const categories = [
   "Music",
-  "Dance",
+  "Literature",
+  "Journalism",
+  "Film & Television",
+  "Religion & Judaism",
   "Comedy",
   "Theater",
   "Visual Arts",
-  "Literature",
-  "Film",
-  "Television",
-  "Religion",
   "Culinary",
+  "Inspiration",
 ];
 
 const subcategories: Record<string, string[]> = {
@@ -36,15 +36,48 @@ const subcategories: Record<string, string[]> = {
     "A Cappella",
     "Children's Music",
   ],
-  Dance: [
-    "Israeli Folk Dance",
-    "Contemporary",
-    "Ballet",
-    "Hip Hop",
-    "Ballroom",
-    "Modern",
-    "Choreography",
-    "Dance Instruction",
+  Literature: [
+    "Poetry",
+    "Fiction",
+    "Non-Fiction",
+    "Children's Literature",
+    "Storytelling",
+    "Spoken Word",
+    "Screenwriting",
+  ],
+  Journalism: [
+    "Print Journalist",
+    "Broadcast Journalist",
+    "Investigative Reporter",
+    "Columnist",
+    "War Correspondent",
+    "Media Critic",
+    "Podcast Host",
+  ],
+  "Film & Television": [
+    "Director",
+    "Screenwriter",
+    "Documentary",
+    "Actor",
+    "Producer",
+    "Film Critic",
+    "Animation",
+    "TV Host",
+    "News Anchor",
+    "Talk Show",
+    "Documentary Series",
+  ],
+  "Religion & Judaism": [
+    "Rabbi",
+    "Cantor",
+    "Torah Scholar",
+    "Interfaith Speaker",
+    "Religious Education",
+    "Spiritual Guidance",
+    "Jewish History",
+    "Holocaust Education",
+    "Jewish Philosophy",
+    "Kabbalah",
   ],
   Comedy: [
     "Stand-up",
@@ -75,45 +108,6 @@ const subcategories: Record<string, string[]> = {
     "Judaica Art",
     "Calligraphy",
   ],
-  Literature: [
-    "Poetry",
-    "Fiction",
-    "Non-Fiction",
-    "Screenwriting",
-    "Children's Literature",
-    "Storytelling",
-    "Spoken Word",
-    "Journalism",
-  ],
-  Film: [
-    "Director",
-    "Screenwriter",
-    "Documentary",
-    "Actor",
-    "Producer",
-    "Film Critic",
-    "Animation",
-    "Short Films",
-  ],
-  Television: [
-    "TV Host",
-    "News Anchor",
-    "Talk Show",
-    "Documentary Series",
-    "Reality TV",
-    "Drama Series",
-    "Comedy Series",
-  ],
-  Religion: [
-    "Rabbi",
-    "Cantor",
-    "Torah Scholar",
-    "Interfaith Speaker",
-    "Religious Education",
-    "Spiritual Guidance",
-    "Jewish History",
-    "Holocaust Education",
-  ],
   Culinary: [
     "Chef",
     "Food Writer",
@@ -122,6 +116,15 @@ const subcategories: Record<string, string[]> = {
     "Kosher Cuisine",
     "Mediterranean Cooking",
     "Baking / Pastry",
+  ],
+  Inspiration: [
+    "Motivational Speaker",
+    "Life Coach",
+    "Leadership",
+    "Entrepreneurship",
+    "Personal Development",
+    "Wellness",
+    "Mindfulness",
   ],
 };
 
@@ -171,6 +174,44 @@ const performanceTypes = [
   "Children's Entertainment",
 ];
 
+const countries = [
+  "Israel",
+  "United States",
+  "Canada",
+  "United Kingdom",
+  "France",
+  "Germany",
+  "Spain",
+  "Italy",
+  "Netherlands",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Russia",
+  "Argentina",
+  "Brazil",
+  "Australia",
+  "South Africa",
+  "Ethiopia",
+  "Mexico",
+  "Poland",
+  "Hungary",
+  "Czech Republic",
+  "Ukraine",
+  "Romania",
+  "Greece",
+  "Portugal",
+  "Ireland",
+  "New Zealand",
+  "India",
+  "Japan",
+  "Singapore",
+  "Other",
+];
+
 export default function ArtistRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -180,17 +221,34 @@ export default function ArtistRegistrationPage() {
   const [submittedArtistsCount, setSubmittedArtistsCount] = useState(0);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+      if (
+        showCategoryDropdown &&
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(event.target as Node)
+      ) {
         setShowCategoryDropdown(false);
       }
     };
 
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && showCategoryDropdown) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    // Use both mousedown and click for better coverage
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleEscapeKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [showCategoryDropdown]);
 
   const initialFormData = {
     artistName: "",
@@ -202,9 +260,11 @@ export default function ArtistRegistrationPage() {
     subcategories: [] as string[],
     otherCategories: [] as string[],
     bio: "",
-    location: "",
+    city: "",
+    country: "Israel",
     languages: ["English"],
     performanceTypes: [] as string[],
+    customPerformanceType: "",
     priceRangeMin: "",
     priceRangeMax: "",
     website: "",
@@ -213,6 +273,12 @@ export default function ArtistRegistrationPage() {
     facebook: "",
     twitter: "",
     linkedin: "",
+    // Media fields
+    profileImage: "",
+    videoUrls: [] as string[],
+    portfolioImages: [] as string[],
+    spotifyLinks: [] as string[],
+    mediaLinks: [] as string[],
     acceptTerms: false,
   };
 
@@ -301,6 +367,46 @@ export default function ArtistRegistrationPage() {
     return value.replace(/,/g, "");
   };
 
+  // Phone number validation by country code
+  const getPhoneValidation = (countryCode: string): { min: number; max: number } => {
+    const validationRules: Record<string, { min: number; max: number }> = {
+      "+972": { min: 9, max: 10 },   // Israel
+      "+1": { min: 10, max: 10 },    // US/Canada
+      "+44": { min: 10, max: 11 },   // UK
+      "+33": { min: 9, max: 9 },     // France
+      "+49": { min: 10, max: 11 },   // Germany
+      "+34": { min: 9, max: 9 },     // Spain
+      "+39": { min: 9, max: 10 },    // Italy
+      "+31": { min: 9, max: 9 },     // Netherlands
+      "+32": { min: 9, max: 9 },     // Belgium
+      "+41": { min: 9, max: 9 },     // Switzerland
+      "+43": { min: 10, max: 11 },   // Austria
+      "+46": { min: 9, max: 10 },    // Sweden
+      "+47": { min: 8, max: 8 },     // Norway
+      "+45": { min: 8, max: 8 },     // Denmark
+      "+7": { min: 10, max: 10 },    // Russia
+      "+54": { min: 10, max: 11 },   // Argentina
+      "+55": { min: 10, max: 11 },   // Brazil
+      "+61": { min: 9, max: 9 },     // Australia
+      "+27": { min: 9, max: 9 },     // South Africa
+      "+251": { min: 9, max: 9 },    // Ethiopia
+    };
+    return validationRules[countryCode] || { min: 7, max: 15 };
+  };
+
+  const validatePhoneNumber = (phone: string, countryCode: string): string | null => {
+    if (!phone) return null; // Phone is optional
+    const { min, max } = getPhoneValidation(countryCode);
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < min || digits.length > max) {
+      if (min === max) {
+        return `Phone number must be exactly ${min} digits for this country`;
+      }
+      return `Phone number must be between ${min} and ${max} digits for this country`;
+    }
+    return null;
+  };
+
   // Reset form for adding another artist (agent mode)
   const resetFormForNextArtist = () => {
     setFormData({
@@ -329,6 +435,17 @@ export default function ArtistRegistrationPage() {
     }
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Valid email is required";
+    }
+    // Phone validation
+    const phoneError = validatePhoneNumber(formData.phone, formData.phoneCountryCode);
+    if (phoneError) {
+      newErrors.phone = phoneError;
+    }
+    // City validation
+    if (!formData.city || formData.city.trim().length < 2) {
+      newErrors.city = "City is required";
+    } else if (containsHebrew(formData.city)) {
+      newErrors.city = "Please use English characters only";
     }
     if (!formData.category) {
       newErrors.category = "Primary category is required";
@@ -359,9 +476,12 @@ export default function ArtistRegistrationPage() {
             subcategories: formData.subcategories,
             other_categories: formData.otherCategories,
             bio: formData.bio,
-            city: formData.location,
+            city: formData.city,
+            country: formData.country,
             languages: formData.languages,
-            performance_types: formData.performanceTypes,
+            performance_types: formData.performanceTypes.includes("Other") && formData.customPerformanceType
+              ? [...formData.performanceTypes.filter(t => t !== "Other"), formData.customPerformanceType]
+              : formData.performanceTypes,
             price_range_min: formData.priceRangeMin ? parseInt(formData.priceRangeMin) : null,
             price_range_max: formData.priceRangeMax ? parseInt(formData.priceRangeMax) : null,
             phone: formData.phone ? `${formData.phoneCountryCode} ${formData.phone}` : null,
@@ -371,6 +491,12 @@ export default function ArtistRegistrationPage() {
             facebook: formData.facebook || null,
             twitter: formData.twitter || null,
             linkedin: formData.linkedin || null,
+            // Media fields - filter out empty strings
+            profile_image: formData.profileImage || null,
+            video_urls: formData.videoUrls.filter(url => url.trim() !== ""),
+            portfolio_images: formData.portfolioImages.filter(url => url.trim() !== ""),
+            spotify_links: formData.spotifyLinks.filter(url => url.trim() !== ""),
+            media_links: formData.mediaLinks.filter(url => url.trim() !== ""),
             is_agent_submission: isAgent,
           }),
         }
@@ -584,7 +710,7 @@ export default function ArtistRegistrationPage() {
                     className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
                   {showCategoryDropdown && filteredCategories.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-48 overflow-auto">
                       {filteredCategories.map((cat) => (
                         <button
                           key={cat}
@@ -618,23 +744,48 @@ export default function ArtistRegistrationPage() {
                 </div>
               </div>
 
-              {/* Location */}
+              {/* Location - City and Country */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Based In
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="City, Country/State"
-                    className="w-full px-4 py-3.5 pr-12 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
-                  />
-                  <Search
-                    size={20}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-teal-500"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      placeholder="City"
+                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors ${
+                        errors.city ? "border-red-300" : "border-slate-300"
+                      }`}
+                    />
+                    {errors.city && (
+                      <p className="mt-1 text-sm text-red-500">{errors.city}</p>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={formData.country}
+                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors ${
+                        errors.country ? "border-red-300" : "border-slate-300"
+                      }`}
+                    >
+                      {countries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={20}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    />
+                    {errors.country && (
+                      <p className="mt-1 text-sm text-red-500">{errors.country}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -672,7 +823,27 @@ export default function ArtistRegistrationPage() {
                       {type}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePerformanceType("Other")}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      formData.performanceTypes.includes("Other")
+                        ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                        : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    Other
+                  </button>
                 </div>
+                {formData.performanceTypes.includes("Other") && (
+                  <input
+                    type="text"
+                    value={formData.customPerformanceType}
+                    onChange={(e) => setFormData({ ...formData, customPerformanceType: e.target.value })}
+                    placeholder="Please specify your performance type..."
+                    className="mt-3 w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                )}
               </div>
             </div>
 
@@ -735,7 +906,9 @@ export default function ArtistRegistrationPage() {
                     <select
                       value={formData.phoneCountryCode}
                       onChange={(e) => setFormData({ ...formData, phoneCountryCode: e.target.value })}
-                      className="h-full px-3 py-3.5 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white pr-10 text-teal-600"
+                      className={`h-full px-3 py-3.5 border-2 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white pr-10 text-teal-600 ${
+                        errors.phone ? "border-red-300" : "border-slate-300"
+                      }`}
                     >
                       {countryCodes.map((country) => (
                         <option key={country.code} value={country.code}>
@@ -758,34 +931,48 @@ export default function ArtistRegistrationPage() {
                     }}
                     placeholder="501234567"
                     maxLength={15}
-                    className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    className={`flex-1 px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors ${
+                      errors.phone ? "border-red-300" : "border-slate-300"
+                    }`}
                   />
                 </div>
+                {errors.phone && (
+                  <p className="mt-2 text-sm text-red-500">{errors.phone}</p>
+                )}
               </div>
 
-              {/* Price Range */}
+              {/* Pricing */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
-                  Price Range (USD per show)
+                  Pricing (USD)
                 </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    value={formData.priceRangeMin ? formatNumberWithCommas(formData.priceRangeMin) : ""}
-                    onChange={(e) => setFormData({ ...formData, priceRangeMin: parseFormattedNumber(e.target.value) })}
-                    placeholder="500"
-                    className="w-32 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
-                  />
-                  <span className="text-slate-600">to</span>
-                  <input
-                    type="text"
-                    value={formData.priceRangeMax ? formatNumberWithCommas(formData.priceRangeMax) : ""}
-                    onChange={(e) => setFormData({ ...formData, priceRangeMax: parseFormattedNumber(e.target.value) })}
-                    placeholder="2,000"
-                    className="w-32 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
-                  />
-                  <span className="text-slate-600">USD</span>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-600 w-36">Single Performance:</span>
+                    <span className="text-slate-500">$</span>
+                    <input
+                      type="text"
+                      value={formData.priceRangeMin ? formatNumberWithCommas(formData.priceRangeMin) : ""}
+                      onChange={(e) => setFormData({ ...formData, priceRangeMin: parseFormattedNumber(e.target.value) })}
+                      placeholder="500"
+                      className="w-32 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-600 w-36">Tour Package:</span>
+                    <span className="text-slate-500">$</span>
+                    <input
+                      type="text"
+                      value={formData.priceRangeMax ? formatNumberWithCommas(formData.priceRangeMax) : ""}
+                      onChange={(e) => setFormData({ ...formData, priceRangeMax: parseFormattedNumber(e.target.value) })}
+                      placeholder="2,000"
+                      className="w-32 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                  </div>
                 </div>
+                <p className="mt-2 text-sm text-slate-500">
+                  Single Performance is your rate for one show. Tour Package is your rate for multiple shows in one trip.
+                </p>
               </div>
 
               {/* Languages */}
@@ -872,6 +1059,238 @@ export default function ArtistRegistrationPage() {
                     className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Media Upload Section */}
+          <div className="mt-12 space-y-8">
+            <h2 className="text-xl font-semibold text-slate-900">
+              3 | Media & Portfolio <span className="text-slate-400 font-normal text-base">(Optional)</span>
+            </h2>
+
+            {/* Profile Photo */}
+            <div>
+              <label className="block text-base font-medium text-slate-800 mb-2">
+                <Image className="inline mr-2" size={18} />
+                Profile Photo
+              </label>
+              <p className="text-sm text-slate-500 mb-3">
+                Upload a professional photo that will appear on your profile (JPG, PNG, max 10MB)
+              </p>
+              {formData.profileImage ? (
+                <div className="flex items-center gap-4">
+                  <img
+                    src={formData.profileImage}
+                    alt="Profile preview"
+                    className="w-24 h-24 object-cover rounded-xl border-2 border-slate-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, profileImage: "" })}
+                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-flex items-center gap-2"
+                  >
+                    <Trash2 size={16} />
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <div className="w-24 h-24 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center">
+                    <Image size={32} className="text-slate-400" />
+                  </div>
+                  <input
+                    type="url"
+                    value={formData.profileImage}
+                    onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
+                    placeholder="Paste image URL or upload later"
+                    className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Video Clips */}
+            <div>
+              <label className="block text-base font-medium text-slate-800 mb-2">
+                <Video className="inline mr-2" size={18} />
+                Video Clips
+              </label>
+              <p className="text-sm text-slate-500 mb-3">
+                Add YouTube or Vimeo links to showcase your performances
+              </p>
+              <div className="space-y-2">
+                {formData.videoUrls.map((url, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => {
+                        const newUrls = [...formData.videoUrls];
+                        newUrls[index] = e.target.value;
+                        setFormData({ ...formData, videoUrls: newUrls });
+                      }}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = formData.videoUrls.filter((_, i) => i !== index);
+                        setFormData({ ...formData, videoUrls: newUrls });
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, videoUrls: [...formData.videoUrls, ""] })}
+                  className="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-2"
+                >
+                  <Plus size={18} />
+                  Add Video Link
+                </button>
+              </div>
+            </div>
+
+            {/* Portfolio Images */}
+            <div>
+              <label className="block text-base font-medium text-slate-800 mb-2">
+                <Image className="inline mr-2" size={18} />
+                Portfolio Images
+              </label>
+              <p className="text-sm text-slate-500 mb-3">
+                Add links to images of your work (book covers, film stills, event photos, etc.)
+              </p>
+              <div className="space-y-2">
+                {formData.portfolioImages.map((url, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => {
+                        const newUrls = [...formData.portfolioImages];
+                        newUrls[index] = e.target.value;
+                        setFormData({ ...formData, portfolioImages: newUrls });
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = formData.portfolioImages.filter((_, i) => i !== index);
+                        setFormData({ ...formData, portfolioImages: newUrls });
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, portfolioImages: [...formData.portfolioImages, ""] })}
+                  className="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-2"
+                >
+                  <Plus size={18} />
+                  Add Image Link
+                </button>
+              </div>
+            </div>
+
+            {/* Spotify Links */}
+            <div>
+              <label className="block text-base font-medium text-slate-800 mb-2">
+                <Music className="inline mr-2" size={18} />
+                Spotify Links
+              </label>
+              <p className="text-sm text-slate-500 mb-3">
+                Add Spotify links to your tracks, albums, or artist profile
+              </p>
+              <div className="space-y-2">
+                {formData.spotifyLinks.map((url, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => {
+                        const newUrls = [...formData.spotifyLinks];
+                        newUrls[index] = e.target.value;
+                        setFormData({ ...formData, spotifyLinks: newUrls });
+                      }}
+                      placeholder="https://open.spotify.com/..."
+                      className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = formData.spotifyLinks.filter((_, i) => i !== index);
+                        setFormData({ ...formData, spotifyLinks: newUrls });
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, spotifyLinks: [...formData.spotifyLinks, ""] })}
+                  className="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-2"
+                >
+                  <Plus size={18} />
+                  Add Spotify Link
+                </button>
+              </div>
+            </div>
+
+            {/* Media Articles */}
+            <div>
+              <label className="block text-base font-medium text-slate-800 mb-2">
+                <FileText className="inline mr-2" size={18} />
+                Press & Media Articles
+              </label>
+              <p className="text-sm text-slate-500 mb-3">
+                Add links to articles, interviews, or press coverage about you
+              </p>
+              <div className="space-y-2">
+                {formData.mediaLinks.map((url, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => {
+                        const newUrls = [...formData.mediaLinks];
+                        newUrls[index] = e.target.value;
+                        setFormData({ ...formData, mediaLinks: newUrls });
+                      }}
+                      placeholder="https://example.com/article"
+                      className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = formData.mediaLinks.filter((_, i) => i !== index);
+                        setFormData({ ...formData, mediaLinks: newUrls });
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, mediaLinks: [...formData.mediaLinks, ""] })}
+                  className="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-2"
+                >
+                  <Plus size={18} />
+                  Add Media Link
+                </button>
               </div>
             </div>
           </div>

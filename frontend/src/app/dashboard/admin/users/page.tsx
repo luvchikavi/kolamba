@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   Search,
   Users,
@@ -10,6 +11,7 @@ import {
   Loader2,
   X,
   Check,
+  ExternalLink,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -22,11 +24,13 @@ interface User {
   is_active: boolean;
   is_superuser: boolean;
   created_at: string;
+  artist_id: number | null;
 }
 
 function RoleBadge({ role }: { role: string }) {
   const styles: Record<string, string> = {
     admin: "bg-violet-100 text-violet-700",
+    agent: "bg-orange-100 text-orange-700",
     artist: "bg-blue-100 text-blue-700",
     community: "bg-emerald-100 text-emerald-700",
   };
@@ -199,6 +203,7 @@ export default function UsersPage() {
           >
             <option value="">All Roles</option>
             <option value="admin">Admin</option>
+            <option value="agent">Agent</option>
             <option value="artist">Artist</option>
             <option value="community">Community</option>
           </select>
@@ -289,6 +294,16 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
+                        {user.role === "artist" && user.artist_id && (
+                          <Link
+                            href={`/artists/${user.artist_id}`}
+                            target="_blank"
+                            className="px-3 py-1 text-sm text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-1"
+                          >
+                            View Profile
+                            <ExternalLink size={14} />
+                          </Link>
+                        )}
                         <button
                           onClick={() => setEditingUser(user)}
                           className="px-3 py-1 text-sm text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
@@ -365,6 +380,7 @@ export default function UsersPage() {
                   className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="artist">Artist</option>
+                  <option value="agent">Agent</option>
                   <option value="community">Community</option>
                   <option value="admin">Admin</option>
                 </select>

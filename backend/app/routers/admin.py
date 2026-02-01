@@ -185,6 +185,15 @@ async def list_users(
     result = await db.execute(query)
     users = result.scalars().all()
 
+    # Get artist IDs for users with role "artist"
+    artist_user_ids = [u.id for u in users if u.role == "artist"]
+    artist_map = {}
+    if artist_user_ids:
+        artist_result = await db.execute(
+            select(Artist.user_id, Artist.id).where(Artist.user_id.in_(artist_user_ids))
+        )
+        artist_map = {row[0]: row[1] for row in artist_result.all()}
+
     return [
         {
             "id": u.id,
@@ -195,6 +204,7 @@ async def list_users(
             "is_active": u.is_active,
             "is_superuser": u.is_superuser,
             "created_at": u.created_at.isoformat(),
+            "artist_id": artist_map.get(u.id) if u.role == "artist" else None,
         }
         for u in users
     ]

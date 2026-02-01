@@ -13,6 +13,7 @@ from app.models.category import Category
 from app.models.user import User
 from app.models.community import Community
 from app.models.booking import Booking
+from app.models.artist_tour_date import ArtistTourDate
 from app.schemas.artist import ArtistResponse, ArtistListResponse, ArtistUpdate
 from app.utils.security import get_password_hash
 from app.routers.auth import get_current_active_user
@@ -354,6 +355,62 @@ async def seed_artists(
             notes="We'd love to have you perform at our community!",
         )
         db.add(booking)
+
+    # Create sample tour dates for featured artists
+    tour_dates_data = [
+        {
+            "artist_idx": 0,  # Avi Luvchik
+            "location": "New York, NY",
+            "days_offset": 30,
+            "description": "East Coast Concert Tour",
+            "latitude": 40.7128,
+            "longitude": -74.0060,
+        },
+        {
+            "artist_idx": 0,  # Avi Luvchik
+            "location": "Boston, MA",
+            "days_offset": 33,
+            "description": "East Coast Concert Tour",
+            "latitude": 42.3601,
+            "longitude": -71.0589,
+        },
+        {
+            "artist_idx": 1,  # David Cohen
+            "location": "Los Angeles, CA",
+            "days_offset": 45,
+            "description": "West Coast High Holiday Tour",
+            "latitude": 34.0522,
+            "longitude": -118.2437,
+        },
+        {
+            "artist_idx": 2,  # Sarah Levy
+            "location": "Chicago, IL",
+            "days_offset": 60,
+            "description": "Jewish History Lecture Series",
+            "latitude": 41.8781,
+            "longitude": -87.6298,
+        },
+        {
+            "artist_idx": 3,  # Yossi Mizrachi
+            "location": "Miami, FL",
+            "days_offset": 50,
+            "description": "Comedy Night Tour",
+            "latitude": 25.7617,
+            "longitude": -80.1918,
+        },
+    ]
+
+    for td in tour_dates_data:
+        tour_date = ArtistTourDate(
+            artist_id=created_artists[td["artist_idx"]]["id"],
+            location=td["location"],
+            start_date=(datetime.now() + timedelta(days=td["days_offset"])).date(),
+            end_date=(datetime.now() + timedelta(days=td["days_offset"] + 2)).date(),
+            description=td["description"],
+            latitude=td["latitude"],
+            longitude=td["longitude"],
+        )
+        db.add(tour_date)
 
     await db.commit()
 

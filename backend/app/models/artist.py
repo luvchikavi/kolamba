@@ -27,6 +27,12 @@ class Artist(Base):
         unique=True,
         nullable=False,
     )
+    # Agent who submitted this artist (if any)
+    agent_user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     # Profile info
     name_he: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -54,6 +60,15 @@ class Artist(Base):
     website: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     instagram: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     youtube: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    facebook: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    twitter: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    linkedin: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
+    # Media - uploaded files and external links
+    video_urls: Mapped[list[str]] = mapped_column(ARRAY(String(500)), default=list)  # Video clip URLs
+    portfolio_images: Mapped[list[str]] = mapped_column(ARRAY(String(500)), default=list)  # Gallery images
+    spotify_links: Mapped[list[str]] = mapped_column(ARRAY(String(500)), default=list)  # Spotify track/album links
+    media_links: Mapped[list[str]] = mapped_column(ARRAY(String(500)), default=list)  # Press/media article links
 
     # Performance types (array of strings)
     performance_types: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)

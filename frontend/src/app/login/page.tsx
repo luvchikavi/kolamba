@@ -61,6 +61,8 @@ export default function LoginPage() {
           router.push("/dashboard/admin");
         } else if (user.role === "artist") {
           router.push("/dashboard/artist");
+        } else if (user.role === "agent") {
+          router.push("/dashboard/agent");
         } else if (user.role === "community") {
           router.push("/dashboard/community");
         } else {

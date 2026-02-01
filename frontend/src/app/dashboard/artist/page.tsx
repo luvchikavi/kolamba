@@ -592,13 +592,25 @@ export default function ArtistDashboardPage() {
               <h1 className="text-2xl font-bold text-slate-900">Artist Dashboard</h1>
               <p className="text-slate-500">Manage your tours and bookings</p>
             </div>
-            <Link
-              href="/dashboard/artist/settings"
-              className="btn-secondary"
-            >
-              <Settings size={18} />
-              Settings
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setActiveTab("tourDates");
+                  setIsAddModalOpen(true);
+                }}
+                className="btn-primary"
+              >
+                <Plus size={18} />
+                Start a Tour
+              </button>
+              <Link
+                href="/dashboard/artist/settings"
+                className="btn-secondary"
+              >
+                <Settings size={18} />
+                Settings
+              </Link>
+            </div>
           </div>
         </div>
       </div>
