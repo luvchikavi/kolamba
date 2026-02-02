@@ -78,9 +78,34 @@ async def get_featured_artists(
 @router.get("/me", response_model=ArtistResponse)
 async def get_my_artist_profile(
     current_user: User = Depends(get_current_active_user),
+    artist_id: Optional[int] = Query(None, description="Artist ID for admin impersonation"),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get current user's artist profile."""
+    """Get current user's artist profile. Admins can specify artist_id to impersonate."""
+    # Allow superusers to impersonate any artist for testing
+    if current_user.is_superuser and artist_id:
+        result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.id == artist_id)
+        )
+        artist = result.scalar_one_or_none()
+        if not artist:
+            raise HTTPException(status_code=404, detail="Artist not found")
+        return artist
+
+    # For superusers without artist_id, return first active artist for testing
+    if current_user.is_superuser:
+        result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.status == "active")
+            .limit(1)
+        )
+        artist = result.scalar_one_or_none()
+        if artist:
+            return artist
+
     if current_user.role != "artist":
         raise HTTPException(status_code=403, detail="Not an artist account")
 
