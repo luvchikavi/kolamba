@@ -216,7 +216,7 @@ function TourCard({ tour }: { tour: Tour }) {
           </span>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
 
