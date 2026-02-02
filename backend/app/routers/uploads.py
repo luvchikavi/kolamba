@@ -232,3 +232,61 @@ async def upload_status():
         "configured": is_cloudinary_configured(),
         "service": "cloudinary" if is_cloudinary_configured() else None,
     }
+
+
+@router.post("/public/image", response_model=UploadResponse)
+async def upload_image_public(
+    file: UploadFile = File(...),
+):
+    """Upload a single image for registration (no auth required).
+
+    This endpoint is used during artist registration before the user has an account.
+    Files are stored in a temporary folder and can be associated with the artist later.
+    """
+    if not is_cloudinary_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="File upload service not configured",
+        )
+
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}",
+        )
+
+    # Validate file size (max 10MB)
+    contents = await file.read()
+    if len(contents) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File too large. Maximum size is 10MB",
+        )
+
+    try:
+        # Upload to Cloudinary in a registration folder
+        import uuid
+        upload_id = str(uuid.uuid4())[:8]
+        result = cloudinary.uploader.upload(
+            contents,
+            folder=f"kolamba/registration/{upload_id}",
+            resource_type="image",
+            transformation=[
+                {"width": 1200, "height": 1200, "crop": "limit"},
+                {"quality": "auto:good"},
+                {"fetch_format": "auto"},
+            ],
+        )
+
+        return UploadResponse(
+            url=result["secure_url"],
+            public_id=result["public_id"],
+            resource_type="image",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Upload failed: {str(e)}",
+        )

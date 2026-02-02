@@ -258,9 +258,9 @@ export default function ArtistRegistrationPage() {
     phoneCountryCode: "+972",
     category: "",
     subcategories: [] as string[],
+    customSubcategory: "",
     otherCategories: [] as string[],
     bio: "",
-    city: "",
     country: "Israel",
     languages: ["English"],
     performanceTypes: [] as string[],
@@ -293,6 +293,10 @@ export default function ArtistRegistrationPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+  const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const portfolioInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddCategory = (cat: string) => {
     if (!formData.otherCategories.includes(cat) && cat !== formData.category) {
@@ -407,6 +411,116 @@ export default function ArtistRegistrationPage() {
     return null;
   };
 
+  // Handle profile photo file upload
+  const handleProfilePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      setErrors({ ...errors, profileImage: "Please upload a JPG, PNG, WebP, or GIF image" });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors({ ...errors, profileImage: "File too large. Maximum size is 10MB" });
+      return;
+    }
+
+    setIsUploadingProfile(true);
+    setErrors({ ...errors, profileImage: "" });
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      const response = await fetch(`${API_URL}/uploads/public/image`, {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || "Upload failed");
+      }
+
+      const data = await response.json();
+      setFormData({ ...formData, profileImage: data.url });
+    } catch (error) {
+      setErrors({
+        ...errors,
+        profileImage: error instanceof Error ? error.message : "Upload failed",
+      });
+    } finally {
+      setIsUploadingProfile(false);
+      // Reset input so the same file can be selected again
+      if (profileInputRef.current) {
+        profileInputRef.current.value = "";
+      }
+    }
+  };
+
+  // Handle portfolio image file upload
+  const handlePortfolioImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Validate file types
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const validFiles = Array.from(files).filter((file) => {
+      if (!allowedTypes.includes(file.type)) return false;
+      if (file.size > 10 * 1024 * 1024) return false;
+      return true;
+    });
+
+    if (validFiles.length === 0) {
+      setErrors({ ...errors, portfolioImages: "No valid images selected (JPG, PNG, WebP, GIF under 10MB)" });
+      return;
+    }
+
+    setIsUploadingPortfolio(true);
+    setErrors({ ...errors, portfolioImages: "" });
+
+    try {
+      const uploadedUrls: string[] = [];
+
+      for (const file of validFiles) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", file);
+
+        const response = await fetch(`${API_URL}/uploads/public/image`, {
+          method: "POST",
+          body: formDataUpload,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          uploadedUrls.push(data.url);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setFormData({
+          ...formData,
+          portfolioImages: [...formData.portfolioImages, ...uploadedUrls],
+        });
+      }
+    } catch (error) {
+      setErrors({
+        ...errors,
+        portfolioImages: error instanceof Error ? error.message : "Upload failed",
+      });
+    } finally {
+      setIsUploadingPortfolio(false);
+      // Reset input so the same files can be selected again
+      if (portfolioInputRef.current) {
+        portfolioInputRef.current.value = "";
+      }
+    }
+  };
+
   // Reset form for adding another artist (agent mode)
   const resetFormForNextArtist = () => {
     setFormData({
@@ -441,12 +555,6 @@ export default function ArtistRegistrationPage() {
     if (phoneError) {
       newErrors.phone = phoneError;
     }
-    // City validation
-    if (!formData.city || formData.city.trim().length < 2) {
-      newErrors.city = "City is required";
-    } else if (containsHebrew(formData.city)) {
-      newErrors.city = "Please use English characters only";
-    }
     if (!formData.category) {
       newErrors.category = "Primary category is required";
     }
@@ -473,10 +581,11 @@ export default function ArtistRegistrationPage() {
             name: formData.realName,
             artist_name: formData.artistName,
             category: formData.category,
-            subcategories: formData.subcategories,
+            subcategories: formData.customSubcategory
+              ? [...formData.subcategories.filter(s => s !== "Other"), formData.customSubcategory]
+              : formData.subcategories.filter(s => s !== "Other"),
             other_categories: formData.otherCategories,
             bio: formData.bio,
-            city: formData.city,
             country: formData.country,
             languages: formData.languages,
             performance_types: formData.performanceTypes.includes("Other") && formData.customPerformanceType
@@ -688,7 +797,27 @@ export default function ArtistRegistrationPage() {
                         {subcat}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSubcategory("Other")}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        formData.subcategories.includes("Other")
+                          ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                          : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      Other
+                    </button>
                   </div>
+                  {formData.subcategories.includes("Other") && (
+                    <input
+                      type="text"
+                      value={formData.customSubcategory}
+                      onChange={(e) => setFormData({ ...formData, customSubcategory: e.target.value })}
+                      placeholder="Please specify your subcategory..."
+                      className="mt-3 w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                  )}
                 </div>
               )}
 
@@ -744,48 +873,27 @@ export default function ArtistRegistrationPage() {
                 </div>
               </div>
 
-              {/* Location - City and Country */}
+              {/* Location - Country Only */}
               <div>
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Based In
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      placeholder="City"
-                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors ${
-                        errors.city ? "border-red-300" : "border-slate-300"
-                      }`}
-                    />
-                    {errors.city && (
-                      <p className="mt-1 text-sm text-red-500">{errors.city}</p>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <select
-                      value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors ${
-                        errors.country ? "border-red-300" : "border-slate-300"
-                      }`}
-                    >
-                      {countries.map((country) => (
-                        <option key={country} value={country}>
-                          {country}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown
-                      size={20}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                    />
-                    {errors.country && (
-                      <p className="mt-1 text-sm text-red-500">{errors.country}</p>
-                    )}
-                  </div>
+                <div className="relative">
+                  <select
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors"
+                  >
+                    {countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={20}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
                 </div>
               </div>
 
@@ -1095,17 +1203,48 @@ export default function ArtistRegistrationPage() {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-4">
-                  <div className="w-24 h-24 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center">
-                    <Image size={32} className="text-slate-400" />
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-4">
+                    <input
+                      ref={profileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleProfilePhotoUpload}
+                      className="hidden"
+                      id="profile-photo-upload"
+                    />
+                    <label
+                      htmlFor="profile-photo-upload"
+                      className={`flex items-center gap-2 px-4 py-3 border-2 border-teal-300 bg-teal-50 text-teal-700 rounded-lg cursor-pointer hover:bg-teal-100 transition-colors ${
+                        isUploadingProfile ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {isUploadingProfile ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={18} />
+                          Upload from Device
+                        </>
+                      )}
+                    </label>
                   </div>
-                  <input
-                    type="url"
-                    value={formData.profileImage}
-                    onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
-                    placeholder="Paste image URL or upload later"
-                    className="flex-1 px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
-                  />
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <span>or paste URL:</span>
+                    <input
+                      type="url"
+                      value={formData.profileImage}
+                      onChange={(e) => setFormData({ ...formData, profileImage: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
+                      className="flex-1 px-3 py-2 border-2 border-slate-300 rounded-lg text-sm focus:outline-none focus:border-teal-400 transition-colors"
+                    />
+                  </div>
+                  {errors.profileImage && (
+                    <p className="text-sm text-red-500">{errors.profileImage}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -1163,42 +1302,105 @@ export default function ArtistRegistrationPage() {
                 Portfolio Images
               </label>
               <p className="text-sm text-slate-500 mb-3">
-                Add links to images of your work (book covers, film stills, event photos, etc.)
+                Upload images of your work (book covers, film stills, event photos, etc.)
               </p>
-              <div className="space-y-2">
-                {formData.portfolioImages.map((url, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input
-                      type="url"
-                      value={url}
-                      onChange={(e) => {
-                        const newUrls = [...formData.portfolioImages];
-                        newUrls[index] = e.target.value;
-                        setFormData({ ...formData, portfolioImages: newUrls });
-                      }}
-                      placeholder="https://example.com/image.jpg"
-                      className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-teal-400 transition-colors"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newUrls = formData.portfolioImages.filter((_, i) => i !== index);
-                        setFormData({ ...formData, portfolioImages: newUrls });
-                      }}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, portfolioImages: [...formData.portfolioImages, ""] })}
-                  className="px-4 py-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-2"
-                >
-                  <Plus size={18} />
-                  Add Image Link
-                </button>
+
+              {/* Uploaded Images Grid */}
+              {formData.portfolioImages.length > 0 && (
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  {formData.portfolioImages.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Portfolio ${index + 1}`}
+                        className="w-full aspect-square object-cover rounded-lg border-2 border-slate-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newUrls = formData.portfolioImages.filter((_, i) => i !== index);
+                          setFormData({ ...formData, portfolioImages: newUrls });
+                        }}
+                        className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    ref={portfolioInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    multiple
+                    onChange={handlePortfolioImageUpload}
+                    className="hidden"
+                    id="portfolio-upload"
+                  />
+                  <label
+                    htmlFor="portfolio-upload"
+                    className={`flex items-center gap-2 px-4 py-3 border-2 border-teal-300 bg-teal-50 text-teal-700 rounded-lg cursor-pointer hover:bg-teal-100 transition-colors ${
+                      isUploadingPortfolio ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {isUploadingPortfolio ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={18} />
+                        Upload Images
+                      </>
+                    )}
+                  </label>
+                  <span className="text-sm text-slate-500">Select multiple images</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <span>or add URL:</span>
+                  <input
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    className="flex-1 px-3 py-2 border-2 border-slate-300 rounded-lg text-sm focus:outline-none focus:border-teal-400 transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const input = e.target as HTMLInputElement;
+                        if (input.value.trim()) {
+                          setFormData({
+                            ...formData,
+                            portfolioImages: [...formData.portfolioImages, input.value.trim()],
+                          });
+                          input.value = "";
+                        }
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      const input = (e.target as HTMLElement).previousElementSibling as HTMLInputElement;
+                      if (input && input.value.trim()) {
+                        setFormData({
+                          ...formData,
+                          portfolioImages: [...formData.portfolioImages, input.value.trim()],
+                        });
+                        input.value = "";
+                      }
+                    }}
+                    className="px-3 py-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+                {errors.portfolioImages && (
+                  <p className="text-sm text-red-500">{errors.portfolioImages}</p>
+                )}
               </div>
             </div>
 
