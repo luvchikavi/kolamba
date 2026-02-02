@@ -327,7 +327,7 @@ function AddTourDateModal({
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-slate-900">Add Tour Date</h2>
+          <h2 className="text-xl font-bold text-slate-900">Add Confirmed Show</h2>
           <button
             onClick={onClose}
             className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
@@ -415,7 +415,7 @@ function AddTourDateModal({
               ) : (
                 <>
                   <Plus size={16} />
-                  Add Tour Date
+                  Add Show
                 </>
               )}
             </button>
@@ -926,7 +926,7 @@ export default function ArtistDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">{tourDates.length}</p>
-                <p className="text-sm text-slate-500">Tour Dates</p>
+                <p className="text-sm text-slate-500">Confirmed Shows</p>
               </div>
             </div>
           </div>
@@ -985,7 +985,7 @@ export default function ArtistDashboardPage() {
                 : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
-            Tour Dates ({tourDates.length})
+            Confirmed Shows ({tourDates.length})
           </button>
         </div>
 
@@ -1068,9 +1068,9 @@ export default function ArtistDashboardPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-lg text-slate-900">Your Tour Dates</h3>
+                <h3 className="font-bold text-lg text-slate-900">Your Confirmed Shows</h3>
                 <p className="text-sm text-slate-500">
-                  Announce where you&apos;ll be touring so nearby communities can find you
+                  Shows you&apos;ve confirmed - nearby communities will see these
                 </p>
               </div>
               <button
@@ -1078,7 +1078,7 @@ export default function ArtistDashboardPage() {
                 className="btn-primary"
               >
                 <Plus size={18} />
-                Add Tour Date
+                Add Show
               </button>
             </div>
 
@@ -1086,18 +1086,18 @@ export default function ArtistDashboardPage() {
               <div className="card p-8 text-center">
                 <MapPin size={48} className="text-slate-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-slate-900 mb-2">
-                  No Tour Dates Announced
+                  No Confirmed Shows Yet
                 </h3>
                 <p className="text-slate-500 max-w-md mx-auto mb-6">
-                  Let communities know when you&apos;ll be in their area. When you add tour dates,
-                  nearby communities will see you in their &quot;Events in Your Area&quot; section.
+                  Add your confirmed shows so nearby communities can find you.
+                  They&apos;ll appear in their &quot;Events in Your Area&quot; section.
                 </p>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className="btn-primary mx-auto"
                 >
                   <Plus size={18} />
-                  Add Your First Tour Date
+                  Add Your First Show
                 </button>
               </div>
             ) : (
