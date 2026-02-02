@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { showError, showSuccess } from "@/lib/toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -72,7 +73,9 @@ export default function LoginPage() {
         router.push("/");
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Login failed");
+      const errorMessage = error instanceof Error ? error.message : "Login failed";
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { CheckCircle, Search, ChevronDown, X } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { showError } from "@/lib/toast";
 
 interface CommunityOptions {
   community_types: string[];
@@ -253,9 +254,9 @@ export default function CommunityRegistrationPage() {
 
       setIsSubmitted(true);
     } catch (error) {
-      setErrors({
-        submit: error instanceof Error ? error.message : "Registration failed",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
+      setErrors({ submit: errorMessage });
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

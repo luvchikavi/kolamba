@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { CheckCircle, ChevronDown, X, Search, Upload, Image, Video, Music, FileText, Loader2, Plus, Trash2 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { showError } from "@/lib/toast";
 
 // The 10 official categories as specified by client
 const categories = [
@@ -629,9 +630,9 @@ export default function ArtistRegistrationPage() {
       setSubmittedArtistsCount((prev) => prev + 1);
       setIsSubmitted(true);
     } catch (error) {
-      setErrors({
-        submit: error instanceof Error ? error.message : "Registration failed",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Registration failed";
+      setErrors({ submit: errorMessage });
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

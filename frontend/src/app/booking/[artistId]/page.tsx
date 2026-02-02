@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2, ChevronDown } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { showError, showSuccess } from "@/lib/toast";
 
 interface ArtistInfo {
   id: number;
@@ -309,7 +310,9 @@ export default function BookingPage() {
       setIsSubmitted(true);
     } catch (error) {
       console.error("Booking submission failed:", error);
-      setSubmitError("Failed to submit booking request. Please try again.");
+      const errorMessage = "Failed to submit booking request. Please try again.";
+      setSubmitError(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
