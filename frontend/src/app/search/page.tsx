@@ -338,8 +338,8 @@ function SearchContent() {
                           <MapPin size={14} />
                           <span>{artist.city || artist.country}</span>
                         </div>
-                        {artist.price_single && (
-                          <div className="font-semibold text-slate-900">From ${artist.price_single}</div>
+                        {artist.price_tier && (
+                          <div className="font-semibold text-primary-600">{artist.price_tier}</div>
                         )}
                       </div>
                     </div>

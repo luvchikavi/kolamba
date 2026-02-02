@@ -12,6 +12,7 @@ import {
   Users,
   CheckCircle,
   Loader2,
+  DollarSign,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -24,6 +25,7 @@ interface Category {
 
 interface Artist {
   id: number;
+  user_id: number;
   name_en: string;
   name_he: string;
   bio_en: string | null;
@@ -31,6 +33,7 @@ interface Artist {
   profile_image: string | null;
   price_single: number | null;
   price_tour: number | null;
+  price_tier: string | null;
   languages: string[];
   city: string | null;
   country: string | null;
@@ -42,12 +45,19 @@ interface Artist {
   youtube: string | null;
 }
 
+interface UserInfo {
+  id: number;
+  role: string;
+  is_superuser?: boolean;
+}
+
 export default function ArtistDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
   const [artist, setArtist] = useState<Artist | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,8 +78,32 @@ export default function ArtistDetailPage({
       }
     };
 
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        try {
+          const res = await fetch(`${API_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setCurrentUser(data);
+          }
+        } catch {
+          // User not logged in or token invalid
+        }
+      }
+    };
+
     fetchArtist();
+    fetchCurrentUser();
   }, [params.id]);
+
+  // Check if current user can see exact prices (admin or artist owner)
+  const canSeeExactPrice = currentUser && (
+    currentUser.is_superuser ||
+    (artist && currentUser.id === artist.user_id)
+  );
 
   if (isLoading) {
     return (
@@ -238,35 +272,54 @@ export default function ArtistDetailPage({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Pricing */}
-            {(artist.price_single || artist.price_tour) && (
+            {(artist.price_single || artist.price_tour || artist.price_tier) && (
               <div className="card p-6">
                 <h3 className="font-bold text-slate-900 mb-4">Pricing</h3>
                 <div className="space-y-4">
-                  {artist.price_single && (
-                    <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Users size={18} className="text-slate-400" />
-                        Single Performance
+                  {canSeeExactPrice ? (
+                    <>
+                      {artist.price_single && (
+                        <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                          <div className="flex items-center gap-2 text-slate-600">
+                            <Users size={18} className="text-slate-400" />
+                            Single Performance
+                          </div>
+                          <span className="text-xl font-bold text-slate-900">
+                            ${artist.price_single.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {artist.price_tour && (
+                        <div className="flex justify-between items-center py-3">
+                          <div className="flex items-center gap-2 text-slate-600">
+                            <Calendar size={18} className="text-slate-400" />
+                            Tour Package
+                          </div>
+                          <span className="text-xl font-bold text-slate-900">
+                            ${artist.price_tour.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* Show price tier for community managers and guests */
+                    artist.price_tier && (
+                      <div className="flex justify-between items-center py-3">
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <DollarSign size={18} className="text-slate-400" />
+                          Price Range
+                        </div>
+                        <span className="text-2xl font-bold text-primary-600">
+                          {artist.price_tier}
+                        </span>
                       </div>
-                      <span className="text-xl font-bold text-slate-900">
-                        ${artist.price_single}
-                      </span>
-                    </div>
-                  )}
-                  {artist.price_tour && (
-                    <div className="flex justify-between items-center py-3">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Calendar size={18} className="text-slate-400" />
-                        Tour Package
-                      </div>
-                      <span className="text-xl font-bold text-slate-900">
-                        ${artist.price_tour}
-                      </span>
-                    </div>
+                    )
                   )}
                 </div>
                 <p className="text-sm text-slate-500 mt-4">
-                  Prices are estimates and may vary based on event requirements.
+                  {canSeeExactPrice
+                    ? "Prices are estimates and may vary based on event requirements."
+                    : "$ = Budget  $$= Mid-range  $$$ = Premium"}
                 </p>
               </div>
             )}

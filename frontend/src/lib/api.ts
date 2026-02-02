@@ -65,6 +65,7 @@ export interface Artist {
   profile_image?: string;
   price_single?: number;
   price_tour?: number;
+  price_tier?: string;
   languages: string[];
   availability: Record<string, boolean>;
   city?: string;
@@ -82,6 +83,7 @@ export interface ArtistListItem {
   name_en?: string;
   profile_image?: string;
   price_single?: number;
+  price_tier?: string;
   city?: string;
   country: string;
   is_featured: boolean;

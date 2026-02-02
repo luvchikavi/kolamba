@@ -2,9 +2,26 @@
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from app.schemas.category import CategoryResponse
+
+
+def calculate_price_tier(price: Optional[int]) -> Optional[str]:
+    """Calculate price tier from price_single.
+
+    $ = up to $2,000
+    $$ = $2,000 - $10,000
+    $$$ = above $10,000
+    """
+    if price is None:
+        return None
+    if price <= 2000:
+        return "$"
+    elif price <= 10000:
+        return "$$"
+    else:
+        return "$$$"
 
 
 class ArtistBase(BaseModel):
@@ -64,6 +81,12 @@ class ArtistResponse(ArtistBase):
     created_at: datetime
     updated_at: datetime
 
+    @computed_field
+    @property
+    def price_tier(self) -> Optional[str]:
+        """Price tier based on price_single: $ (<=2k), $$ (2k-10k), $$$ (>10k)."""
+        return calculate_price_tier(self.price_single)
+
     class Config:
         from_attributes = True
 
@@ -79,6 +102,12 @@ class ArtistListResponse(BaseModel):
     country: str
     is_featured: bool
     categories: list[CategoryResponse] = []
+
+    @computed_field
+    @property
+    def price_tier(self) -> Optional[str]:
+        """Price tier based on price_single: $ (<=2k), $$ (2k-10k), $$$ (>10k)."""
+        return calculate_price_tier(self.price_single)
 
     class Config:
         from_attributes = True
