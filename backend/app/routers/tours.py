@@ -2,7 +2,8 @@
 
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, func as sa_func
+import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -19,10 +20,97 @@ from app.schemas.tour import (
     NearbyTourResponse,
     JoinTourRequest,
     TourJoinRequestResponse,
+    TourOpportunityResponse,
+    TourOpportunityArtist,
+    calculate_price_tier,
 )
 from app.services.tour_grouping import suggest_tours, find_nearby_tours
 
 router = APIRouter()
+
+
+@router.get("/opportunities", response_model=list[TourOpportunityResponse])
+async def get_tour_opportunities(
+    region: Optional[str] = Query(None, description="Filter by region"),
+    status: Optional[str] = Query(None, pattern="^(pending|approved)$", description="Filter by status"),
+    limit: int = Query(20, le=100),
+    offset: int = Query(0),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get public tour opportunities for communities to browse.
+
+    Returns tours that are either:
+    - pending: Artist has announced availability, waiting for bookings
+    - approved: Has confirmed bookings, open for more communities to join
+
+    Communities can use this to find artists touring in their region.
+    """
+    from datetime import date
+
+    # Build query for tours with artist info
+    query = (
+        select(Tour, Artist)
+        .join(Artist, Tour.artist_id == Artist.id)
+        .where(Tour.status.in_(["pending", "approved"]))
+        .where(Artist.status == "active")
+    )
+
+    # Only show tours with future dates
+    query = query.where(
+        (Tour.start_date >= date.today()) | (Tour.start_date.is_(None))
+    )
+
+    if region:
+        query = query.where(Tour.region.ilike(f"%{region}%"))
+
+    if status:
+        query = query.where(Tour.status == status)
+
+    query = query.order_by(Tour.start_date.asc().nulls_last(), Tour.created_at.desc())
+    query = query.offset(offset).limit(limit)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    # Get booking counts for each tour
+    tour_ids = [tour.id for tour, artist in rows]
+    booking_counts = {}
+    if tour_ids:
+        booking_result = await db.execute(
+            select(Booking.tour_id, sa.func.count(Booking.id))
+            .where(Booking.tour_id.in_(tour_ids))
+            .where(Booking.status.in_(["approved", "confirmed"]))
+            .group_by(Booking.tour_id)
+        )
+        booking_counts = dict(booking_result.all())
+
+    opportunities = []
+    for tour, artist in rows:
+        opportunities.append(
+            TourOpportunityResponse(
+                id=tour.id,
+                name=tour.name,
+                region=tour.region,
+                start_date=tour.start_date,
+                end_date=tour.end_date,
+                description=tour.description,
+                price_tier=calculate_price_tier(tour.price_per_show),
+                status=tour.status,
+                confirmed_shows=booking_counts.get(tour.id, 0),
+                artist=TourOpportunityArtist(
+                    id=artist.id,
+                    name_en=artist.name_en,
+                    name_he=artist.name_he,
+                    profile_image=artist.profile_image,
+                    city=artist.city,
+                    country=artist.country,
+                ),
+                created_at=tour.created_at,
+            )
+        )
+
+    return opportunities
 
 
 @router.get("/suggestions", response_model=list[TourSuggestion])
@@ -111,10 +199,10 @@ async def request_to_join_tour(
     if not tour:
         raise HTTPException(status_code=404, detail="Tour not found")
 
-    if tour.status not in ["proposed", "confirmed"]:
+    if tour.status not in ["pending", "approved"]:
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot join tour with status '{tour.status}'. Tour must be 'proposed' or 'confirmed'."
+            detail=f"Cannot join tour with status '{tour.status}'. Tour must be 'pending' or 'approved'."
         )
 
     # Verify community exists
@@ -278,8 +366,9 @@ async def create_tour(
         start_date=tour_data.start_date,
         end_date=tour_data.end_date,
         total_budget=tour_data.total_budget,
+        price_per_show=tour_data.price_per_show,
         description=tour_data.description,
-        status="draft",
+        status="pending",  # Artist announces availability, waiting for bookings
     )
     db.add(tour)
     await db.flush()

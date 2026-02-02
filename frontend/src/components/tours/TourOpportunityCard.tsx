@@ -29,17 +29,22 @@ interface NearbyBooking {
 }
 
 interface TourOpportunity {
-  tour_id: number;
-  tour_name: string;
+  tour_id?: number;
+  id?: number;  // New schema uses id
+  tour_name?: string;
+  name?: string;  // New schema uses name
   artist: TourArtist;
   region: string;
   start_date: string | null;
   end_date: string | null;
-  nearest_booking: NearbyBooking | null;
-  distance_to_nearest_km: number | null;
-  total_stops: number;
+  nearest_booking?: NearbyBooking | null;
+  distance_to_nearest_km?: number | null;
+  total_stops?: number;
+  confirmed_shows?: number;  // New schema
   status: string;
-  estimated_savings: number | null;
+  estimated_savings?: number | null;
+  price_tier?: string | null;  // New: $, $$, or $$$
+  description?: string | null;
 }
 
 interface TourOpportunityCardProps {
@@ -57,6 +62,9 @@ export default function TourOpportunityCard({
   const [requestSent, setRequestSent] = useState(false);
 
   const artistName = tour.artist.name_en || tour.artist.name_he || "Unknown Artist";
+  const tourId = tour.tour_id || tour.id || 0;
+  const tourName = tour.tour_name || tour.name || "Tour";
+  const totalStops = tour.total_stops ?? tour.confirmed_shows ?? 0;
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "TBD";
@@ -67,12 +75,12 @@ export default function TourOpportunityCard({
   };
 
   const handleJoinRequest = async () => {
-    if (requestSent) return;
+    if (requestSent || !tourId) return;
 
     setIsRequesting(true);
     try {
       const response = await fetch(
-        `${API_URL}/tours/${tour.tour_id}/join-request`,
+        `${API_URL}/tours/${tourId}/join-request`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -85,7 +93,7 @@ export default function TourOpportunityCard({
 
       if (response.ok) {
         setRequestSent(true);
-        onJoinRequest?.(tour.tour_id);
+        onJoinRequest?.(tourId);
       } else {
         const error = await response.json();
         alert(error.detail || "Failed to send request");
@@ -94,6 +102,36 @@ export default function TourOpportunityCard({
       console.error("Failed to send join request:", error);
     } finally {
       setIsRequesting(false);
+    }
+  };
+
+  const getStatusBadge = () => {
+    switch (tour.status) {
+      case "approved":
+        return "bg-emerald-100 text-emerald-700";
+      case "pending":
+        return "bg-amber-100 text-amber-700";
+      case "confirmed":
+        return "bg-emerald-100 text-emerald-700";
+      case "proposed":
+        return "bg-amber-100 text-amber-700";
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
+  };
+
+  const getStatusLabel = () => {
+    switch (tour.status) {
+      case "approved":
+        return "Confirmed";
+      case "pending":
+        return "Open";
+      case "confirmed":
+        return "Confirmed";
+      case "proposed":
+        return "Open";
+      default:
+        return tour.status;
     }
   };
 
@@ -127,21 +165,19 @@ export default function TourOpportunityCard({
           )}
         </div>
         <span
-          className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-            tour.status === "confirmed"
-              ? "bg-emerald-100 text-emerald-700"
-              : tour.status === "proposed"
-                ? "bg-amber-100 text-amber-700"
-                : "bg-slate-100 text-slate-700"
-          }`}
+          className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusBadge()}`}
         >
-          {tour.status}
+          {getStatusLabel()}
         </span>
       </div>
 
       {/* Tour Details */}
       <div className="p-4 space-y-3">
-        <h3 className="font-semibold text-slate-800">{tour.tour_name}</h3>
+        <h3 className="font-semibold text-slate-800">{tourName}</h3>
+
+        {tour.description && (
+          <p className="text-sm text-slate-600 line-clamp-2">{tour.description}</p>
+        )}
 
         <div className="grid grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2 text-slate-600">
@@ -158,11 +194,18 @@ export default function TourOpportunityCard({
 
           <div className="flex items-center gap-2 text-slate-600">
             <Users size={16} className="text-slate-400" />
-            <span>{tour.total_stops} stops</span>
+            <span>{totalStops} {totalStops === 1 ? "show" : "shows"} confirmed</span>
           </div>
 
+          {tour.price_tier && (
+            <div className="flex items-center gap-2 text-primary-600 font-semibold">
+              <DollarSign size={16} />
+              <span>{tour.price_tier}</span>
+            </div>
+          )}
+
           {tour.distance_to_nearest_km && (
-            <div className="flex items-center gap-2 text-primary-600 font-medium">
+            <div className="flex items-center gap-2 text-primary-600 font-medium col-span-2">
               <MapPin size={16} />
               <span>{Math.round(tour.distance_to_nearest_km)} km away</span>
             </div>
@@ -201,10 +244,10 @@ export default function TourOpportunityCard({
       {/* Actions */}
       <div className="px-4 pb-4 flex gap-2">
         <Link
-          href={`/tours/${tour.tour_id}`}
+          href={`/artists/${tour.artist.id}`}
           className="flex-1 btn-secondary text-center justify-center text-sm"
         >
-          View Details
+          View Artist
         </Link>
         <button
           onClick={handleJoinRequest}

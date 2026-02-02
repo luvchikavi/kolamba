@@ -35,7 +35,11 @@ interface Tour {
   start_date: string;
   end_date: string;
   total_budget: number;
+  price_per_show?: number;
+  price_tier?: string;
+  description?: string;
   status: string;
+  confirmed_shows?: number;
   bookings: { id: number }[];
 }
 
@@ -162,11 +166,10 @@ function TourSuggestionCard({
 }
 
 function TourCard({ tour }: { tour: Tour }) {
+  const confirmedCount = tour.confirmed_shows ?? tour.bookings?.length ?? 0;
+
   return (
-    <Link
-      href={`/dashboard/artist/tours/${tour.id}`}
-      className="block card card-hover p-6"
-    >
+    <div className="card p-6">
       <div className="flex justify-between items-start mb-3">
         <div>
           <h3 className="font-bold text-lg text-slate-900">{tour.name}</h3>
@@ -174,6 +177,10 @@ function TourCard({ tour }: { tour: Tour }) {
         </div>
         <StatusBadge status={tour.status} />
       </div>
+
+      {tour.description && (
+        <p className="text-sm text-slate-600 mb-3 line-clamp-2">{tour.description}</p>
+      )}
 
       <div className="flex flex-wrap gap-4 text-sm text-slate-600">
         <div className="flex items-center gap-1">
@@ -183,19 +190,31 @@ function TourCard({ tour }: { tour: Tour }) {
             {new Date(tour.end_date).toLocaleDateString()}
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <DollarSign size={14} className="text-slate-400" />
-          <span>${tour.total_budget?.toLocaleString() || 0}</span>
-        </div>
+        {tour.price_tier && (
+          <div className="flex items-center gap-1">
+            <DollarSign size={14} className="text-primary-500" />
+            <span className="text-primary-600 font-medium">{tour.price_tier}</span>
+          </div>
+        )}
         <div className="flex items-center gap-1">
           <Users size={14} className="text-slate-400" />
-          <span>{tour.bookings?.length || 0} performances</span>
+          <span>{confirmedCount} {confirmedCount === 1 ? "show" : "shows"} confirmed</span>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center text-primary-600 text-sm font-medium">
-        View Details
-        <ChevronRight size={16} className="ml-1" />
+      <div className="mt-4 flex items-center justify-between">
+        <Link
+          href={`/dashboard/artist/tours/${tour.id}`}
+          className="flex items-center text-primary-600 text-sm font-medium hover:text-primary-700"
+        >
+          View Details
+          <ChevronRight size={16} className="ml-1" />
+        </Link>
+        {tour.status === "pending" && confirmedCount > 0 && (
+          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+            Ready to approve
+          </span>
+        )}
       </div>
     </Link>
   );
@@ -410,6 +429,214 @@ function AddTourDateModal({
   );
 }
 
+function CreateTourModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: {
+    name: string;
+    region: string;
+    start_date: string;
+    end_date: string;
+    price_per_show?: number;
+    description?: string;
+  }) => void;
+  isSubmitting: boolean;
+}) {
+  const [name, setName] = useState("");
+  const [region, setRegion] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [pricePerShow, setPricePerShow] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      name,
+      region,
+      start_date: startDate,
+      end_date: endDate,
+      price_per_show: pricePerShow ? parseInt(pricePerShow) : undefined,
+      description: description || undefined,
+    });
+  };
+
+  const resetForm = () => {
+    setName("");
+    setRegion("");
+    setStartDate("");
+    setEndDate("");
+    setPricePerShow("");
+    setDescription("");
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Start a New Tour</h2>
+            <p className="text-sm text-slate-500">
+              Announce your availability and let communities invite you
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Tour Name *
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., East Coast Spring Tour 2026"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Region / Area *
+            </label>
+            <input
+              type="text"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              placeholder="e.g., Northeast USA, California, Europe"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              Communities in this region will see your tour opportunity
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Start Date *
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                End Date *
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Price per Show (USD)
+            </label>
+            <div className="relative">
+              <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="number"
+                value={pricePerShow}
+                onChange={(e) => setPricePerShow(e.target.value)}
+                placeholder="e.g., 5000"
+                min="0"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Communities will see your price tier ($, $$, or $$$)
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Tell communities about this tour - what type of performances, special requirements, etc."
+              rows={3}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <h4 className="font-medium text-amber-800 mb-1">How it works</h4>
+            <ul className="text-sm text-amber-700 space-y-1">
+              <li>1. Your tour will be visible to communities in the region</li>
+              <li>2. Communities can send you booking requests</li>
+              <li>3. Approve requests that meet your requirements</li>
+              <li>4. Once you have bookings, your tour is confirmed!</li>
+            </ul>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !name || !region || !startDate || !endDate}
+              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus size={16} />
+                  Publish Tour
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function ArtistDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [artistId, setArtistId] = useState<number | null>(null);
@@ -417,8 +644,9 @@ export default function ArtistDashboardPage() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
   const [tourDates, setTourDates] = useState<ArtistTourDate[]>([]);
-  const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings" | "tourDates">("suggestions");
+  const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings" | "tourDates">("tours");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCreateTourModalOpen, setIsCreateTourModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -571,6 +799,50 @@ export default function ArtistDashboardPage() {
     }
   };
 
+  const handleCreateNewTour = async (data: {
+    name: string;
+    region: string;
+    start_date: string;
+    end_date: string;
+    price_per_show?: number;
+    description?: string;
+  }) => {
+    if (!artistId) return;
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(`${API_URL}/tours`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          artist_id: artistId,
+          name: data.name,
+          region: data.region,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          price_per_show: data.price_per_show,
+          description: data.description,
+        }),
+      });
+
+      if (response.ok) {
+        const newTour = await response.json();
+        setTours([newTour, ...tours]);
+        setIsCreateTourModalOpen(false);
+        setActiveTab("tours");
+      }
+    } catch (error) {
+      console.error("Failed to create tour:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
@@ -594,10 +866,7 @@ export default function ArtistDashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  setActiveTab("tourDates");
-                  setIsAddModalOpen(true);
-                }}
+                onClick={() => setIsCreateTourModalOpen(true)}
                 className="btn-primary"
               >
                 <Plus size={18} />
@@ -758,9 +1027,17 @@ export default function ArtistDashboardPage() {
                 <h3 className="font-bold text-lg text-slate-900 mb-2">
                   No Tours Yet
                 </h3>
-                <p className="text-slate-500">
-                  Create your first tour from a suggestion above.
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  Announce your availability and let communities invite you to perform.
+                  Once you have confirmed bookings, your tour will be live!
                 </p>
+                <button
+                  onClick={() => setIsCreateTourModalOpen(true)}
+                  className="btn-primary mx-auto"
+                >
+                  <Plus size={18} />
+                  Start Your First Tour
+                </button>
               </div>
             ) : (
               tours.map((tour) => <TourCard key={tour.id} tour={tour} />)
@@ -845,6 +1122,13 @@ export default function ArtistDashboardPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddTourDate}
+        isSubmitting={isSubmitting}
+      />
+
+      <CreateTourModal
+        isOpen={isCreateTourModalOpen}
+        onClose={() => setIsCreateTourModalOpen(false)}
+        onSubmit={handleCreateNewTour}
         isSubmitting={isSubmitting}
       />
     </div>

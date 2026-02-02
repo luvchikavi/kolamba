@@ -33,12 +33,13 @@ class Tour(Base):
 
     # Pricing
     total_budget: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    price_per_show: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Artist's price per show on this tour
 
     # Notes and description
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    # Status: draft, proposed, confirmed, in_progress, completed, cancelled
-    status: Mapped[str] = mapped_column(String(20), default="draft")
+    # Status: pending (announced), approved (has confirmed bookings), completed, cancelled
+    status: Mapped[str] = mapped_column(String(20), default="pending")
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
