@@ -116,9 +116,12 @@ function EventCard({ artist }: { artist: NearbyTouringArtist }) {
             VISIT PROFILE
             <ExternalLink size={14} />
           </Link>
-          <button className="px-4 py-2.5 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors">
+          <Link
+            href={`/booking/${artist.artist_id}`}
+            className="px-4 py-2.5 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors"
+          >
             MAKE IT A TOUR
-          </button>
+          </Link>
         </div>
       </div>
     </div>

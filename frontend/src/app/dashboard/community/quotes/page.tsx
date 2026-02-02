@@ -15,6 +15,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { showSuccess, showError } from "@/lib/toast";
 
 interface Booking {
   id: number;
@@ -51,6 +52,7 @@ export default function CommunityQuotesPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -84,6 +86,37 @@ export default function CommunityQuotesPage() {
       setError("Failed to load your quotes. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: number) => {
+    if (!confirm("Are you sure you want to cancel this booking request?")) {
+      return;
+    }
+
+    setCancellingId(bookingId);
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel booking");
+      }
+
+      // Update local state - change status to cancelled
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status: "cancelled" } : b))
+      );
+
+      showSuccess("Booking request cancelled successfully");
+    } catch (err) {
+      console.error("Failed to cancel booking:", err);
+      showError("Failed to cancel the booking request. Please try again.");
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -184,8 +217,12 @@ export default function CommunityQuotesPage() {
                     View Artist
                   </Link>
                   {booking.status === "pending" && (
-                    <button className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors">
-                      Cancel Request
+                    <button
+                      onClick={() => handleCancelBooking(booking.id)}
+                      disabled={cancellingId === booking.id}
+                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {cancellingId === booking.id ? "Cancelling..." : "Cancel Request"}
                     </button>
                   )}
                 </div>

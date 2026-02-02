@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, CheckCircle, ChevronDown } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronDown } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { showSuccess, showError } from "@/lib/toast";
 
 interface CommunityProfile {
   id: number;
@@ -36,8 +37,6 @@ export default function CommunitySettingsPage() {
   const [profile, setProfile] = useState<CommunityProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",  // Community name
@@ -87,7 +86,7 @@ export default function CommunitySettingsPage() {
       });
     } catch (err) {
       console.error("Failed to fetch profile:", err);
-      setError("Failed to load your profile. Please try again.");
+      showError("Failed to load your profile. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -96,8 +95,6 @@ export default function CommunitySettingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setError(null);
-    setSuccess(false);
 
     try {
       const token = localStorage.getItem("access_token");
@@ -124,10 +121,9 @@ export default function CommunitySettingsPage() {
         throw new Error(data.detail || "Failed to update profile");
       }
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      showSuccess("Settings saved successfully");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save changes");
+      showError(err instanceof Error ? err.message : "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
@@ -157,19 +153,6 @@ export default function CommunitySettingsPage() {
         <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 italic mb-8">
           SETTINGS
         </h1>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <CheckCircle size={18} />
-            Your profile has been updated successfully.
-          </div>
-        )}
 
         {/* Profile Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-sm">
