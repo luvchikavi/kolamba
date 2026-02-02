@@ -421,3 +421,95 @@ async def seed_artists(
         "communities": created_communities,
         "note": "Avi can login with: avi@kolamba.com / avi123",
     }
+
+
+@router.post("/seed-tour-dates")
+async def seed_tour_dates(
+    admin_secret: str = Query(..., description="Admin secret for authorization"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Seed tour dates for existing artists. Requires admin secret."""
+    # Verify admin secret
+    if admin_secret != settings.secret_key:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+
+    # Check if tour dates already exist
+    result = await db.execute(select(ArtistTourDate).limit(1))
+    if result.scalar_one_or_none():
+        return {"message": "Tour dates already exist. Skipping seed.", "seeded": False}
+
+    # Get existing artists
+    artists_result = await db.execute(
+        select(Artist).where(Artist.is_featured == True).order_by(Artist.id)
+    )
+    artists = artists_result.scalars().all()
+
+    if not artists:
+        return {"message": "No featured artists found. Run /seed first.", "seeded": False}
+
+    # Create tour dates
+    tour_dates_data = [
+        {
+            "artist_idx": 0,
+            "location": "New York, NY",
+            "days_offset": 14,
+            "description": "East Coast Concert Tour - Performing live in NYC!",
+        },
+        {
+            "artist_idx": 0,
+            "location": "Boston, MA",
+            "days_offset": 17,
+            "description": "East Coast Concert Tour - Boston stop",
+        },
+        {
+            "artist_idx": 1 if len(artists) > 1 else 0,
+            "location": "Los Angeles, CA",
+            "days_offset": 21,
+            "description": "West Coast High Holiday Tour",
+        },
+        {
+            "artist_idx": 2 if len(artists) > 2 else 0,
+            "location": "Chicago, IL",
+            "days_offset": 28,
+            "description": "Jewish History Lecture Series",
+        },
+        {
+            "artist_idx": 3 if len(artists) > 3 else 0,
+            "location": "Miami, FL",
+            "days_offset": 35,
+            "description": "Comedy Night Tour - Bringing laughs to Florida!",
+        },
+        {
+            "artist_idx": 0,
+            "location": "Washington, DC",
+            "days_offset": 42,
+            "description": "Capital City Performance",
+        },
+    ]
+
+    created_tour_dates = []
+    for td in tour_dates_data:
+        artist = artists[td["artist_idx"]] if td["artist_idx"] < len(artists) else artists[0]
+        tour_date = ArtistTourDate(
+            artist_id=artist.id,
+            location=td["location"],
+            start_date=(datetime.now() + timedelta(days=td["days_offset"])).date(),
+            end_date=(datetime.now() + timedelta(days=td["days_offset"] + 2)).date(),
+            description=td["description"],
+        )
+        db.add(tour_date)
+        await db.flush()
+        created_tour_dates.append({
+            "id": tour_date.id,
+            "location": tour_date.location,
+            "artist": artist.name_en,
+            "start_date": str(tour_date.start_date),
+        })
+
+    await db.commit()
+
+    return {
+        "message": "Tour dates seeded successfully!",
+        "seeded": True,
+        "tour_dates": created_tour_dates,
+    }

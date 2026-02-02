@@ -5,25 +5,20 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, MapPin, Calendar, Loader2 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
-interface TourDate {
+interface TourWithArtist {
   id: number;
-  artist_id: number;
   location: string;
   start_date: string;
   end_date: string | null;
   description: string | null;
-}
-
-interface Artist {
-  id: number;
-  name_en: string | null;
-  name_he: string | null;
-  profile_image: string | null;
-}
-
-interface TourWithArtist {
-  tour_date: TourDate;
-  artist: Artist;
+  artist: {
+    id: number;
+    name_en: string | null;
+    name_he: string | null;
+    profile_image: string | null;
+    city: string | null;
+    country: string | null;
+  };
 }
 
 export default function NewTours() {
@@ -37,39 +32,12 @@ export default function NewTours() {
 
   const fetchTours = async () => {
     try {
-      // Fetch featured/active artists first
-      const artistsRes = await fetch(`${API_URL}/artists/featured?limit=10`);
-      if (!artistsRes.ok) return;
+      // Use the new efficient endpoint that returns tours with artist info
+      const res = await fetch(`${API_URL}/artists/tour-dates/recent?limit=8`);
+      if (!res.ok) return;
 
-      const artists: Artist[] = await artistsRes.json();
-
-      // Fetch tour dates for each artist
-      const toursWithArtists: TourWithArtist[] = [];
-
-      for (const artist of artists) {
-        try {
-          const tourDatesRes = await fetch(`${API_URL}/artists/${artist.id}/tour-dates`);
-          if (tourDatesRes.ok) {
-            const tourDates: TourDate[] = await tourDatesRes.json();
-            // Add upcoming tour dates
-            const upcomingDates = tourDates.filter(
-              td => new Date(td.start_date) >= new Date()
-            );
-            for (const td of upcomingDates) {
-              toursWithArtists.push({ tour_date: td, artist });
-            }
-          }
-        } catch {
-          // Skip this artist if there's an error
-        }
-      }
-
-      // Sort by start date
-      toursWithArtists.sort((a, b) =>
-        new Date(a.tour_date.start_date).getTime() - new Date(b.tour_date.start_date).getTime()
-      );
-
-      setTours(toursWithArtists.slice(0, 8)); // Limit to 8 tours
+      const data: TourWithArtist[] = await res.json();
+      setTours(data);
     } catch (error) {
       console.error("Failed to fetch tours:", error);
     } finally {
@@ -153,7 +121,7 @@ export default function NewTours() {
                   const artistName = tour.artist.name_en || tour.artist.name_he || "Artist";
                   return (
                     <Link
-                      key={`${tour.artist.id}-${tour.tour_date.id}`}
+                      key={`${tour.artist.id}-${tour.id}`}
                       href={`/artists/${tour.artist.id}`}
                       className="flex-shrink-0 w-72 snap-start group"
                     >
@@ -179,15 +147,15 @@ export default function NewTours() {
                         <div className="p-5">
                           <p className="text-sm text-primary-600 font-medium mb-1">{artistName}</p>
                           <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-3">
-                            {tour.tour_date.description || "On Tour"}
+                            {tour.description || "On Tour"}
                           </h3>
                           <div className="flex items-center gap-1 text-slate-500 text-sm mb-2">
                             <MapPin size={14} />
-                            <span>{tour.tour_date.location}</span>
+                            <span>{tour.location}</span>
                           </div>
                           <div className="flex items-center gap-1 text-slate-500 text-sm">
                             <Calendar size={14} />
-                            <span>{formatDate(tour.tour_date.start_date)}</span>
+                            <span>{formatDate(tour.start_date)}</span>
                           </div>
                         </div>
                       </div>

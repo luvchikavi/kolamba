@@ -72,7 +72,9 @@
       "Bash(git reset:*)",
       "Bash(vercel --version:*)",
       "Bash(vercel:*)",
-      "WebFetch(domain:www.kolamba.org)"
+      "WebFetch(domain:www.kolamba.org)",
+      "Bash(pgrep:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

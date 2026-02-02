@@ -19,6 +19,46 @@ from app.services.geocoding import geocode_location
 router = APIRouter()
 
 
+@router.get("/tour-dates/recent")
+async def get_recent_tour_dates(
+    limit: int = Query(10, description="Number of tour dates to return"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get recent upcoming tour dates across all artists (for home page)."""
+    from datetime import date
+
+    query = (
+        select(ArtistTourDate, Artist)
+        .join(Artist, ArtistTourDate.artist_id == Artist.id)
+        .where(ArtistTourDate.start_date >= date.today())
+        .where(Artist.status == "active")
+        .order_by(ArtistTourDate.start_date)
+        .limit(limit)
+    )
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    return [
+        {
+            "id": tour_date.id,
+            "location": tour_date.location,
+            "start_date": tour_date.start_date.isoformat(),
+            "end_date": tour_date.end_date.isoformat() if tour_date.end_date else None,
+            "description": tour_date.description,
+            "artist": {
+                "id": artist.id,
+                "name_en": artist.name_en,
+                "name_he": artist.name_he,
+                "profile_image": artist.profile_image,
+                "city": artist.city,
+                "country": artist.country,
+            },
+        }
+        for tour_date, artist in rows
+    ]
+
+
 @router.get("/{artist_id}/tour-dates", response_model=list[ArtistTourDateResponse])
 async def get_artist_tour_dates(
     artist_id: int,
