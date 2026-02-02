@@ -25,8 +25,68 @@ from app.schemas.tour import (
     calculate_price_tier,
 )
 from app.services.tour_grouping import suggest_tours, find_nearby_tours
+from app.config import get_settings
 
 router = APIRouter()
+settings = get_settings()
+
+
+@router.post("/admin/create-test-tour")
+async def create_test_tour(
+    admin_secret: str = Query(..., description="Admin secret for authorization"),
+    artist_id: int = Query(None, description="Artist ID (optional, uses first active artist if not provided)"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a test tour for admin testing. Requires admin secret."""
+    if admin_secret != settings.secret_key:
+        raise HTTPException(status_code=403, detail="Invalid admin secret")
+
+    # Get artist
+    if artist_id:
+        artist_result = await db.execute(
+            select(Artist).where(Artist.id == artist_id, Artist.status == "active")
+        )
+    else:
+        # Get first active artist
+        artist_result = await db.execute(
+            select(Artist).where(Artist.status == "active").limit(1)
+        )
+
+    artist = artist_result.scalar_one_or_none()
+    if not artist:
+        raise HTTPException(status_code=404, detail="No active artist found")
+
+    from datetime import date, timedelta
+
+    # Create test tour
+    tour = Tour(
+        artist_id=artist.id,
+        name=f"Test Tour - {artist.name_en or artist.name_he}",
+        region="Northeast USA",
+        start_date=date.today() + timedelta(days=14),
+        end_date=date.today() + timedelta(days=30),
+        price_per_show=5000,
+        description="This is a test tour to verify the tour feature is working correctly.",
+        status="pending",
+    )
+    db.add(tour)
+    await db.commit()
+    await db.refresh(tour)
+
+    return {
+        "message": "Test tour created successfully!",
+        "tour": {
+            "id": tour.id,
+            "name": tour.name,
+            "artist_id": tour.artist_id,
+            "artist_name": artist.name_en or artist.name_he,
+            "region": tour.region,
+            "start_date": tour.start_date.isoformat(),
+            "end_date": tour.end_date.isoformat(),
+            "price_per_show": tour.price_per_show,
+            "status": tour.status,
+        }
+    }
 
 
 @router.get("/opportunities", response_model=list[TourOpportunityResponse])
