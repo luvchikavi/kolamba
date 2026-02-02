@@ -191,10 +191,7 @@ function TourCard({ tour }: { tour: Tour }) {
           </span>
         </div>
         {tour.price_tier && (
-          <div className="flex items-center gap-1">
-            <DollarSign size={14} className="text-primary-500" />
-            <span className="text-primary-600 font-medium">{tour.price_tier}</span>
-          </div>
+          <span className="text-primary-600 font-medium">{tour.price_tier}</span>
         )}
         <div className="flex items-center gap-1">
           <Users size={14} className="text-slate-400" />

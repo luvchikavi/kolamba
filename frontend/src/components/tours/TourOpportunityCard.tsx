@@ -198,10 +198,7 @@ export default function TourOpportunityCard({
           </div>
 
           {tour.price_tier && (
-            <div className="flex items-center gap-2 text-primary-600 font-semibold">
-              <DollarSign size={16} />
-              <span>{tour.price_tier}</span>
-            </div>
+            <span className="text-primary-600 font-semibold">{tour.price_tier}</span>
           )}
 
           {tour.distance_to_nearest_km && (
