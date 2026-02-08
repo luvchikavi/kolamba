@@ -13,6 +13,7 @@ from app.models.booking import Booking
 from app.models.artist import Artist
 from app.models.community import Community
 from app.models.user import User
+from app.models.conversation import Conversation
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 from app.routers.auth import get_current_user, get_current_user_optional
 
@@ -68,6 +69,12 @@ async def create_booking(
         status="pending",
     )
     db.add(booking)
+    await db.flush()
+
+    # Auto-create a conversation for this booking
+    conversation = Conversation(booking_id=booking.id)
+    db.add(conversation)
+
     await db.commit()
     await db.refresh(booking)
 

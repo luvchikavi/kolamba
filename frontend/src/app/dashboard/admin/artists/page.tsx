@@ -37,6 +37,13 @@ interface RejectionModalProps {
   onConfirm: (reason: string) => void;
 }
 
+const REJECTION_REASONS = [
+  "Incomplete Profile",
+  "Insufficient Portfolio",
+  "Not a Relevant Fit",
+  "Duplicate Account",
+];
+
 function RejectionModal({ isOpen, artistName, onClose, onConfirm }: RejectionModalProps) {
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,17 +73,32 @@ function RejectionModal({ isOpen, artistName, onClose, onConfirm }: RejectionMod
 
         <h3 className="text-xl font-bold text-slate-900 mb-2">Reject Artist</h3>
         <p className="text-slate-600 mb-4">
-          Please provide a reason for rejecting <strong>{artistName}</strong>.
-          This will be sent to the artist.
+          Select a reason for rejecting <strong>{artistName}</strong>.
+          This will be visible to the artist.
         </p>
 
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Enter rejection reason..."
-          rows={4}
-          className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-red-400 transition-colors resize-none mb-4"
-        />
+        <div className="space-y-2 mb-4">
+          {REJECTION_REASONS.map((r) => (
+            <label
+              key={r}
+              className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                reason === r
+                  ? "border-red-400 bg-red-50"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <input
+                type="radio"
+                name="rejection_reason"
+                value={r}
+                checked={reason === r}
+                onChange={() => setReason(r)}
+                className="text-red-500 focus:ring-red-400"
+              />
+              <span className="text-sm font-medium text-slate-700">{r}</span>
+            </label>
+          ))}
+        </div>
 
         <div className="flex gap-3">
           <button
@@ -87,7 +109,7 @@ function RejectionModal({ isOpen, artistName, onClose, onConfirm }: RejectionMod
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!reason.trim() || isSubmitting}
+            disabled={!reason || isSubmitting}
             className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
@@ -112,7 +134,8 @@ function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
     active: { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle },
     pending: { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
-    inactive: { bg: "bg-red-100", text: "text-red-700", icon: XCircle },
+    inactive: { bg: "bg-slate-100", text: "text-slate-700", icon: XCircle },
+    rejected: { bg: "bg-red-100", text: "text-red-700", icon: XCircle },
   };
 
   const { bg, text, icon: Icon } = config[status] || config.pending;
@@ -181,14 +204,14 @@ export default function ArtistsPage() {
     }
   };
 
-  const handleUpdateStatus = async (artistId: number, newStatus: string, reason?: string) => {
+  const handleUpdateStatus = async (artistId: number, newStatus: string, rejectionReason?: string) => {
     try {
       const token = localStorage.getItem("access_token");
-      
+
       const url = new URL(`${API_URL}/admin/artists/${artistId}/status`);
       url.searchParams.set("status", newStatus);
-      if (reason) {
-        url.searchParams.set("reason", reason);
+      if (rejectionReason) {
+        url.searchParams.set("rejection_reason", rejectionReason);
       }
 
       const response = await fetch(url.toString(), {
@@ -208,7 +231,7 @@ export default function ArtistsPage() {
 
   const handleRejectWithReason = async (reason: string) => {
     if (rejectionModal.artistId) {
-      await handleUpdateStatus(rejectionModal.artistId, "inactive", reason);
+      await handleUpdateStatus(rejectionModal.artistId, "rejected", reason);
       setRejectionModal({ isOpen: false, artistId: null, artistName: "" });
     }
   };
@@ -251,6 +274,7 @@ export default function ArtistsPage() {
 
   const pendingCount = artists.filter((a) => a.status === "pending").length;
   const activeCount = artists.filter((a) => a.status === "active").length;
+  const rejectedCount = artists.filter((a) => a.status === "rejected").length;
   const inactiveCount = artists.filter((a) => a.status === "inactive").length;
 
   return (
@@ -294,10 +318,20 @@ export default function ArtistsPage() {
           Active ({activeCount})
         </button>
         <button
+          onClick={() => setStatusFilter("rejected")}
+          className={`px-4 py-2 rounded-full font-medium transition-colors ${
+            statusFilter === "rejected"
+              ? "bg-red-500 text-white"
+              : "bg-white text-slate-600 hover:bg-slate-100"
+          }`}
+        >
+          Rejected ({rejectedCount})
+        </button>
+        <button
           onClick={() => setStatusFilter("inactive")}
           className={`px-4 py-2 rounded-full font-medium transition-colors ${
             statusFilter === "inactive"
-              ? "bg-red-500 text-white"
+              ? "bg-slate-500 text-white"
               : "bg-white text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -406,12 +440,12 @@ export default function ArtistsPage() {
                     Deactivate
                   </button>
                 )}
-                {artist.status === "inactive" && (
+                {(artist.status === "inactive" || artist.status === "rejected") && (
                   <button
                     onClick={() => handleUpdateStatus(artist.id, "active")}
                     className="flex-1 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-sm font-medium rounded-lg transition-colors"
                   >
-                    Reactivate
+                    Approve
                   </button>
                 )}
                 <Link

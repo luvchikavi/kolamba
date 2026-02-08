@@ -1,21 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: Record<string, unknown>) => void;
+          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+        };
+      };
+    };
+  }
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
+    setIsGoogleLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Google login failed");
+      }
+
+      const data = await res.json();
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+
+      // Get user role for redirect
+      const meRes = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${data.access_token}` },
+      });
+
+      if (meRes.ok) {
+        const user = await meRes.json();
+        if (user.is_superuser) {
+          router.push("/dashboard/admin");
+        } else if (user.role === "artist") {
+          router.push("/dashboard/artist");
+        } else if (user.role === "agent") {
+          router.push("/dashboard/agent");
+        } else if (user.role === "community") {
+          router.push("/dashboard/community");
+        } else {
+          router.push("/");
+        }
+      } else {
+        router.push("/");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Google login failed";
+      setError(msg);
+      showError(msg);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }, [router]);
+
+  const initGoogleSignIn = useCallback(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || !window.google) return;
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleResponse,
+    });
+
+    const btnContainer = document.getElementById("google-signin-btn");
+    if (btnContainer) {
+      window.google.accounts.id.renderButton(btnContainer, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        text: "signin_with",
+      });
+    }
+  }, [handleGoogleResponse]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,9 +265,26 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-200" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-500">or</span>
+              <span className="px-4 bg-white text-slate-500">or continue with</span>
             </div>
           </div>
+
+          {/* Google Sign-In */}
+          {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+            <div className="mb-8">
+              <div id="google-signin-btn" className="flex justify-center" />
+              {isGoogleLoading && (
+                <p className="text-sm text-center text-slate-500 mt-2">
+                  Signing in with Google...
+                </p>
+              )}
+              <Script
+                src="https://accounts.google.com/gsi/client"
+                strategy="afterInteractive"
+                onLoad={initGoogleSignIn}
+              />
+            </div>
+          )}
 
           {/* Register links */}
           <div className="space-y-4">

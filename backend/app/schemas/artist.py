@@ -94,6 +94,7 @@ class ArtistResponse(ArtistBase):
     is_featured: bool
     availability: dict
     categories: list[CategoryResponse] = []
+    rejection_reason: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

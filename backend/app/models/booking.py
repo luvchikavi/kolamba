@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from app.models.artist import Artist
     from app.models.community import Community
     from app.models.tour import Tour
+    from app.models.conversation import Conversation
 
 
 class Booking(Base):
@@ -51,3 +52,4 @@ class Booking(Base):
     artist: Mapped["Artist"] = relationship("Artist", back_populates="bookings")
     community: Mapped["Community"] = relationship("Community", back_populates="bookings")
     tour: Mapped[Optional["Tour"]] = relationship("Tour", back_populates="bookings")
+    conversation: Mapped[Optional["Conversation"]] = relationship("Conversation", back_populates="booking", uselist=False)

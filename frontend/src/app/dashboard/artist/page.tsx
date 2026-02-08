@@ -16,6 +16,7 @@ import {
   Loader2,
   X,
   Trash2,
+  MessageSquare,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -54,6 +55,8 @@ interface Booking {
 interface ArtistProfile {
   id: number;
   name_en: string;
+  status: string;
+  rejection_reason?: string;
 }
 
 interface ArtistTourDate {
@@ -648,6 +651,8 @@ function CreateTourModal({
 export default function ArtistDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [artistId, setArtistId] = useState<number | null>(null);
+  const [artistStatus, setArtistStatus] = useState<string>("active");
+  const [rejectionReason, setRejectionReason] = useState<string | undefined>();
   const [suggestions, setSuggestions] = useState<TourSuggestion[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
@@ -682,6 +687,8 @@ export default function ArtistDashboardPage() {
       }
       const profile: ArtistProfile = await profileRes.json();
       setArtistId(profile.id);
+      setArtistStatus(profile.status);
+      setRejectionReason(profile.rejection_reason);
 
       // Fetch bookings, tours, suggestions, and tour dates in parallel
       const [bookingsRes, toursRes, suggestionsRes, tourDatesRes] = await Promise.all([
@@ -866,6 +873,36 @@ export default function ArtistDashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
+      {/* Status Banners */}
+      {artistStatus === "pending" && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container-default py-4 flex items-center gap-3">
+            <Clock size={20} className="text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-amber-800">Profile Under Review</p>
+              <p className="text-sm text-amber-700">
+                Your profile is being reviewed by our team. You&apos;ll be notified once it&apos;s approved.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      {artistStatus === "rejected" && (
+        <div className="bg-red-50 border-b border-red-200">
+          <div className="container-default py-4 flex items-center gap-3">
+            <X size={20} className="text-red-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-red-800">Profile Not Approved</p>
+              <p className="text-sm text-red-700">
+                {rejectionReason
+                  ? `Reason: ${rejectionReason}`
+                  : "Your profile was not approved. Please update your profile and contact support."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white border-b border-slate-100">
         <div className="container-default py-6">
@@ -888,6 +925,13 @@ export default function ArtistDashboardPage() {
                 <Plus size={18} />
                 <span>Start a Tour</span>
               </button>
+              <Link
+                href="/dashboard/artist/messages"
+                className="btn-secondary"
+              >
+                <MessageSquare size={18} />
+                <span>Messages</span>
+              </Link>
               <Link
                 href="/dashboard/artist/settings"
                 className="btn-secondary"

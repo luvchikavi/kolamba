@@ -342,12 +342,13 @@ async def list_artists_admin(
 @router.put("/artists/{artist_id}/status")
 async def update_artist_status(
     artist_id: int,
-    status: str = Query(..., description="New status: active, pending, inactive"),
+    status: str = Query(..., description="New status: active, pending, inactive, rejected"),
+    rejection_reason: Optional[str] = Query(None, description="Reason for rejection"),
     superuser: User = Depends(get_superuser),
     db: AsyncSession = Depends(get_db),
 ):
     """Update artist status (approve/reject)."""
-    if status not in ["active", "pending", "inactive"]:
+    if status not in ["active", "pending", "inactive", "rejected"]:
         raise HTTPException(status_code=400, detail="Invalid status")
 
     result = await db.execute(
@@ -359,6 +360,12 @@ async def update_artist_status(
         raise HTTPException(status_code=404, detail="Artist not found")
 
     artist.status = status
+
+    # Store or clear rejection reason
+    if status == "rejected":
+        artist.rejection_reason = rejection_reason
+    else:
+        artist.rejection_reason = None
 
     # Also update user status if approving
     if status == "active" and artist.user:
@@ -372,6 +379,7 @@ async def update_artist_status(
         "id": artist.id,
         "name_en": artist.name_en,
         "status": artist.status,
+        "rejection_reason": artist.rejection_reason,
         "message": f"Artist status updated to {status}",
     }
 

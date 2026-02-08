@@ -77,8 +77,9 @@ class Artist(Base):
     subcategories: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)
 
     # Status and visibility
-    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, active, inactive
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, active, inactive, rejected
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
+    rejection_reason: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

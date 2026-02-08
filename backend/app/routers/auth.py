@@ -290,7 +290,7 @@ async def register_artist(
         portfolio_images=request.portfolio_images,
         spotify_links=request.spotify_links,
         media_links=request.media_links,
-        status="active",  # MVP: Auto-approve artists
+        status="pending",  # Requires admin approval
     )
 
     # Link categories
@@ -485,3 +485,87 @@ async def admin_reset_password(
     await db.commit()
 
     return {"message": f"Password updated for {request.email}"}
+
+
+class GoogleAuthRequest(BaseModel):
+    """Request body for Google OAuth login."""
+    credential: str  # Google ID token
+
+
+@router.post("/google", response_model=Token)
+async def google_auth(
+    request: GoogleAuthRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Authenticate with Google ID token."""
+    import httpx
+
+    if not settings.google_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Google OAuth is not configured",
+        )
+
+    # Verify the Google ID token using Google's tokeninfo endpoint
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"https://oauth2.googleapis.com/tokeninfo?id_token={request.credential}"
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        )
+
+    token_data = resp.json()
+
+    # Verify audience matches our client ID
+    if token_data.get("aud") != settings.google_client_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token audience mismatch",
+        )
+
+    email = token_data.get("email")
+    name = token_data.get("name", "")
+
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email not available from Google",
+        )
+
+    # Check if user already exists
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        # Create new user as community role (default for Google sign-ups)
+        user = User(
+            email=email,
+            password_hash=None,  # No password for Google users
+            name=name,
+            role="community",
+            status="active",
+            is_active=True,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account is inactive",
+        )
+
+    # Create tokens
+    access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
+    refresh_token = create_refresh_token(data={"sub": user.id})
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+    )
