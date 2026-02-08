@@ -1068,7 +1068,7 @@ export default function ArtistRegistrationPage() {
                     />
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-600 w-36">Tour Package:</span>
+                    <span className="text-slate-600 w-36">Tour:</span>
                     <span className="text-slate-500">$</span>
                     <input
                       type="text"
@@ -1080,7 +1080,7 @@ export default function ArtistRegistrationPage() {
                   </div>
                 </div>
                 <p className="mt-2 text-sm text-slate-500">
-                  Single Performance is your rate for one show. Tour Package is your rate for multiple shows in one trip.
+                  Single Performance is your minimum rate for one show. Tour is your minimum rate for multiple shows in one trip.
                 </p>
               </div>
 

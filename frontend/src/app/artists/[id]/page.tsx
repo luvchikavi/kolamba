@@ -43,6 +43,7 @@ interface Artist {
   website: string | null;
   instagram: string | null;
   youtube: string | null;
+  spotify_links: string[];
 }
 
 interface UserInfo {
@@ -267,6 +268,36 @@ export default function ArtistDetailPage({
                 </ul>
               </section>
             )}
+
+            {/* Spotify */}
+            {artist.spotify_links && artist.spotify_links.length > 0 && (
+              <section className="card p-6 md:p-8">
+                <h2 className="text-xl font-bold text-slate-900 mb-4">
+                  Spotify
+                </h2>
+                <div className="divider-gradient mb-6" />
+                <div className="space-y-4">
+                  {artist.spotify_links.map((link, idx) => {
+                    const embedUrl = link
+                      .replace("open.spotify.com/", "open.spotify.com/embed/")
+                      .split("?")[0];
+                    const isArtistEmbed = link.includes("/artist/");
+                    return (
+                      <iframe
+                        key={idx}
+                        src={embedUrl}
+                        width="100%"
+                        height={isArtistEmbed ? 352 : 152}
+                        frameBorder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                        className="rounded-xl"
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -293,7 +324,7 @@ export default function ArtistDetailPage({
                         <div className="flex justify-between items-center py-3">
                           <div className="flex items-center gap-2 text-slate-600">
                             <Calendar size={18} className="text-slate-400" />
-                            Tour Package
+                            Tour
                           </div>
                           <span className="text-xl font-bold text-slate-900">
                             ${artist.price_tour.toLocaleString()}

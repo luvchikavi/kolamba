@@ -41,6 +41,7 @@ class ArtistBase(BaseModel):
     instagram: Optional[str] = None
     youtube: Optional[str] = None
     performance_types: list[str] = []
+    spotify_links: list[str] = []
 
 
 class ArtistCreate(ArtistBase):
