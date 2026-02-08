@@ -354,31 +354,17 @@ function AddTourDateModal({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Start Date *
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate}
-                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Show Date *
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
           </div>
 
           <div>
@@ -440,6 +426,7 @@ function CreateTourModal({
     start_date: string;
     end_date: string;
     price_per_show?: number;
+    min_tour_budget?: number;
     description?: string;
   }) => void;
   isSubmitting: boolean;
@@ -449,6 +436,7 @@ function CreateTourModal({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [pricePerShow, setPricePerShow] = useState("");
+  const [minTourBudget, setMinTourBudget] = useState("");
   const [description, setDescription] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -459,6 +447,7 @@ function CreateTourModal({
       start_date: startDate,
       end_date: endDate,
       price_per_show: pricePerShow ? parseInt(pricePerShow) : undefined,
+      min_tour_budget: minTourBudget ? parseInt(minTourBudget) : undefined,
       description: description || undefined,
     });
   };
@@ -469,6 +458,7 @@ function CreateTourModal({
     setStartDate("");
     setEndDate("");
     setPricePerShow("");
+    setMinTourBudget("");
     setDescription("");
   };
 
@@ -559,24 +549,45 @@ function CreateTourModal({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Price per Show (USD)
-            </label>
-            <div className="relative">
-              <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="number"
-                value={pricePerShow}
-                onChange={(e) => setPricePerShow(e.target.value)}
-                placeholder="e.g., 5000"
-                min="0"
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Price per Show (USD)
+              </label>
+              <div className="relative">
+                <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="number"
+                  value={pricePerShow}
+                  onChange={(e) => setPricePerShow(e.target.value)}
+                  placeholder="e.g., 5000"
+                  min="0"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Communities will see your price tier ($, $$, or $$$)
+              </p>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Communities will see your price tier ($, $$, or $$$)
-            </p>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Minimum Tour Budget (USD)
+              </label>
+              <div className="relative">
+                <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="number"
+                  value={minTourBudget}
+                  onChange={(e) => setMinTourBudget(e.target.value)}
+                  placeholder="e.g., 10000"
+                  min="0"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Tour confirms when bookings reach this total
+              </p>
+            </div>
           </div>
 
           <div>
@@ -598,7 +609,7 @@ function CreateTourModal({
               <li>1. Your tour will be visible to communities in the region</li>
               <li>2. Communities can send you booking requests</li>
               <li>3. Approve requests that meet your requirements</li>
-              <li>4. Once you have bookings, your tour is confirmed!</li>
+              <li>4. Your tour is confirmed once approved bookings reach your minimum tour budget</li>
             </ul>
           </div>
 
@@ -802,6 +813,7 @@ export default function ArtistDashboardPage() {
     start_date: string;
     end_date: string;
     price_per_show?: number;
+    min_tour_budget?: number;
     description?: string;
   }) => {
     if (!artistId) return;
@@ -823,6 +835,7 @@ export default function ArtistDashboardPage() {
           start_date: data.start_date,
           end_date: data.end_date,
           price_per_show: data.price_per_show,
+          min_tour_budget: data.min_tour_budget,
           description: data.description,
         }),
       });
@@ -857,9 +870,15 @@ export default function ArtistDashboardPage() {
       <div className="bg-white border-b border-slate-100">
         <div className="container-default py-6">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Artist Dashboard</h1>
-              <p className="text-slate-500">Manage your tours and bookings</p>
+            <div className="flex items-center gap-6">
+              <Link href="/" className="text-xl font-bold text-slate-900 hover:text-primary-600 transition-colors">
+                KOLAMBA
+              </Link>
+              <div className="h-8 w-px bg-slate-200" />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Artist Dashboard</h1>
+                <p className="text-slate-500">Manage your tours and bookings</p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -867,14 +886,14 @@ export default function ArtistDashboardPage() {
                 className="btn-primary"
               >
                 <Plus size={18} />
-                Start a Tour
+                <span>Start a Tour</span>
               </button>
               <Link
                 href="/dashboard/artist/settings"
                 className="btn-secondary"
               >
                 <Settings size={18} />
-                Settings
+                <span>Settings</span>
               </Link>
             </div>
           </div>

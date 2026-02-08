@@ -34,6 +34,7 @@ class Tour(Base):
     # Pricing
     total_budget: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     price_per_show: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Artist's price per show on this tour
+    min_tour_budget: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Minimum total revenue to confirm the tour
 
     # Notes and description
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

@@ -427,6 +427,7 @@ async def create_tour(
         end_date=tour_data.end_date,
         total_budget=tour_data.total_budget,
         price_per_show=tour_data.price_per_show,
+        min_tour_budget=tour_data.min_tour_budget,
         description=tour_data.description,
         status="pending",  # Artist announces availability, waiting for bookings
     )

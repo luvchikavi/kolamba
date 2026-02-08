@@ -7,15 +7,15 @@ import { API_URL } from "@/lib/api";
 
 const categories = [
   { id: 1, name: "Music", slug: "music" },
-  { id: 2, name: "Dance", slug: "dance" },
-  { id: 3, name: "Theater", slug: "theater" },
-  { id: 4, name: "Literature", slug: "literature" },
-  { id: 5, name: "Comedy", slug: "comedy" },
-  { id: 6, name: "Lectures", slug: "lecture" },
-  { id: 7, name: "Workshops", slug: "workshop" },
-  { id: 8, name: "Journalism", slug: "journalism" },
-  { id: 9, name: "Inspiration", slug: "inspiration" },
-  { id: 10, name: "Visual Arts", slug: "visual-arts" },
+  { id: 2, name: "Literature", slug: "literature" },
+  { id: 3, name: "Journalism", slug: "journalism" },
+  { id: 4, name: "Film & Television", slug: "film-television" },
+  { id: 5, name: "Religion & Judaism", slug: "religion-judaism" },
+  { id: 6, name: "Comedy", slug: "comedy" },
+  { id: 7, name: "Theater", slug: "theater" },
+  { id: 8, name: "Visual Arts", slug: "visual-arts" },
+  { id: 9, name: "Culinary", slug: "culinary" },
+  { id: 10, name: "Inspiration", slug: "inspiration" },
 ];
 
 const languages = ["English", "Hebrew", "French", "Spanish", "Russian", "German"];

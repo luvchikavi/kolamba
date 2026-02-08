@@ -106,14 +106,22 @@ async def get_my_artist_profile(
         if artist:
             return artist
 
-    if current_user.role != "artist":
+    if current_user.role not in ("artist", "agent"):
         raise HTTPException(status_code=403, detail="Not an artist account")
 
-    result = await db.execute(
-        select(Artist)
-        .options(selectinload(Artist.categories))
-        .where(Artist.user_id == current_user.id)
-    )
+    # Look up by user_id (artist role) or agent_user_id (agent role)
+    if current_user.role == "agent":
+        result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.agent_user_id == current_user.id)
+        )
+    else:
+        result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.user_id == current_user.id)
+        )
     artist = result.scalar_one_or_none()
 
     if not artist:
@@ -129,14 +137,22 @@ async def update_my_artist_profile(
     db: AsyncSession = Depends(get_db),
 ):
     """Update current user's artist profile."""
-    if current_user.role != "artist":
+    if current_user.role not in ("artist", "agent"):
         raise HTTPException(status_code=403, detail="Not an artist account")
 
-    result = await db.execute(
-        select(Artist)
-        .options(selectinload(Artist.categories))
-        .where(Artist.user_id == current_user.id)
-    )
+    # Look up by user_id (artist role) or agent_user_id (agent role)
+    if current_user.role == "agent":
+        result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.agent_user_id == current_user.id)
+        )
+    else:
+        result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.user_id == current_user.id)
+        )
     artist = result.scalar_one_or_none()
 
     if not artist:

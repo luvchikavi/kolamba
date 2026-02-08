@@ -33,6 +33,7 @@ class TourBase(BaseModel):
     end_date: Optional[date] = None
     total_budget: Optional[int] = Field(None, ge=0)
     price_per_show: Optional[int] = Field(None, ge=0, description="Artist's price per show on this tour")
+    min_tour_budget: Optional[int] = Field(None, ge=0, description="Minimum total revenue to confirm the tour")
     description: Optional[str] = None
 
 
@@ -52,6 +53,7 @@ class TourUpdate(BaseModel):
     end_date: Optional[date] = None
     total_budget: Optional[int] = Field(None, ge=0)
     price_per_show: Optional[int] = Field(None, ge=0)
+    min_tour_budget: Optional[int] = Field(None, ge=0)
     description: Optional[str] = None
     status: Optional[str] = Field(None, pattern="^(pending|approved|completed|cancelled)$")
 
@@ -77,6 +79,12 @@ class TourResponse(TourBase):
     def confirmed_shows(self) -> int:
         """Number of confirmed/approved bookings."""
         return len([b for b in self.bookings if b.status in ("approved", "confirmed")])
+
+    @computed_field
+    @property
+    def confirmed_revenue(self) -> int:
+        """Total revenue from confirmed/approved bookings."""
+        return sum(b.budget or 0 for b in self.bookings if b.status in ("approved", "confirmed"))
 
     class Config:
         from_attributes = True

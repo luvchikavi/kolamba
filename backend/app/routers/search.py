@@ -61,16 +61,19 @@ async def search_artists(
     if category:
         query = query.join(Artist.categories).where(Category.slug == category)
 
-    # Price filters
+    # Price filters (include artists without pricing)
     if min_price is not None:
-        query = query.where(Artist.price_single >= min_price)
+        query = query.where(or_(Artist.price_single >= min_price, Artist.price_single.is_(None)))
 
     if max_price is not None:
-        query = query.where(Artist.price_single <= max_price)
+        query = query.where(or_(Artist.price_single <= max_price, Artist.price_single.is_(None)))
 
     # Language filter
     if language:
-        query = query.where(Artist.languages.contains([language]))
+        query = query.where(
+            Artist.languages.isnot(None),
+            Artist.languages.contains([language]),
+        )
 
     # City filter
     if city:
