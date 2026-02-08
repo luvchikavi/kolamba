@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { CheckCircle, Search, ChevronDown, X } from "lucide-react";
+import { CheckCircle, ChevronDown, X } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showError } from "@/lib/toast";
 
@@ -15,12 +15,13 @@ interface CommunityOptions {
 
 interface FormData {
   communityName: string;
-  location: string;
+  city: string;
+  state: string;
   latitude: number | null;
   longitude: number | null;
   memberCountMin: number | null;
   memberCountMax: number | null;
-  language: string;
+  languages: string[];
   eventTypes: string[];
   name: string;
   contactRole: string;
@@ -29,6 +30,19 @@ interface FormData {
   phoneCountryCode: string;
   acceptTerms: boolean;
 }
+
+const usStates = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+  "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+  "New Hampshire", "New Jersey", "New Mexico", "New York",
+  "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+  "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+  "West Virginia", "Wisconsin", "Wyoming",
+];
 
 const communityRoles = [
   "Executive Director / CEO",
@@ -83,12 +97,13 @@ export default function CommunityRegistrationPage() {
 
   const [formData, setFormData] = useState<FormData>({
     communityName: "",
-    location: "",
+    city: "",
+    state: "",
     latitude: null,
     longitude: null,
     memberCountMin: null,
     memberCountMax: null,
-    language: "English",
+    languages: ["English"],
     eventTypes: [],
     name: "",
     contactRole: "",
@@ -194,10 +209,10 @@ export default function CommunityRegistrationPage() {
     } else if (containsHebrew(formData.communityName)) {
       newErrors.communityName = "Please use English characters only";
     }
-    if (!formData.location || formData.location.length < 3) {
-      newErrors.location = "Location is required";
-    } else if (containsHebrew(formData.location)) {
-      newErrors.location = "Please use English characters only";
+    if (!formData.city || formData.city.length < 2) {
+      newErrors.city = "City is required";
+    } else if (containsHebrew(formData.city)) {
+      newErrors.city = "Please use English characters only";
     }
     if (!formData.name || formData.name.length < 2) {
       newErrors.name = "Full name is required";
@@ -234,7 +249,7 @@ export default function CommunityRegistrationPage() {
             email: formData.email,
             name: formData.name,
             community_name: formData.communityName,
-            location: formData.location,
+            location: formData.state ? `${formData.city}, ${formData.state}` : formData.city,
             latitude: formData.latitude,
             longitude: formData.longitude,
             member_count_min: formData.memberCountMin,
@@ -242,7 +257,7 @@ export default function CommunityRegistrationPage() {
             event_types: formData.eventTypes.length > 0 ? formData.eventTypes : null,
             contact_role: formData.contactRole || null,
             phone: formData.phone ? `${formData.phoneCountryCode} ${formData.phone}` : null,
-            language: formData.language,
+            language: formData.languages.join(", "),
           }),
         }
       );
@@ -341,28 +356,46 @@ export default function CommunityRegistrationPage() {
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Location <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    placeholder="Search Adress"
-                    className={`w-full px-4 py-3.5 pr-12 border-2 rounded-lg text-base focus:outline-none transition-colors ${
-                      errors.location
-                        ? "border-red-300 focus:border-red-400"
-                        : "border-slate-300 focus:border-slate-400"
-                    }`}
-                  />
-                  <Search
-                    size={20}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-teal-500"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                      placeholder="City"
+                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                        errors.city
+                          ? "border-red-300 focus:border-red-400"
+                          : "border-slate-300 focus:border-slate-400"
+                      }`}
+                    />
+                    {errors.city && (
+                      <p className="mt-2 text-sm text-red-500">{errors.city}</p>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={formData.state}
+                      onChange={(e) =>
+                        setFormData({ ...formData, state: e.target.value })
+                      }
+                      className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 appearance-none bg-white transition-colors"
+                    >
+                      <option value="">State (Optional)</option>
+                      {usStates.map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={20}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                    />
+                  </div>
                 </div>
-                {errors.location && (
-                  <p className="mt-2 text-sm text-red-500">{errors.location}</p>
-                )}
               </div>
 
               {/* How Many Members */}
@@ -400,24 +433,33 @@ export default function CommunityRegistrationPage() {
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Main Language
                 </label>
-                <div className="relative">
-                  <select
-                    value={formData.language}
-                    onChange={(e) =>
-                      setFormData({ ...formData, language: e.target.value })
-                    }
-                    className="w-full px-4 py-3.5 border-2 border-teal-400 rounded-lg text-base focus:outline-none focus:border-teal-500 appearance-none bg-white transition-colors"
-                  >
-                    {(options?.languages || ["English"]).map((lang) => (
-                      <option key={lang} value={lang}>
-                        {lang}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={20}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-teal-500 pointer-events-none"
-                  />
+                <div className="flex flex-wrap gap-2">
+                  {(options?.languages || ["English", "Hebrew", "French", "Spanish", "Russian", "Italian", "Amharic", "Dutch", "Swedish", "Yiddish"]).map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => {
+                        if (formData.languages.includes(lang)) {
+                          setFormData({
+                            ...formData,
+                            languages: formData.languages.filter((l) => l !== lang),
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            languages: [...formData.languages, lang],
+                          });
+                        }
+                      }}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        formData.languages.includes(lang)
+                          ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                          : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
                 </div>
               </div>
 

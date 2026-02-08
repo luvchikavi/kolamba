@@ -32,6 +32,19 @@ const languageOptions = [
   "Yiddish",
 ];
 
+const usStates = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+  "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+  "New Hampshire", "New Jersey", "New Mexico", "New York",
+  "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+  "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+  "West Virginia", "Wisconsin", "Wyoming",
+];
+
 export default function CommunitySettingsPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<CommunityProfile | null>(null);
@@ -40,9 +53,10 @@ export default function CommunitySettingsPage() {
 
   const [formData, setFormData] = useState({
     name: "",  // Community name
-    location: "",
+    city: "",
+    state: "",
     phone: "",
-    language: "English",
+    languages: ["English"] as string[],
     member_count_min: "",
     member_count_max: "",
     contact_role: "",
@@ -75,11 +89,20 @@ export default function CommunitySettingsPage() {
 
       const data = await response.json();
       setProfile(data);
+      // Parse location into city and state
+      const locationParts = (data.location || "").split(", ");
+      const parsedState = usStates.find((s) => locationParts.includes(s)) || "";
+      const parsedCity = locationParts.filter((p: string) => p !== parsedState).join(", ");
+      // Parse languages (stored as comma-separated string)
+      const parsedLanguages = data.language
+        ? data.language.split(", ").map((l: string) => l.trim()).filter(Boolean)
+        : ["English"];
       setFormData({
         name: data.name || "",  // Community name
-        location: data.location || "",
+        city: parsedCity,
+        state: parsedState,
         phone: data.phone || "",
-        language: data.language || "English",
+        languages: parsedLanguages,
         member_count_min: data.member_count_min?.toString() || "",
         member_count_max: data.member_count_max?.toString() || "",
         contact_role: data.contact_role || "",
@@ -107,9 +130,9 @@ export default function CommunitySettingsPage() {
         },
         body: JSON.stringify({
           name: formData.name,  // Community name
-          location: formData.location,
+          location: formData.state ? `${formData.city}, ${formData.state}` : formData.city,
           phone: formData.phone || null,
-          language: formData.language,
+          language: formData.languages.join(", "),
           member_count_min: formData.member_count_min ? parseInt(formData.member_count_min) : null,
           member_count_max: formData.member_count_max ? parseInt(formData.member_count_max) : null,
           contact_role: formData.contact_role || null,
@@ -175,12 +198,28 @@ export default function CommunitySettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Location
               </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 transition-colors"
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  placeholder="City"
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 transition-colors"
+                />
+                <div className="relative">
+                  <select
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors"
+                  >
+                    <option value="">State (Optional)</option>
+                    {usStates.map((state) => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
             </div>
 
             {/* Phone */}
@@ -201,17 +240,33 @@ export default function CommunitySettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Main Language
               </label>
-              <div className="relative">
-                <select
-                  value={formData.language}
-                  onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors"
-                >
-                  {languageOptions.map((lang) => (
-                    <option key={lang} value={lang}>{lang}</option>
-                  ))}
-                </select>
-                <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <div className="flex flex-wrap gap-2">
+                {languageOptions.map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => {
+                      if (formData.languages.includes(lang)) {
+                        setFormData({
+                          ...formData,
+                          languages: formData.languages.filter((l) => l !== lang),
+                        });
+                      } else {
+                        setFormData({
+                          ...formData,
+                          languages: [...formData.languages, lang],
+                        });
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      formData.languages.includes(lang)
+                        ? "bg-teal-100 text-teal-800 border-2 border-teal-300"
+                        : "bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    {lang}
+                  </button>
+                ))}
               </div>
             </div>
 
