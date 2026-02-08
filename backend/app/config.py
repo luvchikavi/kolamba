@@ -41,9 +41,12 @@ class Settings(BaseSettings):
     def convert_database_url(cls, v: str) -> str:
         """Convert Railway's postgres:// URL to asyncpg format."""
         if v.startswith("postgres://"):
-            return v.replace("postgres://", "postgresql+asyncpg://", 1)
-        if v.startswith("postgresql://"):
-            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+            v = v.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif v.startswith("postgresql://") and "+asyncpg" not in v:
+            v = v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # Railway internal Postgres doesn't support SSL
+        if "railway.internal" in v and "ssl=" not in v:
+            v += "?ssl=disable" if "?" not in v else "&ssl=disable"
         return v
 
     @property
