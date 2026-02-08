@@ -88,6 +88,7 @@ export interface ArtistListItem {
   country: string;
   is_featured: boolean;
   categories: Category[];
+  subcategories: string[];
 }
 
 export interface Community {

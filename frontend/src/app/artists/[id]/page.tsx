@@ -7,14 +7,19 @@ import {
   Globe,
   Calendar,
   MessageSquare,
-  Star,
-  Clock,
   Users,
   CheckCircle,
   Loader2,
   DollarSign,
+  Heart,
+  Youtube,
+  Facebook,
+  Linkedin,
+  Instagram,
+  Twitter,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { isInAnyList, toggleFavorite } from "@/lib/favorites";
 
 interface Category {
   id: number;
@@ -39,17 +44,47 @@ interface Artist {
   country: string | null;
   is_featured: boolean;
   categories: Category[];
+  subcategories: string[];
   performance_types: string[];
   website: string | null;
   instagram: string | null;
   youtube: string | null;
+  facebook: string | null;
+  twitter: string | null;
+  linkedin: string | null;
+  portfolio_images: string[];
+  video_urls: string[];
   spotify_links: string[];
+  media_links: string[];
 }
 
 interface UserInfo {
   id: number;
   role: string;
   is_superuser?: boolean;
+}
+
+function getSocialUrl(platform: string, value: string): string {
+  // If value is already a full URL, use as-is
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+  // Handle @-prefixed handles
+  const handle = value.startsWith("@") ? value.slice(1) : value;
+  switch (platform) {
+    case "instagram":
+      return `https://www.instagram.com/${handle}`;
+    case "twitter":
+      return `https://x.com/${handle}`;
+    case "facebook":
+      return `https://www.facebook.com/${handle}`;
+    case "linkedin":
+      return `https://www.linkedin.com/in/${handle}`;
+    case "youtube":
+      return `https://www.youtube.com/${handle}`;
+    default:
+      return value;
+  }
 }
 
 export default function ArtistDetailPage({
@@ -61,6 +96,7 @@ export default function ArtistDetailPage({
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     const fetchArtist = async () => {
@@ -71,6 +107,7 @@ export default function ArtistDetailPage({
         }
         const data = await response.json();
         setArtist(data);
+        setIsFavorited(isInAnyList(data.id));
       } catch (err) {
         setError("Failed to load artist");
         console.error(err);
@@ -99,6 +136,13 @@ export default function ArtistDetailPage({
     fetchArtist();
     fetchCurrentUser();
   }, [params.id]);
+
+  const handleFavoriteToggle = () => {
+    if (!artist) return;
+    const artistName = artist.name_en || artist.name_he;
+    const nowFavorited = toggleFavorite(artist.id, artistName);
+    setIsFavorited(nowFavorited);
+  };
 
   // Check if current user can see exact prices (admin or artist owner)
   const canSeeExactPrice = currentUser && (
@@ -132,6 +176,17 @@ export default function ArtistDetailPage({
   const artistName = artist.name_en || artist.name_he;
   const artistBio = artist.bio_en || artist.bio_he || "No bio available.";
 
+  const socialLinks = [
+    { platform: "website", value: artist.website, icon: Globe },
+    { platform: "instagram", value: artist.instagram, icon: Instagram },
+    { platform: "youtube", value: artist.youtube, icon: Youtube },
+    { platform: "facebook", value: artist.facebook, icon: Facebook },
+    { platform: "twitter", value: artist.twitter, icon: Twitter },
+    { platform: "linkedin", value: artist.linkedin, icon: Linkedin },
+  ].filter((s) => s.value);
+
+  const hasSocialLinks = socialLinks.length > 0;
+
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       {/* Breadcrumb */}
@@ -163,7 +218,7 @@ export default function ArtistDetailPage({
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Profile Image */}
             <div className="lg:w-72 flex-shrink-0">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center shadow-soft-lg overflow-hidden">
+              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center shadow-soft-lg overflow-hidden relative">
                 {artist.profile_image ? (
                   <img
                     src={artist.profile_image}
@@ -175,6 +230,17 @@ export default function ArtistDetailPage({
                     {artistName.charAt(0)}
                   </span>
                 )}
+                {/* Favorite Button */}
+                <button
+                  onClick={handleFavoriteToggle}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                  title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                >
+                  <Heart
+                    size={22}
+                    className={isFavorited ? "text-pink-500 fill-pink-500" : "text-pink-400"}
+                  />
+                </button>
               </div>
             </div>
 
@@ -192,7 +258,7 @@ export default function ArtistDetailPage({
 
               {/* Categories */}
               {artist.categories && artist.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-2">
                   {artist.categories.map((cat) => (
                     <Link
                       key={cat.id}
@@ -201,6 +267,20 @@ export default function ArtistDetailPage({
                     >
                       {cat.name_en}
                     </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Subcategories */}
+              {artist.subcategories && artist.subcategories.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {artist.subcategories.map((sub, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm"
+                    >
+                      {sub}
+                    </span>
                   ))}
                 </div>
               )}
@@ -266,6 +346,57 @@ export default function ArtistDetailPage({
                     </li>
                   ))}
                 </ul>
+              </section>
+            )}
+
+            {/* Portfolio Images */}
+            {artist.portfolio_images && artist.portfolio_images.length > 0 && (
+              <section className="card p-6 md:p-8">
+                <h2 className="text-xl font-bold text-slate-900 mb-4">
+                  Portfolio
+                </h2>
+                <div className="divider-gradient mb-6" />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {artist.portfolio_images.map((img, idx) => (
+                    <a
+                      key={idx}
+                      href={img}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="aspect-square rounded-xl overflow-hidden bg-slate-100 hover:opacity-90 transition-opacity"
+                    >
+                      <img
+                        src={img}
+                        alt={`${artistName} portfolio ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Video URLs */}
+            {artist.video_urls && artist.video_urls.length > 0 && (
+              <section className="card p-6 md:p-8">
+                <h2 className="text-xl font-bold text-slate-900 mb-4">
+                  Videos
+                </h2>
+                <div className="divider-gradient mb-6" />
+                <div className="space-y-4">
+                  {artist.video_urls.map((url, idx) => (
+                    <a
+                      key={idx}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
+                    >
+                      <Youtube size={18} />
+                      {url}
+                    </a>
+                  ))}
+                </div>
               </section>
             )}
 
@@ -355,42 +486,44 @@ export default function ArtistDetailPage({
               </div>
             )}
 
-            {/* Social Links */}
-            {(artist.website || artist.instagram || artist.youtube) && (
+            {/* Social Links - Icon only */}
+            {hasSocialLinks && (
               <div className="card p-6">
                 <h3 className="font-bold text-slate-900 mb-4">Connect</h3>
-                <div className="space-y-3">
-                  {artist.website && (
+                <div className="flex flex-wrap gap-3">
+                  {socialLinks.map(({ platform, value, icon: Icon }) => (
                     <a
-                      href={artist.website}
+                      key={platform}
+                      href={platform === "website" ? value! : getSocialUrl(platform, value!)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-slate-600 hover:text-primary-600"
+                      className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-primary-100 hover:text-primary-600 transition-colors"
+                      title={platform.charAt(0).toUpperCase() + platform.slice(1)}
                     >
-                      <Globe size={18} />
-                      Website
+                      <Icon size={20} />
                     </a>
-                  )}
-                  {artist.instagram && (
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Media Links */}
+            {artist.media_links && artist.media_links.length > 0 && (
+              <div className="card p-6">
+                <h3 className="font-bold text-slate-900 mb-4">Press & Media</h3>
+                <div className="space-y-2">
+                  {artist.media_links.map((link, idx) => (
                     <a
-                      href={`https://instagram.com/${artist.instagram}`}
+                      key={idx}
+                      href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-slate-600 hover:text-primary-600"
+                      className="flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 transition-colors truncate"
                     >
-                      Instagram: @{artist.instagram}
+                      <Globe size={14} className="flex-shrink-0" />
+                      {link.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}
                     </a>
-                  )}
-                  {artist.youtube && (
-                    <a
-                      href={artist.youtube}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-slate-600 hover:text-primary-600"
-                    >
-                      YouTube
-                    </a>
-                  )}
+                  ))}
                 </div>
               </div>
             )}

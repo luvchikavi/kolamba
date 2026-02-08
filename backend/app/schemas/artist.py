@@ -40,8 +40,15 @@ class ArtistBase(BaseModel):
     website: Optional[str] = None
     instagram: Optional[str] = None
     youtube: Optional[str] = None
+    facebook: Optional[str] = None
+    twitter: Optional[str] = None
+    linkedin: Optional[str] = None
     performance_types: list[str] = []
+    subcategories: list[str] = []
+    portfolio_images: list[str] = []
+    video_urls: list[str] = []
     spotify_links: list[str] = []
+    media_links: list[str] = []
 
 
 class ArtistCreate(ArtistBase):
@@ -66,7 +73,15 @@ class ArtistUpdate(BaseModel):
     website: Optional[str] = None
     instagram: Optional[str] = None
     youtube: Optional[str] = None
+    facebook: Optional[str] = None
+    twitter: Optional[str] = None
+    linkedin: Optional[str] = None
     performance_types: Optional[list[str]] = None
+    subcategories: Optional[list[str]] = None
+    portfolio_images: Optional[list[str]] = None
+    video_urls: Optional[list[str]] = None
+    spotify_links: Optional[list[str]] = None
+    media_links: Optional[list[str]] = None
     category_ids: Optional[list[int]] = None
     availability: Optional[dict] = None
 
@@ -103,6 +118,7 @@ class ArtistListResponse(BaseModel):
     country: str
     is_featured: bool
     categories: list[CategoryResponse] = []
+    subcategories: list[str] = []
 
     @computed_field
     @property

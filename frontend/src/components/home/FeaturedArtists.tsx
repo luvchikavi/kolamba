@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import ArtistCard from "@/components/artists/ArtistCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { isInAnyList, toggleFavorite } from "@/lib/favorites";
 
 // Sample data matching Figma design
 const sampleArtists = [
@@ -42,6 +43,37 @@ const sampleArtists = [
 
 export default function FeaturedArtists() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const ids = new Set<number>();
+    try {
+      const raw = localStorage.getItem("kolamba_favorites");
+      if (raw) {
+        const data = JSON.parse(raw);
+        for (const list of data.lists || []) {
+          for (const id of list.artistIds || []) {
+            ids.add(id);
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    setFavoriteIds(ids);
+  }, []);
+
+  const handleFavoriteToggle = (id: number) => {
+    const artist = sampleArtists.find((a) => a.id === id);
+    toggleFavorite(id, artist?.name || "Artist");
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -98,7 +130,11 @@ export default function FeaturedArtists() {
                 key={artist.id}
                 className="flex-shrink-0 w-72 snap-start"
               >
-                <ArtistCard {...artist} />
+                <ArtistCard
+                  {...artist}
+                  isFavorited={favoriteIds.has(artist.id)}
+                  onFavoriteToggle={handleFavoriteToggle}
+                />
               </div>
             ))}
           </div>

@@ -2,10 +2,11 @@
 
 import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, Filter, X, MapPin, Star, Loader2 } from "lucide-react";
+import { Search, Filter, X, MapPin, Star, Loader2, Heart } from "lucide-react";
 import Link from "next/link";
 import { useSearchArtists } from "@/hooks/useArtists";
 import { API_URL } from "@/lib/api";
+import { isInAnyList, toggleFavorite } from "@/lib/favorites";
 
 interface Category {
   id: number;
@@ -40,6 +41,40 @@ function SearchContent() {
   const [sortBy, setSortBy] = useState(searchParams.get("sort_by") || "name");
   const [sortOrder, setSortOrder] = useState(searchParams.get("sort_order") || "asc");
   const [showFilters, setShowFilters] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    const updateFavorites = () => {
+      const ids = new Set<number>();
+      try {
+        const raw = localStorage.getItem("kolamba_favorites");
+        if (raw) {
+          const data = JSON.parse(raw);
+          for (const list of data.lists || []) {
+            for (const id of list.artistIds || []) {
+              ids.add(id);
+            }
+          }
+        }
+      } catch { /* ignore */ }
+      setFavoriteIds(ids);
+    };
+    updateFavorites();
+  }, []);
+
+  const handleFavoriteToggle = (artistId: number, artistName: string) => {
+    toggleFavorite(artistId, artistName);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(artistId)) {
+        next.delete(artistId);
+      } else {
+        next.add(artistId);
+      }
+      return next;
+    });
+  };
 
   // Fetch categories from API
   useEffect(() => {
@@ -301,50 +336,80 @@ function SearchContent() {
             {/* Results Grid */}
             {!isLoading && !error && artists.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {artists.map((artist) => (
-                  <Link key={artist.id} href={`/artists/${artist.id}`} className="group card card-hover overflow-hidden">
-                    <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center relative">
-                      {artist.profile_image ? (
-                        <img
-                          src={artist.profile_image}
-                          alt={artist.name_en || artist.name_he}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                {artists.map((artist) => {
+                  const name = artist.name_en || artist.name_he;
+                  const fav = favoriteIds.has(artist.id);
+                  return (
+                    <div key={artist.id} className="group card card-hover overflow-hidden relative">
+                      <Link href={`/artists/${artist.id}`}>
+                        <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center relative">
+                          {artist.profile_image ? (
+                            <img
+                              src={artist.profile_image}
+                              alt={name}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <span className="text-5xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
+                              {name.charAt(0)}
+                            </span>
+                          )}
+                          {artist.is_featured && (
+                            <div className="absolute top-3 left-3 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium flex items-center gap-1">
+                              <Star size={12} fill="currentColor" />
+                              Featured
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+                              {name}
+                            </h3>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 mb-1">
+                            {artist.categories?.map((cat) => (
+                              <span key={cat.slug} className="badge-primary text-xs">{cat.name_en}</span>
+                            ))}
+                          </div>
+                          {artist.subcategories && artist.subcategories.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {artist.subcategories.slice(0, 3).map((sub, idx) => (
+                                <span key={idx} className="text-xs text-slate-500">{sub}{idx < Math.min(artist.subcategories.length, 3) - 1 ? "," : ""}</span>
+                              ))}
+                              {artist.subcategories.length > 3 && (
+                                <span className="text-xs text-slate-400">+{artist.subcategories.length - 3}</span>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center text-sm">
+                            <div className="flex items-center gap-1 text-slate-500">
+                              <MapPin size={14} />
+                              <span>{artist.city || artist.country}</span>
+                            </div>
+                            {artist.price_tier && (
+                              <div className="font-semibold text-primary-600">{artist.price_tier}</div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                      {/* Favorite Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleFavoriteToggle(artist.id, name);
+                        }}
+                        className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors z-10"
+                      >
+                        <Heart
+                          size={18}
+                          className={fav ? "text-pink-500 fill-pink-500" : "text-pink-400"}
                         />
-                      ) : (
-                        <span className="text-5xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
-                          {(artist.name_en || artist.name_he).charAt(0)}
-                        </span>
-                      )}
-                      {artist.is_featured && (
-                        <div className="absolute top-3 right-3 px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium flex items-center gap-1">
-                          <Star size={12} fill="currentColor" />
-                          Featured
-                        </div>
-                      )}
+                      </button>
                     </div>
-                    <div className="p-5">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
-                          {artist.name_en || artist.name_he}
-                        </h3>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        {artist.categories?.map((cat) => (
-                          <span key={cat.slug} className="badge-primary text-xs">{cat.name_en}</span>
-                        ))}
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-1 text-slate-500">
-                          <MapPin size={14} />
-                          <span>{artist.city || artist.country}</span>
-                        </div>
-                        {artist.price_tier && (
-                          <div className="font-semibold text-primary-600">{artist.price_tier}</div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
 

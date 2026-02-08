@@ -246,14 +246,20 @@ async def register_artist(
     # Get categories by name (case-insensitive matching on name_en)
     all_category_names = [request.category] + request.other_categories
 
-    # Fetch all categories and match by name (case-insensitive)
+    # Fetch all categories and match by name (case-insensitive, with fuzzy matching)
     categories_result = await db.execute(select(Category))
     all_categories = categories_result.scalars().all()
 
     categories = []
     for cat in all_categories:
         for name in all_category_names:
-            if cat.name_en.lower() == name.lower() or cat.slug == name.lower().replace(" ", "-"):
+            name_lower = name.lower()
+            cat_lower = cat.name_en.lower()
+            # Exact match, slug match, or partial match (e.g. "Film & Television" contains "Film" or "Television")
+            if (cat_lower == name_lower
+                or cat.slug == name_lower.replace(" ", "-").replace("&", "and")
+                or cat_lower in name_lower
+                or name_lower in cat_lower):
                 categories.append(cat)
                 break
 
@@ -268,6 +274,7 @@ async def register_artist(
         country=request.country,
         languages=request.languages,
         performance_types=request.performance_types,
+        subcategories=request.subcategories,
         price_single=request.price_range_min,
         price_tour=request.price_range_max,
         phone=request.phone,

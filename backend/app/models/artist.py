@@ -73,6 +73,9 @@ class Artist(Base):
     # Performance types (array of strings)
     performance_types: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)
 
+    # Subcategories within primary category
+    subcategories: Mapped[list[str]] = mapped_column(ARRAY(String(100)), default=list)
+
     # Status and visibility
     status: Mapped[str] = mapped_column(String(20), default="pending")  # pending, active, inactive
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
