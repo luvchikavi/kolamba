@@ -61,6 +61,80 @@ async def health_check():
     return {"status": "healthy", "service": "kolamba-api"}
 
 
+@app.get("/api/debug/db", tags=["Debug"])
+async def debug_db():
+    """Temporary debug endpoint to test database connectivity."""
+    import socket
+    import asyncpg
+    results = {}
+
+    # Check resolved DATABASE_URL
+    results["database_url"] = settings.database_url[:60] + "..."
+
+    # DNS test
+    try:
+        ip = socket.gethostbyname("postgres.railway.internal")
+        results["dns"] = f"OK -> {ip}"
+    except Exception as e:
+        results["dns"] = f"FAIL: {e}"
+
+    # TCP test
+    try:
+        s = socket.socket()
+        s.settimeout(5)
+        s.connect(("postgres.railway.internal", 5432))
+        results["tcp"] = "OK"
+        s.close()
+    except Exception as e:
+        results["tcp"] = f"FAIL: {e}"
+
+    # asyncpg direct test with ssl=False
+    try:
+        conn = await asyncpg.connect(
+            host="postgres.railway.internal",
+            port=5432,
+            user="postgres",
+            password="fhIYmeKyBXKiBfujwcgswCsPEepnGGwl",
+            database="railway",
+            ssl=False,
+            timeout=10
+        )
+        val = await conn.fetchval("SELECT 1")
+        results["asyncpg_no_ssl"] = f"OK (result={val})"
+        await conn.close()
+    except Exception as e:
+        results["asyncpg_no_ssl"] = f"FAIL: {type(e).__name__}: {e}"
+
+    # asyncpg with ssl='prefer'
+    try:
+        conn = await asyncpg.connect(
+            host="postgres.railway.internal",
+            port=5432,
+            user="postgres",
+            password="fhIYmeKyBXKiBfujwcgswCsPEepnGGwl",
+            database="railway",
+            ssl="prefer",
+            timeout=10
+        )
+        val = await conn.fetchval("SELECT 1")
+        results["asyncpg_ssl_prefer"] = f"OK (result={val})"
+        await conn.close()
+    except Exception as e:
+        results["asyncpg_ssl_prefer"] = f"FAIL: {type(e).__name__}: {e}"
+
+    # SQLAlchemy engine test
+    try:
+        from app.database import engine
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            val = await conn.execute(text("SELECT 1"))
+            results["sqlalchemy"] = f"OK (result={val.scalar()})"
+    except Exception as e:
+        results["sqlalchemy"] = f"FAIL: {type(e).__name__}: {e}"
+
+    return results
+
+
 @app.get("/", tags=["Root"])
 async def root():
     """Root endpoint with API information."""
