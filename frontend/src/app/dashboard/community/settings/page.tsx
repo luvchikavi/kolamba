@@ -32,6 +32,44 @@ const languageOptions = [
   "Yiddish",
 ];
 
+const countries = [
+  "United States",
+  "Canada",
+  "Israel",
+  "United Kingdom",
+  "France",
+  "Germany",
+  "Spain",
+  "Italy",
+  "Netherlands",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Russia",
+  "Argentina",
+  "Brazil",
+  "Australia",
+  "South Africa",
+  "Ethiopia",
+  "Mexico",
+  "Poland",
+  "Hungary",
+  "Czech Republic",
+  "Ukraine",
+  "Romania",
+  "Greece",
+  "Portugal",
+  "Ireland",
+  "New Zealand",
+  "India",
+  "Japan",
+  "Singapore",
+  "Other",
+];
+
 const usStates = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
   "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
@@ -53,6 +91,7 @@ export default function CommunitySettingsPage() {
 
   const [formData, setFormData] = useState({
     name: "",  // Community name
+    country: "United States",
     city: "",
     state: "",
     phone: "",
@@ -89,16 +128,18 @@ export default function CommunitySettingsPage() {
 
       const data = await response.json();
       setProfile(data);
-      // Parse location into city and state
+      // Parse location into city, state, and country
       const locationParts = (data.location || "").split(", ");
+      const parsedCountry = countries.find((c) => locationParts.includes(c)) || "";
       const parsedState = usStates.find((s) => locationParts.includes(s)) || "";
-      const parsedCity = locationParts.filter((p: string) => p !== parsedState).join(", ");
+      const parsedCity = locationParts.filter((p: string) => p !== parsedState && p !== parsedCountry).join(", ");
       // Parse languages (stored as comma-separated string)
       const parsedLanguages = data.language
         ? data.language.split(", ").map((l: string) => l.trim()).filter(Boolean)
         : ["English"];
       setFormData({
         name: data.name || "",  // Community name
+        country: parsedCountry || "United States",
         city: parsedCity,
         state: parsedState,
         phone: data.phone || "",
@@ -130,7 +171,7 @@ export default function CommunitySettingsPage() {
         },
         body: JSON.stringify({
           name: formData.name,  // Community name
-          location: formData.state ? `${formData.city}, ${formData.state}` : formData.city,
+          location: [formData.city, formData.state, formData.country].filter(Boolean).join(", "),
           phone: formData.phone || null,
           language: formData.languages.join(", "),
           member_count_min: formData.member_count_min ? parseInt(formData.member_count_min) : null,
@@ -198,26 +239,43 @@ export default function CommunitySettingsPage() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Location
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  placeholder="City"
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 transition-colors"
-                />
+              <div className="space-y-3">
                 <div className="relative">
                   <select
-                    value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value, state: "" })}
                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors"
                   >
-                    <option value="">State (Optional)</option>
-                    {usStates.map((state) => (
-                      <option key={state} value={state}>{state}</option>
+                    <option value="">Select Country</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country}>{country}</option>
                     ))}
                   </select>
                   <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="City"
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 transition-colors"
+                  />
+                  {(formData.country === "United States" || formData.country === "Canada") && (
+                    <div className="relative">
+                      <select
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:border-teal-400 appearance-none bg-white transition-colors"
+                      >
+                        <option value="">State (Optional)</option>
+                        {usStates.map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

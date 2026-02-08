@@ -15,6 +15,7 @@ interface CommunityOptions {
 
 interface FormData {
   communityName: string;
+  country: string;
   city: string;
   state: string;
   latitude: number | null;
@@ -30,6 +31,44 @@ interface FormData {
   phoneCountryCode: string;
   acceptTerms: boolean;
 }
+
+const countries = [
+  "United States",
+  "Canada",
+  "Israel",
+  "United Kingdom",
+  "France",
+  "Germany",
+  "Spain",
+  "Italy",
+  "Netherlands",
+  "Belgium",
+  "Switzerland",
+  "Austria",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Russia",
+  "Argentina",
+  "Brazil",
+  "Australia",
+  "South Africa",
+  "Ethiopia",
+  "Mexico",
+  "Poland",
+  "Hungary",
+  "Czech Republic",
+  "Ukraine",
+  "Romania",
+  "Greece",
+  "Portugal",
+  "Ireland",
+  "New Zealand",
+  "India",
+  "Japan",
+  "Singapore",
+  "Other",
+];
 
 const usStates = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
@@ -97,6 +136,7 @@ export default function CommunityRegistrationPage() {
 
   const [formData, setFormData] = useState<FormData>({
     communityName: "",
+    country: "United States",
     city: "",
     state: "",
     latitude: null,
@@ -209,6 +249,9 @@ export default function CommunityRegistrationPage() {
     } else if (containsHebrew(formData.communityName)) {
       newErrors.communityName = "Please use English characters only";
     }
+    if (!formData.country) {
+      newErrors.country = "Country is required";
+    }
     if (!formData.city || formData.city.length < 2) {
       newErrors.city = "City is required";
     } else if (containsHebrew(formData.city)) {
@@ -249,7 +292,7 @@ export default function CommunityRegistrationPage() {
             email: formData.email,
             name: formData.name,
             community_name: formData.communityName,
-            location: formData.state ? `${formData.city}, ${formData.state}` : formData.city,
+            location: [formData.city, formData.state, formData.country].filter(Boolean).join(", "),
             latitude: formData.latitude,
             longitude: formData.longitude,
             member_count_min: formData.memberCountMin,
@@ -356,37 +399,24 @@ export default function CommunityRegistrationPage() {
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Location <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <input
-                      type="text"
-                      value={formData.city}
+                <div className="space-y-3">
+                  {/* Country */}
+                  <div className="relative">
+                    <select
+                      value={formData.country}
                       onChange={(e) =>
-                        setFormData({ ...formData, city: e.target.value })
+                        setFormData({ ...formData, country: e.target.value, state: "" })
                       }
-                      placeholder="City"
-                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
-                        errors.city
+                      className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none appearance-none bg-white transition-colors ${
+                        errors.country
                           ? "border-red-300 focus:border-red-400"
                           : "border-slate-300 focus:border-slate-400"
                       }`}
-                    />
-                    {errors.city && (
-                      <p className="mt-2 text-sm text-red-500">{errors.city}</p>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <select
-                      value={formData.state}
-                      onChange={(e) =>
-                        setFormData({ ...formData, state: e.target.value })
-                      }
-                      className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 appearance-none bg-white transition-colors"
                     >
-                      <option value="">State (Optional)</option>
-                      {usStates.map((state) => (
-                        <option key={state} value={state}>
-                          {state}
+                      <option value="">Select Country</option>
+                      {countries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
                         </option>
                       ))}
                     </select>
@@ -394,6 +424,53 @@ export default function CommunityRegistrationPage() {
                       size={20}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                     />
+                    {errors.country && (
+                      <p className="mt-2 text-sm text-red-500">{errors.country}</p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* City */}
+                    <div>
+                      <input
+                        type="text"
+                        value={formData.city}
+                        onChange={(e) =>
+                          setFormData({ ...formData, city: e.target.value })
+                        }
+                        placeholder="City"
+                        className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                          errors.city
+                            ? "border-red-300 focus:border-red-400"
+                            : "border-slate-300 focus:border-slate-400"
+                        }`}
+                      />
+                      {errors.city && (
+                        <p className="mt-2 text-sm text-red-500">{errors.city}</p>
+                      )}
+                    </div>
+                    {/* State - only for US/Canada */}
+                    {(formData.country === "United States" || formData.country === "Canada") && (
+                      <div className="relative">
+                        <select
+                          value={formData.state}
+                          onChange={(e) =>
+                            setFormData({ ...formData, state: e.target.value })
+                          }
+                          className="w-full px-4 py-3.5 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-slate-400 appearance-none bg-white transition-colors"
+                        >
+                          <option value="">State (Optional)</option>
+                          {usStates.map((state) => (
+                            <option key={state} value={state}>
+                              {state}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown
+                          size={20}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
