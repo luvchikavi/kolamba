@@ -122,6 +122,41 @@ async def debug_db():
     except Exception as e:
         results["asyncpg_ssl_prefer"] = f"FAIL: {type(e).__name__}: {e}"
 
+    # asyncpg via TCP proxy (external)
+    try:
+        conn = await asyncpg.connect(
+            host="switchback.proxy.rlwy.net",
+            port=29317,
+            user="postgres",
+            password="fhIYmeKyBXKiBfujwcgswCsPEepnGGwl",
+            database="railway",
+            ssl="prefer",
+            timeout=10
+        )
+        val = await conn.fetchval("SELECT 1")
+        results["asyncpg_tcp_proxy"] = f"OK (result={val})"
+        await conn.close()
+    except Exception as e:
+        results["asyncpg_tcp_proxy"] = f"FAIL: {type(e).__name__}: {e}"
+
+    # Check what postgres.railway.internal:5432 actually responds with
+    try:
+        s = socket.socket()
+        s.settimeout(5)
+        s.connect(("postgres.railway.internal", 5432))
+        # Send a minimal Postgres startup packet
+        import struct
+        # Just read what the server sends first (if anything)
+        s.settimeout(2)
+        try:
+            data = s.recv(100)
+            results["raw_response"] = data.hex() + " = " + repr(data[:20])
+        except socket.timeout:
+            results["raw_response"] = "No data received (timeout)"
+        s.close()
+    except Exception as e:
+        results["raw_response"] = f"FAIL: {e}"
+
     # SQLAlchemy engine test
     try:
         from app.database import engine
