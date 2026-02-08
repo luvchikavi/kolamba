@@ -182,7 +182,98 @@ export default function BookingPage() {
         setIsLoadingArtist(false);
       }
     };
+
+    const prefillFromCommunity = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
+
+        const meRes = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!meRes.ok) return;
+        const user = await meRes.json();
+
+        const prefill: Partial<BookingData> = {};
+        if (user.name) prefill.contactName = user.name;
+        if (user.email) prefill.contactEmail = user.email;
+
+        if (user.community_id) {
+          try {
+            const commRes = await fetch(`${API_URL}/communities/${user.community_id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (commRes.ok) {
+              const community = await commRes.json();
+
+              if (community.name) prefill.communityName = community.name;
+
+              // Parse location: "City, State, Country" or "City, Country"
+              if (community.location) {
+                const parts = community.location.split(",").map((p: string) => p.trim());
+                if (parts.length >= 2) {
+                  prefill.venueCity = parts[0];
+                  const rawCountry = parts[parts.length - 1];
+                  const matched = countries.find(
+                    (c) => c.toLowerCase() === rawCountry.toLowerCase() || c.toLowerCase().includes(rawCountry.toLowerCase())
+                  );
+                  prefill.venueCountry = matched || "United States";
+                }
+              }
+
+              // Venue capacity from member counts
+              if (community.member_count_min && community.member_count_max) {
+                prefill.venueCapacity = `${community.member_count_min}-${community.member_count_max}`;
+              } else if (community.member_count_min) {
+                prefill.venueCapacity = `${community.member_count_min}`;
+              } else if (community.member_count_max) {
+                prefill.venueCapacity = `${community.member_count_max}`;
+              }
+
+              // Community type → venue type mapping
+              if (community.community_type) {
+                const typeMap: Record<string, string> = {
+                  "Synagogue": "Synagogue",
+                  "Temple": "Synagogue",
+                  "JCC": "Community Hall",
+                  "Cultural Center": "Community Hall",
+                  "Federation": "Community Hall",
+                  "Museum": "Community Hall",
+                  "Jewish School": "School Auditorium",
+                  "Campus Organization": "School Auditorium",
+                  "Summer Camp": "Outdoor Venue",
+                };
+                const mappedVenue = typeMap[community.community_type];
+                if (mappedVenue) prefill.venueType = mappedVenue;
+              }
+
+              // Phone parsing
+              if (community.phone) {
+                const phone = community.phone.trim();
+                const matchedCode = countryCodes.find((c) => phone.startsWith(c.code));
+                if (matchedCode) {
+                  prefill.contactPhoneCountryCode = matchedCode.code;
+                  prefill.contactPhone = phone.slice(matchedCode.code.length).replace(/\D/g, "");
+                } else {
+                  prefill.contactPhone = phone.replace(/\D/g, "");
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Failed to fetch community:", error);
+          }
+        }
+
+        if (Object.keys(prefill).length > 0) {
+          setBookingData((prev) => ({ ...prev, ...prefill }));
+        }
+      } catch (error) {
+        console.error("Failed to prefill from community:", error);
+      }
+    };
+
     fetchArtist();
+    prefillFromCommunity();
   }, [artistId]);
 
   const [bookingData, setBookingData] = useState<BookingData>({
