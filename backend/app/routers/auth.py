@@ -62,6 +62,7 @@ class ArtistRegisterRequest(BaseModel):
     portfolio_images: list[str] = []  # Gallery images URLs
     spotify_links: list[str] = []  # Spotify track/album links
     media_links: list[str] = []  # Press/media article links
+    password: Optional[str] = None  # Password for self-registration (not needed for agent submissions)
     is_agent_submission: bool = False  # Whether this is submitted by an agent
 
 
@@ -228,13 +229,13 @@ async def register_artist(
                 detail="Email already registered",
             )
 
-        # Generate a temporary password (artist will need to set it on first login)
-        temp_password = secrets.token_urlsafe(16)
+        # Use provided password or generate a temporary one
+        password = request.password if request.password else secrets.token_urlsafe(16)
 
         # Create user with artist role
         user = User(
             email=request.email,
-            password_hash=get_password_hash(temp_password),
+            password_hash=get_password_hash(password),
             name=request.name,
             role="artist",
             status="active",  # MVP: Auto-approve artists
