@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Setup Guide | Drishti Consulting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--darker);
+            color: #e2e8f0;
+            line-height: 1.7;
+        }
+
+        /* Header Bar */
+        .header-bar {
+            background: var(--dark);
+            border-bottom: 3px solid;
+            border-image: var(--gradient) 1;
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .header-logo svg {
+            width: 42px;
+            height: 42px;
+        }
+        .header-company {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .header-company .drishti { color: var(--primary); }
+        .header-company .consulting { color: #e2e8f0; }
+        .header-tagline {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            letter-spacing: 0.03em;
+        }
+        .header-doc {
+            text-align: right;
+            font-size: 12px;
+            color: var(--gray);
+        }
+        .header-doc-type {
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 2rem;
+        }
+
+        /* Intro Box */
+        .intro-box {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2.5rem;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+        .intro-box strong {
+            color: var(--light);
+        }
+
+        /* Steps */
+        .step {
+            margin-bottom: 2.5rem;
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--light);
+        }
+        .step-content {
+            margin-left: 48px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+        .step-content p {
+            margin-bottom: 0.75rem;
+        }
+        .step-content a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .step-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Instruction list */
+        .instructions {
+            list-style: none;
+            padding: 0;
+            margin: 0.75rem 0;
+        }
+        .instructions li {
+            position: relative;
+            padding: 0.5rem 0 0.5rem 24px;
+            border-left: 2px solid #1e293b;
+            margin-left: 4px;
+        }
+        .instructions li::before {
+            content: "";
+            position: absolute;
+            left: -5px;
+            top: 14px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+        .instructions li:last-child {
+            border-left-color: transparent;
+        }
+
+        /* Field highlight */
+        .field {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* URL box */
+        .url-box {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin: 0.75rem 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        /* Values table */
+        .values-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--dark);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            margin: 1rem 0;
+        }
+        .values-table th {
+            background: rgba(99, 102, 241, 0.08);
+            text-align: left;
+            padding: 0.65rem 1rem;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #1e293b;
+        }
+        .values-table td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid #0f172a;
+            font-size: 14px;
+        }
+        .values-table tr:last-child td { border-bottom: none; }
+
+        /* Tip box */
+        .tip-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-left: 4px solid var(--success);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            font-size: 13px;
+            color: #a7f3d0;
+        }
+        .tip-box strong {
+            color: var(--success);
+        }
+
+        /* Warning box */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            font-size: 13px;
+            color: #fde68a;
+        }
+        .warning-box strong {
+            color: var(--warning);
+        }
+
+        /* Deliverables box */
+        .deliverables {
+            background: var(--dark);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+        }
+        .deliverables h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .deliverables h3 svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--primary);
+        }
+        .deliverables-list {
+            list-style: none;
+            padding: 0;
+        }
+        .deliverables-list li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .deliverables-list li:last-child {
+            border-bottom: none;
+        }
+        .deliverables-list .num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .deliverables-list .label {
+            color: var(--light);
+            font-weight: 500;
+        }
+        .deliverables-list .desc {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        /* Screenshot hint */
+        .screenshot-hint {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            margin: 0.75rem 0;
+            font-size: 13px;
+            color: #c4b5fd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .screenshot-hint svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--accent);
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            border-top: 3px solid;
+            border-image: var(--gradient) 1;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .footer-inner {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .footer-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .footer-logo svg {
+            width: 50px;
+            height: 50px;
+        }
+        .footer-divider {
+            width: 3px;
+            height: 70px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        .footer-content { line-height: 1.5; }
+        .footer-company {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 1px;
+        }
+        .footer-company .drishti { color: var(--primary); }
+        .footer-company .consulting { color: #e2e8f0; }
+        .footer-slogan {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+        .footer-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .footer-title {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        .footer-contact {
+            font-size: 11px;
+            color: var(--primary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .footer-contact span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .footer-contact svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--primary);
+        }
+        .footer-bottom {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #1e293b;
+            font-size: 11px;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="header-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                    <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                </svg>
+            </div>
+            <div>
+                <div class="header-company">
+                    <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                </div>
+                <div class="header-tagline">Focused Vision. Precise Execution.</div>
+            </div>
+        </div>
+        <div class="header-doc">
+            <div class="header-doc-type">Setup Guide</div>
+            <div>Kolamba Platform &bull; Google OAuth</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Google Sign-In Setup Guide</h1>
+        <p class="subtitle">Enable "Sign in with Google" for the Kolamba platform</p>
+
+        <div class="intro-box">
+            <strong>What is this?</strong> To allow users to sign in to Kolamba with their Google account,
+            we need to register the application with Google. This is a one-time setup that takes about
+            5 minutes. Please follow the steps below and send us the credentials at the end.
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Open Google Cloud Console</div>
+            </div>
+            <div class="step-content">
+                <p>Go to the Google Cloud Console and sign in with your Google account:</p>
+                <div class="url-box">https://console.cloud.google.com</div>
+                <div class="tip-box">
+                    <strong>Tip:</strong> If you don't have a Google Cloud account, it will be created
+                    automatically when you sign in with any Gmail account. No credit card is required &mdash;
+                    OAuth is a free service.
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Create a New Project</div>
+            </div>
+            <div class="step-content">
+                <ul class="instructions">
+                    <li>Click the <span class="field">project dropdown</span> at the top-left of the page (next to "Google Cloud")</li>
+                    <li>Click <span class="field">New Project</span></li>
+                    <li>Enter project name: <span class="field">Kolamba</span></li>
+                    <li>Click <span class="field">Create</span> and wait a few seconds for it to be ready</li>
+                    <li>Make sure the new "Kolamba" project is selected in the top dropdown</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Configure the OAuth Consent Screen</div>
+            </div>
+            <div class="step-content">
+                <p>This tells Google what your app is called when users see the "Sign in with Google" popup.</p>
+                <ul class="instructions">
+                    <li>In the left sidebar, go to <span class="field">APIs & Services</span> &rarr; <span class="field">OAuth consent screen</span></li>
+                    <li>Select <span class="field">External</span> as the user type, then click <span class="field">Create</span></li>
+                    <li>Fill in the required fields:
+                        <table class="values-table" style="margin-top: 0.5rem;">
+                            <tr><th>Field</th><th>Value</th></tr>
+                            <tr><td>App name</td><td><span class="field">Kolamba</span></td></tr>
+                            <tr><td>User support email</td><td>Your email address</td></tr>
+                            <tr><td>Developer contact email</td><td>Your email address</td></tr>
+                        </table>
+                    </li>
+                    <li>Click <span class="field">Save and Continue</span></li>
+                    <li>On the <strong>Scopes</strong> page &mdash; no changes needed, click <span class="field">Save and Continue</span></li>
+                    <li>On the <strong>Test Users</strong> page &mdash; no changes needed, click <span class="field">Save and Continue</span></li>
+                    <li>Click <span class="field">Back to Dashboard</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">Create OAuth Credentials</div>
+            </div>
+            <div class="step-content">
+                <p>This generates the Client ID and Secret that we need to connect Kolamba to Google.</p>
+                <ul class="instructions">
+                    <li>In the left sidebar, go to <span class="field">APIs & Services</span> &rarr; <span class="field">Credentials</span></li>
+                    <li>Click <span class="field">+ Create Credentials</span> at the top, then select <span class="field">OAuth client ID</span></li>
+                    <li>Set Application type to <span class="field">Web application</span></li>
+                    <li>Set Name to <span class="field">Kolamba Web</span></li>
+                    <li>Under <strong>Authorized JavaScript origins</strong>, click <span class="field">+ Add URI</span> and add these two URLs:
+                        <div class="url-box">http://localhost:3000</div>
+                        <div class="url-box">https://kolamba.vercel.app</div>
+                    </li>
+                    <li>Leave <strong>Authorized redirect URIs</strong> empty (not needed)</li>
+                    <li>Click <span class="field">Create</span></li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Important:</strong> Make sure both URLs are added exactly as shown above,
+                    including <code>http://</code> for localhost and <code>https://</code> for the production URL.
+                    No trailing slashes.
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step">
+            <div class="step-header">
+                <div class="step-number">5</div>
+                <div class="step-title">Copy the Credentials</div>
+            </div>
+            <div class="step-content">
+                <p>After clicking Create, a popup will appear showing your new credentials:</p>
+                <table class="values-table">
+                    <tr><th>Credential</th><th>What it looks like</th></tr>
+                    <tr>
+                        <td><strong>Client ID</strong></td>
+                        <td><code style="color: var(--accent); font-size: 12px;">123456789-xxxxxxxx.apps.googleusercontent.com</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Client Secret</strong></td>
+                        <td><code style="color: var(--accent); font-size: 12px;">GOCSPX-xxxxxxxxxxxxxxxxxx</code></td>
+                    </tr>
+                </table>
+
+                <div class="screenshot-hint">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    A screenshot of this popup is the easiest way to share the credentials with us.
+                </div>
+            </div>
+        </div>
+
+        <!-- Deliverables -->
+        <div class="deliverables">
+            <h3>
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                What We Need From You
+            </h3>
+            <ul class="deliverables-list">
+                <li>
+                    <span class="num">1</span>
+                    <div>
+                        <div class="label">Client ID</div>
+                        <div class="desc">Ends with .apps.googleusercontent.com</div>
+                    </div>
+                </li>
+                <li>
+                    <span class="num">2</span>
+                    <div>
+                        <div class="label">Client Secret</div>
+                        <div class="desc">Starts with GOCSPX-</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tip-box" style="margin-top: 1.5rem;">
+            <strong>What happens next?</strong> Once we receive these two values, we'll configure them
+            in the Kolamba backend and frontend. The "Sign in with Google" button will then be active
+            on the login page. No further action will be needed from your side.
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-inner">
+            <div class="footer-row">
+                <div class="footer-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                        <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                    </svg>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-content">
+                    <div class="footer-company">
+                        <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                    </div>
+                    <div class="footer-slogan">Focus Your Vision. Build Your Future.</div>
+                    <div class="footer-name">Avi Luvchik, Ph.D.</div>
+                    <div class="footer-title">Founder & CEO</div>
+                    <div class="footer-contact">
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            +972 52 501 6720
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            avi@drishticonsulting.com
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            drishticonsulting.com
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>Kolamba Platform &bull; Google OAuth Configuration</span>
+                <span>&copy; 2026 Drishti Consulting. All rights reserved.</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

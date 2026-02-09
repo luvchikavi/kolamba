@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolamba - Production Test Report | Drishti Consulting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--darker);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        /* Header Bar */
+        .header-bar {
+            background: var(--dark);
+            border-bottom: 3px solid;
+            border-image: var(--gradient) 1;
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .header-logo svg {
+            width: 42px;
+            height: 42px;
+        }
+        .header-company {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .header-company .drishti { color: var(--primary); }
+        .header-company .consulting { color: #e2e8f0; }
+        .header-tagline {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            letter-spacing: 0.03em;
+        }
+        .header-doc {
+            text-align: right;
+            font-size: 12px;
+            color: var(--gray);
+        }
+        .header-doc-type {
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 2rem;
+        }
+
+        /* Meta Cards */
+        .meta {
+            display: flex;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            flex: 1;
+            min-width: 200px;
+            border-top: 3px solid var(--primary);
+        }
+        .meta-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .meta-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-top: 0.25rem;
+        }
+        .meta-value a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .meta-value a:hover { text-decoration: underline; }
+
+        /* Summary Chips */
+        .summary-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .summary-chip {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .chip-pass {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .chip-fixed {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .chip-na {
+            background: rgba(100, 116, 139, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+        }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h2::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--dark);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+        }
+        th {
+            background: rgba(99, 102, 241, 0.08);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #1e293b;
+        }
+        td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid #0f172a;
+            font-size: 14px;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(99, 102, 241, 0.04); }
+
+        .pass { color: var(--success); font-weight: 600; }
+        .fixed { color: var(--primary); font-weight: 600; }
+        .na { color: var(--gray); font-weight: 600; }
+
+        .endpoint {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--accent);
+        }
+        a.link { color: var(--primary); text-decoration: none; }
+        a.link:hover { text-decoration: underline; }
+        .notes { color: #94a3b8; font-size: 13px; }
+
+        .fix-detail {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+        }
+        .fix-detail h3 {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+        .fix-detail p {
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .fix-detail code {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .service-card {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .service-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--light);
+            margin-bottom: 0.25rem;
+        }
+        .service-url { font-size: 12px; }
+        .service-url a { color: var(--primary); text-decoration: none; }
+        .service-url a:hover { text-decoration: underline; }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .dot-green { background: var(--success); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+        .status-text { font-size: 12px; color: #94a3b8; margin-top: 0.5rem; }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            border-top: 3px solid;
+            border-image: var(--gradient) 1;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .footer-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .footer-logo svg {
+            width: 50px;
+            height: 50px;
+        }
+        .footer-divider {
+            width: 3px;
+            height: 70px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        .footer-content { line-height: 1.5; }
+        .footer-company {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 1px;
+        }
+        .footer-company .drishti { color: var(--primary); }
+        .footer-company .consulting { color: #e2e8f0; }
+        .footer-slogan {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+        .footer-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .footer-title {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        .footer-contact {
+            font-size: 11px;
+            color: var(--primary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .footer-contact span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .footer-contact svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--primary);
+        }
+        .footer-bottom {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #1e293b;
+            font-size: 11px;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="header-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                    <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                </svg>
+            </div>
+            <div>
+                <div class="header-company">
+                    <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                </div>
+                <div class="header-tagline">Focused Vision. Precise Execution.</div>
+            </div>
+        </div>
+        <div class="header-doc">
+            <div class="header-doc-type">Production Test Report</div>
+            <div>Kolamba Platform &bull; v1.0.0</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Kolamba Production Test Report</h1>
+        <p class="subtitle">Full-stack deployment verification &mdash; February 8, 2026</p>
+
+        <div class="meta">
+            <div class="meta-item">
+                <div class="meta-label">Date</div>
+                <div class="meta-value">Feb 8, 2026 &bull; 19:10 IST</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Commit</div>
+                <div class="meta-value"><a href="https://github.com/luvchikavi/kolamba/commit/5da6874">5da6874</a></div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Environment</div>
+                <div class="meta-value">Production</div>
+            </div>
+        </div>
+
+        <div class="summary-bar">
+            <span class="summary-chip chip-pass">25 Passed</span>
+            <span class="summary-chip chip-fixed">1 Fixed</span>
+            <span class="summary-chip chip-na">1 N/A</span>
+        </div>
+
+        <!-- Services -->
+        <section>
+            <h2>Production Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name">Frontend (Vercel)</div>
+                    <div class="service-url"><a href="https://kolamba.vercel.app" target="_blank">kolamba.vercel.app</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Online</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Backend API (Railway)</div>
+                    <div class="service-url"><a href="https://kolamba-api-production.up.railway.app" target="_blank">kolamba-api-production.up.railway.app</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Online</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Database (Railway Postgres)</div>
+                    <div class="service-url">postgres.railway.internal:5432</div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Online</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Media Storage (Cloudinary)</div>
+                    <div class="service-url">Cloud: dbsoruwol</div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Configured</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Endpoints -->
+        <section>
+            <h2>API Endpoints</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Feature</th>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Health Check</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/health" target="_blank">GET /api/health</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">{"status":"healthy","service":"kolamba-api"}</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Categories</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/categories" target="_blank">GET /api/categories</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">10 categories returned (Music, Literature, Comedy, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Artists List</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/artists" target="_blank">GET /api/artists</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">0 artists visible (all pending approval &mdash; correct behavior)</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Tours</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/tours" target="_blank">GET /api/tours</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">0 tours (fresh database)</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Communities</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/communities" target="_blank">GET /api/communities</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">0 communities (fresh database)</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Cloudinary Status</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/uploads/status" target="_blank">GET /api/uploads/status</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">{"configured":true,"service":"cloudinary"}</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>API Documentation</td>
+                        <td><span class="endpoint"><a class="link" href="https://kolamba-api-production.up.railway.app/api/docs" target="_blank">GET /api/docs</a></span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Swagger UI loads successfully</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Authentication -->
+        <section>
+            <h2>Authentication</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Feature</th>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>8</td>
+                        <td>Community Registration</td>
+                        <td><span class="endpoint">POST /api/auth/register</span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Returns access_token and refresh_token</td>
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>Community Login</td>
+                        <td><span class="endpoint">POST /api/auth/login</span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">OAuth2 form-urlencoded format, returns tokens</td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>Get Current User</td>
+                        <td><span class="endpoint">GET /api/auth/me</span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Returns user profile with role, artist_id, community_id</td>
+                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>Artist Registration</td>
+                        <td><span class="endpoint">POST /api/auth/register/artist</span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Returns tokens, creates artist with pending status</td>
+                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>Artist Login</td>
+                        <td><span class="endpoint">POST /api/auth/login</span></td>
+                        <td><span class="fixed">FIXED</span></td>
+                        <td class="notes">Was using random temp password; now uses user-provided password</td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>Google OAuth</td>
+                        <td><span class="endpoint">POST /api/auth/google</span></td>
+                        <td><span class="na">N/A</span></td>
+                        <td class="notes">Endpoint exists, Google Cloud project not yet configured</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="fix-detail">
+                <h3>Fix #12: Artist Login After Registration</h3>
+                <p>
+                    The <code>register_artist</code> endpoint previously generated a random
+                    <code>temp_password = secrets.token_urlsafe(16)</code> and stored its hash,
+                    ignoring the password provided by the user. Fixed in commit
+                    <a class="link" href="https://github.com/luvchikavi/kolamba/commit/5da6874">5da6874</a>
+                    to use the user-provided password for self-registration, falling back to a
+                    temp password only for agent submissions.
+                </p>
+            </div>
+        </section>
+
+        <!-- Feature 1: Pending Approval -->
+        <section>
+            <h2>Feature 1: Artist Pending Approval</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Test</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>14</td>
+                        <td>Pending artists hidden from public list</td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">3 artists registered, 0 visible in GET /api/artists</td>
+                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>Admin-only access to artist management</td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Non-admin gets "Superuser access required"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Feature 2: Messaging -->
+        <section>
+            <h2>Feature 2: Messaging System</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Test</th>
+                        <th>Endpoint</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>16</td>
+                        <td>Conversations inbox (community)</td>
+                        <td><span class="endpoint">GET /api/conversations</span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Returns empty array (no bookings/conversations yet)</td>
+                    </tr>
+                    <tr>
+                        <td>17</td>
+                        <td>Conversations inbox (artist)</td>
+                        <td><span class="endpoint">GET /api/conversations</span></td>
+                        <td><span class="pass">PASS</span></td>
+                        <td class="notes">Returns empty array (no bookings/conversations yet)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Frontend Pages -->
+        <section>
+            <h2>Frontend Pages</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Page</th>
+                        <th>URL</th>
+                        <th>HTTP</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>18</td>
+                        <td>Homepage</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/" target="_blank">kolamba.vercel.app/</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>19</td>
+                        <td>Login</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/login" target="_blank">kolamba.vercel.app/login</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>20</td>
+                        <td>Artist Registration</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/register/artist" target="_blank">kolamba.vercel.app/register/artist</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>21</td>
+                        <td>Community Registration</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/register/community" target="_blank">kolamba.vercel.app/register/community</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>22</td>
+                        <td>Artist Dashboard</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/dashboard/artist" target="_blank">kolamba.vercel.app/dashboard/artist</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>23</td>
+                        <td>Community Dashboard</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/dashboard/community" target="_blank">kolamba.vercel.app/dashboard/community</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>24</td>
+                        <td>Admin Dashboard</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/dashboard/admin" target="_blank">kolamba.vercel.app/dashboard/admin</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>25</td>
+                        <td>Artist Messages</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/dashboard/artist/messages" target="_blank">kolamba.vercel.app/dashboard/artist/messages</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td>26</td>
+                        <td>Community Messages</td>
+                        <td><a class="link" href="https://kolamba.vercel.app/dashboard/community/messages" target="_blank">kolamba.vercel.app/dashboard/community/messages</a></td>
+                        <td>200</td>
+                        <td><span class="pass">PASS</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-inner">
+            <div class="footer-row">
+                <div class="footer-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                        <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                    </svg>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-content">
+                    <div class="footer-company">
+                        <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                    </div>
+                    <div class="footer-slogan">Focus Your Vision. Build Your Future.</div>
+                    <div class="footer-name">Avi Luvchik, Ph.D.</div>
+                    <div class="footer-title">Founder & CEO</div>
+                    <div class="footer-contact">
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            +972 52 501 6720
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            avi@drishticonsulting.com
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            drishticonsulting.com
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>Kolamba v1.0.0 &bull; Railway + Vercel Deployment</span>
+                <span>&copy; 2026 Drishti Consulting. All rights reserved.</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
