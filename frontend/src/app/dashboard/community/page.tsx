@@ -7,14 +7,13 @@ import {
   Search,
   User,
   MessageSquare,
-  FileText,
   Calendar,
   Quote,
   Settings,
-  Bell,
   ExternalLink,
   Loader2,
   MapPin,
+  ArrowRight,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -36,26 +35,25 @@ interface NearbyTouringArtist {
   distance_km: number;
 }
 
-interface CommunityProfile {
+interface DashboardCounts {
+  messages: number;
+  pendingQuotes: number;
+  upcomingEvents: number;
+}
+
+interface UpcomingEvent {
   id: number;
-  name: string;
+  artist_name: string;
   location: string;
+  date: string;
 }
 
-interface UserProfile {
-  id: number;
-  name: string;
-  email: string;
-}
-
-// Sidebar menu items
-const menuItems = [
-  { label: "Messages", icon: MessageSquare, count: 0, href: "/dashboard/community/messages" },
-  { label: "Drafts", icon: FileText, count: 2, href: "/dashboard/community/drafts" },
-  { label: "Events", icon: Calendar, href: "/dashboard/community/events" },
-  { label: "Quotes", icon: Quote, href: "/dashboard/community/quotes" },
+// Sidebar menu items (dynamic counts filled from API)
+const menuConfig = [
+  { label: "Messages", icon: MessageSquare, countKey: "messages" as const, href: "/dashboard/community/messages" },
+  { label: "Events", icon: Calendar, countKey: "upcomingEvents" as const, href: "/dashboard/community/events" },
+  { label: "Quotes", icon: Quote, countKey: "pendingQuotes" as const, href: "/dashboard/community/quotes" },
   { label: "Settings", icon: Settings, href: "/dashboard/community/settings" },
-  { label: "Privacy & Notifications", icon: Bell, href: "/dashboard/community/privacy" },
 ];
 
 function EventCard({ artist }: { artist: NearbyTouringArtist }) {
@@ -154,6 +152,8 @@ export default function CommunityDashboardPage() {
   const [userName, setUserName] = useState("Friend");
   const [communityName, setCommunityName] = useState("");
   const [communityId, setCommunityId] = useState<number | null>(null);
+  const [counts, setCounts] = useState<DashboardCounts>({ messages: 0, pendingQuotes: 0, upcomingEvents: 0 });
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -202,6 +202,46 @@ export default function CommunityDashboardPage() {
             const artists: NearbyTouringArtist[] = await nearbyRes.json();
             setNearbyArtists(artists);
           }
+
+          // Fetch bookings to compute counts
+          try {
+            const bookingsRes = await fetch(`${API_URL}/bookings?community_id=${commId}`, { headers });
+            if (bookingsRes.ok) {
+              const bookings = await bookingsRes.json();
+              const pending = bookings.filter((b: { status: string }) => b.status === "pending");
+              const approved = bookings.filter((b: { status: string }) => b.status === "approved");
+
+              setCounts((prev) => ({
+                ...prev,
+                pendingQuotes: pending.length,
+                upcomingEvents: approved.length,
+              }));
+
+              // Build upcoming events list (next 3 approved bookings)
+              const upcoming = approved
+                .filter((b: { requested_date?: string }) => b.requested_date)
+                .sort((a: { requested_date: string }, b: { requested_date: string }) =>
+                  new Date(a.requested_date).getTime() - new Date(b.requested_date).getTime()
+                )
+                .slice(0, 3)
+                .map((b: { id: number; location?: string; requested_date?: string }) => ({
+                  id: b.id,
+                  artist_name: "",
+                  location: b.location || "TBD",
+                  date: b.requested_date || "",
+                }));
+              setUpcomingEvents(upcoming);
+            }
+          } catch { /* ignore booking fetch errors */ }
+
+          // Fetch messages count
+          try {
+            const messagesRes = await fetch(`${API_URL}/conversations`, { headers });
+            if (messagesRes.ok) {
+              const conversations = await messagesRes.json();
+              setCounts((prev) => ({ ...prev, messages: conversations.length }));
+            }
+          } catch { /* ignore */ }
         }
       }
     } catch (error) {
@@ -295,27 +335,90 @@ export default function CommunityDashboardPage() {
             </div>
           </div>
 
-          {/* Right: Sidebar Menu */}
-          <div>
+          {/* Right: Sidebar */}
+          <div className="space-y-8">
+            {/* Navigation Menu */}
             <nav className="space-y-2">
-              {menuItems.map((item) => {
+              {menuConfig.map((item) => {
                 const Icon = item.icon;
+                const count = item.countKey ? counts[item.countKey] : undefined;
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
                     className="flex items-center justify-between px-4 py-4 text-slate-800 hover:bg-white/50 rounded-xl transition-colors"
                   >
-                    <span className="text-lg font-medium">{item.label}</span>
-                    {item.count !== undefined && (
+                    <div className="flex items-center gap-3">
+                      <Icon size={20} className="text-slate-500" />
+                      <span className="text-lg font-medium">{item.label}</span>
+                    </div>
+                    {count !== undefined && count > 0 && (
                       <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm font-semibold shadow-sm">
-                        {item.count}
+                        {count}
                       </span>
                     )}
                   </Link>
                 );
               })}
             </nav>
+
+            {/* Quick Actions */}
+            <div className="bg-white/60 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <Link
+                  href="/search"
+                  className="flex items-center justify-between px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
+                >
+                  <span>Browse Artists</span>
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/dashboard/community/quotes"
+                  className="flex items-center justify-between px-4 py-3 border-2 border-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  <span>View Quotes {counts.pendingQuotes > 0 && `(${counts.pendingQuotes} pending)`}</span>
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/dashboard/community/messages"
+                  className="flex items-center justify-between px-4 py-3 border-2 border-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
+                >
+                  <span>Messages {counts.messages > 0 && `(${counts.messages})`}</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Upcoming Events Summary */}
+            {upcomingEvents.length > 0 && (
+              <div className="bg-white/60 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Upcoming Events</h3>
+                <div className="space-y-3">
+                  {upcomingEvents.map((event) => (
+                    <div key={event.id} className="flex items-center gap-3 text-sm">
+                      <Calendar size={16} className="text-pink-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-slate-800">{event.location}</p>
+                        <p className="text-slate-500">
+                          {new Date(event.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/dashboard/community/events"
+                  className="inline-flex items-center gap-1 mt-4 text-sm font-medium text-pink-600 hover:text-pink-700"
+                >
+                  View all events <ArrowRight size={14} />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

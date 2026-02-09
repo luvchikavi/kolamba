@@ -81,6 +81,7 @@ export interface ArtistListItem {
   id: number;
   name_he: string;
   name_en?: string;
+  bio_en?: string;
   profile_image?: string;
   price_single?: number;
   price_tier?: string;

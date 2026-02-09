@@ -2,50 +2,18 @@
 
 import { useRef, useState, useEffect } from "react";
 import ArtistCard from "@/components/artists/ArtistCard";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { isInAnyList, toggleFavorite } from "@/lib/favorites";
-
-// Sample data matching Figma design
-const sampleArtists = [
-  {
-    id: 1,
-    name: "Tuna",
-    category: "Music",
-    description: "Itay Zvulun, known professionally by his stage name Tuna Is an Israeli rapper, singer, songwriter...",
-    image: "/artists/tuna.jpg",
-    rating: 4,
-  },
-  {
-    id: 2,
-    name: "Noga Erez",
-    category: "Music",
-    description: "Noga Erez is a visionary musician and producer with an innate talent for blending genres and pushing c...",
-    image: "/artists/noga-erez.jpg",
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: "Jasmin Moallem",
-    category: "Music",
-    description: "Short description about the artist, recent work and notable awards. Up to 3 lines max",
-    image: "/artists/jasmin-moallem.jpg",
-    rating: 4,
-  },
-  {
-    id: 4,
-    name: "Eden Ben Zaken",
-    category: "Music",
-    description: "One of Israel's most beloved pop stars with numerous hit songs and sold-out performances worldwide.",
-    image: "/artists/eden-ben-zaken.jpg",
-    rating: 5,
-  },
-];
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { toggleFavorite } from "@/lib/favorites";
+import { API_URL, ArtistListItem } from "@/lib/api";
 
 export default function FeaturedArtists() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+  const [artists, setArtists] = useState<ArtistListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Load favorites from localStorage
     const ids = new Set<number>();
     try {
       const raw = localStorage.getItem("kolamba_favorites");
@@ -59,11 +27,18 @@ export default function FeaturedArtists() {
       }
     } catch { /* ignore */ }
     setFavoriteIds(ids);
+
+    // Fetch featured artists from API
+    fetch(`${API_URL}/artists/featured?limit=6`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: ArtistListItem[]) => setArtists(data))
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   }, []);
 
   const handleFavoriteToggle = (id: number) => {
-    const artist = sampleArtists.find((a) => a.id === id);
-    toggleFavorite(id, artist?.name || "Artist");
+    const artist = artists.find((a) => a.id === id);
+    toggleFavorite(id, artist?.name_en || "Artist");
     setFavoriteIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -84,6 +59,20 @@ export default function FeaturedArtists() {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 text-center">
+          <Loader2 size={32} className="animate-spin text-slate-400 mx-auto" />
+        </div>
+      </section>
+    );
+  }
+
+  if (artists.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 bg-white">
@@ -125,13 +114,18 @@ export default function FeaturedArtists() {
             className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {sampleArtists.map((artist) => (
+            {artists.map((artist) => (
               <div
                 key={artist.id}
                 className="flex-shrink-0 w-72 snap-start"
               >
                 <ArtistCard
-                  {...artist}
+                  id={artist.id}
+                  name={artist.name_en || artist.name_he}
+                  category={artist.categories?.[0]?.name_en || "Artist"}
+                  description={artist.bio_en || ""}
+                  image={artist.profile_image || ""}
+                  rating={5}
                   isFavorited={favoriteIds.has(artist.id)}
                   onFavoriteToggle={handleFavoriteToggle}
                 />

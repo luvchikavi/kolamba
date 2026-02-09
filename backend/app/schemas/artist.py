@@ -113,6 +113,7 @@ class ArtistListResponse(BaseModel):
     id: int
     name_he: str
     name_en: Optional[str]
+    bio_en: Optional[str] = None
     profile_image: Optional[str]
     price_single: Optional[int]
     city: Optional[str]
