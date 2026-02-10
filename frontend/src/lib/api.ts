@@ -100,10 +100,54 @@ export interface Community {
   latitude?: number;
   longitude?: number;
   audience_size?: string;
+  event_types?: string[];
   language: string;
   status: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface NearbyTourDateInfo {
+  location: string;
+  start_date: string;
+  distance_km: number;
+}
+
+export interface DiscoverArtist {
+  id: number;
+  name_he: string;
+  name_en?: string;
+  bio_en?: string;
+  profile_image?: string;
+  price_single?: number;
+  price_tier?: string;
+  city?: string;
+  country: string;
+  is_featured: boolean;
+  categories: Category[];
+  subcategories: string[];
+  interest_score: number;
+  matched_event_types: string[];
+  nearest_tour_date?: NearbyTourDateInfo;
+}
+
+export interface DiscoverResponse {
+  artists: DiscoverArtist[];
+  total: number;
+  matched_categories: string[];
+  community_event_types: string[];
+}
+
+export interface DiscoverParams {
+  min_price?: number;
+  max_price?: number;
+  category?: string;
+  match_interests?: boolean;
+  touring_only?: boolean;
+  radius_km?: number;
+  sort_by?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export interface SearchParams {
@@ -287,6 +331,20 @@ export const api = {
   getCommunity: (id: number) => api.get<Community>(`/communities/${id}`),
   registerCommunity: (data: CommunityRegisterRequest) =>
     api.post<Community>("/communities", data),
+  discoverArtists: (communityId: number, params?: DiscoverParams) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.set(key, String(value));
+        }
+      });
+    }
+    const query = searchParams.toString();
+    return api.get<DiscoverResponse>(
+      `/communities/${communityId}/discover-artists${query ? `?${query}` : ""}`
+    );
+  },
 
   // Bookings
   createBooking: (data: BookingCreateRequest) =>

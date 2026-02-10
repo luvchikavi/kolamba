@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -15,7 +15,9 @@ import {
   MapPin,
   ArrowRight,
 } from "lucide-react";
-import { API_URL } from "@/lib/api";
+import { API_URL, DiscoverArtist, DiscoverResponse, DiscoverParams } from "@/lib/api";
+import DiscoverFilters from "@/components/dashboard/DiscoverFilters";
+import DiscoverArtistCard from "@/components/dashboard/DiscoverArtistCard";
 
 interface TourDate {
   id: number;
@@ -146,6 +148,8 @@ function EmptyState() {
   );
 }
 
+const DISCOVER_PAGE_SIZE = 6;
+
 export default function CommunityDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [nearbyArtists, setNearbyArtists] = useState<NearbyTouringArtist[]>([]);
@@ -154,6 +158,61 @@ export default function CommunityDashboardPage() {
   const [communityId, setCommunityId] = useState<number | null>(null);
   const [counts, setCounts] = useState<DashboardCounts>({ messages: 0, pendingQuotes: 0, upcomingEvents: 0 });
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+
+  // Discover state
+  const [communityEventTypes, setCommunityEventTypes] = useState<string[]>([]);
+  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
+  const [discoverParams, setDiscoverParams] = useState<DiscoverParams>({
+    match_interests: true,
+    sort_by: "relevance",
+    limit: DISCOVER_PAGE_SIZE,
+    offset: 0,
+  });
+  const [discoverResults, setDiscoverResults] = useState<DiscoverArtist[]>([]);
+  const [discoverTotal, setDiscoverTotal] = useState(0);
+  const [discoverTouringCount, setDiscoverTouringCount] = useState(0);
+  const [isDiscoverLoading, setIsDiscoverLoading] = useState(false);
+
+  const fetchDiscoverArtists = useCallback(async (
+    commId: number,
+    params: DiscoverParams,
+    append = false,
+  ) => {
+    setIsDiscoverLoading(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          searchParams.set(key, String(value));
+        }
+      });
+      const query = searchParams.toString();
+      const res = await fetch(
+        `${API_URL}/communities/${commId}/discover-artists${query ? `?${query}` : ""}`,
+        { headers },
+      );
+      if (res.ok) {
+        const data: DiscoverResponse = await res.json();
+        setDiscoverResults((prev) => append ? [...prev, ...data.artists] : data.artists);
+        setDiscoverTotal(data.total);
+        // Count artists with nearby tour dates
+        const touringNearby = data.artists.filter((a) => a.nearest_tour_date).length;
+        if (!append) {
+          setDiscoverTouringCount(touringNearby);
+        } else {
+          setDiscoverTouringCount((prev) => prev + touringNearby);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch discover artists:", error);
+    } finally {
+      setIsDiscoverLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
@@ -185,11 +244,14 @@ export default function CommunityDashboardPage() {
         if (commId) {
           setCommunityId(commId);
 
-          // Fetch community profile to get name
+          // Fetch community profile to get name and event_types
           const communityRes = await fetch(`${API_URL}/communities/${commId}`, { headers });
           if (communityRes.ok) {
             const communityData = await communityRes.json();
             setCommunityName(communityData.name);
+            const eventTypes: string[] = communityData.event_types || [];
+            setCommunityEventTypes(eventTypes);
+            setSelectedEventTypes(eventTypes);
           }
 
           // Fetch nearby touring artists
@@ -202,6 +264,14 @@ export default function CommunityDashboardPage() {
             const artists: NearbyTouringArtist[] = await nearbyRes.json();
             setNearbyArtists(artists);
           }
+
+          // Fetch discover artists (initial load)
+          fetchDiscoverArtists(commId, {
+            match_interests: true,
+            sort_by: "relevance",
+            limit: DISCOVER_PAGE_SIZE,
+            offset: 0,
+          });
 
           // Fetch bookings to compute counts
           try {
@@ -248,6 +318,38 @@ export default function CommunityDashboardPage() {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Re-fetch discover results when filters change
+  const handleDiscoverParamsChange = (newParams: DiscoverParams) => {
+    const updated = { ...newParams, offset: 0, limit: DISCOVER_PAGE_SIZE };
+    setDiscoverParams(updated);
+    if (communityId) {
+      fetchDiscoverArtists(communityId, updated);
+    }
+  };
+
+  const handleEventTypesChange = (types: string[]) => {
+    setSelectedEventTypes(types);
+    const updated: DiscoverParams = {
+      ...discoverParams,
+      match_interests: types.length > 0,
+      offset: 0,
+      limit: DISCOVER_PAGE_SIZE,
+    };
+    setDiscoverParams(updated);
+    if (communityId) {
+      fetchDiscoverArtists(communityId, updated);
+    }
+  };
+
+  const handleShowMore = () => {
+    const newOffset = (discoverParams.offset || 0) + DISCOVER_PAGE_SIZE;
+    const updated = { ...discoverParams, offset: newOffset };
+    setDiscoverParams(updated);
+    if (communityId) {
+      fetchDiscoverArtists(communityId, updated, true);
     }
   };
 
@@ -298,8 +400,9 @@ export default function CommunityDashboardPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left: Greeting */}
+          {/* Left: Main content */}
           <div className="lg:col-span-2">
+            {/* Greeting */}
             <div className="flex items-start gap-6 mb-12">
               <div className="w-16 h-16 rounded-full border-2 border-pink-300 flex items-center justify-center">
                 <User size={28} className="text-pink-400" />
@@ -315,6 +418,65 @@ export default function CommunityDashboardPage() {
                   <p className="text-sm text-slate-500 mt-2">{communityName}</p>
                 )}
               </div>
+            </div>
+
+            {/* Discover Artists Section */}
+            <div className="mb-16">
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 italic mb-4">
+                DISCOVER ARTISTS
+              </h2>
+              <p className="text-sm text-slate-500 mb-6">
+                {discoverTotal} artist{discoverTotal !== 1 ? "s" : ""} match your interests
+                {discoverTouringCount > 0 && (
+                  <> &middot; {discoverTouringCount} touring nearby</>
+                )}
+              </p>
+
+              <DiscoverFilters
+                eventTypes={communityEventTypes}
+                selectedEventTypes={selectedEventTypes}
+                onEventTypesChange={handleEventTypesChange}
+                params={discoverParams}
+                onParamsChange={handleDiscoverParamsChange}
+              />
+
+              {isDiscoverLoading && discoverResults.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 size={32} className="animate-spin text-pink-500" />
+                </div>
+              ) : discoverResults.length === 0 ? (
+                <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+                  <Search size={40} className="text-slate-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">No artists found</h3>
+                  <p className="text-slate-500 text-sm">
+                    Try adjusting your filters or browse all artists.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {discoverResults.map((artist) => (
+                      <DiscoverArtistCard key={artist.id} artist={artist} />
+                    ))}
+                  </div>
+
+                  {/* Show More button */}
+                  {discoverResults.length < discoverTotal && (
+                    <div className="text-center mt-6">
+                      <button
+                        onClick={handleShowMore}
+                        disabled={isDiscoverLoading}
+                        className="inline-flex items-center gap-2 px-6 py-3 border-2 border-slate-900 rounded-full text-sm font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      >
+                        {isDiscoverLoading ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : null}
+                        Show More
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Events in Your Area */}

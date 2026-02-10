@@ -13,10 +13,13 @@ from app.models.community import Community, COMMUNITY_TYPES, EVENT_TYPES, CONTAC
 from app.models.user import User
 from app.models.artist_tour_date import ArtistTourDate
 from app.models.artist import Artist
+from app.models.category import Category, ArtistCategory
 from app.schemas.community import CommunityCreate, CommunityUpdate, CommunityResponse
 from app.schemas.tour import NearbyTourResponse
 from app.schemas.artist_tour_date import NearbyTouringArtist, ArtistTourDateResponse
+from app.schemas.discover import DiscoverArtistItem, DiscoverResponse, NearbyTourDateInfo
 from app.services.tour_grouping import find_nearby_tours, haversine_distance
+from app.services.interest_matching import get_matched_categories, calculate_interest_score, EVENT_TYPE_TO_CATEGORIES
 from app.services.geocoding import geocode_location
 from app.routers.auth import get_current_active_user
 
@@ -313,6 +316,174 @@ async def get_nearby_touring_artists(
     nearby_artists.sort(key=lambda x: x.distance_km)
 
     return nearby_artists
+
+
+@router.get("/{community_id}/discover-artists", response_model=DiscoverResponse)
+async def discover_artists(
+    community_id: int,
+    min_price: Optional[int] = Query(None, ge=0, description="Minimum price filter"),
+    max_price: Optional[int] = Query(None, ge=0, description="Maximum price filter"),
+    category: Optional[str] = Query(None, description="Explicit category slug override"),
+    match_interests: bool = Query(True, description="Auto-filter by community event_types"),
+    touring_only: bool = Query(False, description="Only artists with tour dates within radius"),
+    radius_km: float = Query(500, description="Radius for touring_only filter"),
+    sort_by: str = Query("relevance", description="Sort: relevance|price_asc|price_desc|distance|name"),
+    limit: int = Query(12, le=50),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Discover artists matched to a community's interests.
+
+    Returns artists scored by interest overlap, with optional
+    price, category, and touring-nearby filters.
+    """
+    # 1. Fetch community
+    result = await db.execute(
+        select(Community).where(Community.id == community_id)
+    )
+    community = result.scalar_one_or_none()
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    community_event_types: list[str] = community.event_types or []
+    community_lat = float(community.latitude) if community.latitude is not None else None
+    community_lng = float(community.longitude) if community.longitude is not None else None
+
+    # 2. Determine category filter
+    matched_categories: list[str] = []
+    if category:
+        matched_categories = [category]
+    elif match_interests and community_event_types:
+        matched_categories = get_matched_categories(community_event_types)
+
+    # 3. Query active artists with categories eagerly loaded
+    from sqlalchemy.orm import selectinload
+    artist_query = (
+        select(Artist)
+        .options(selectinload(Artist.categories))
+        .where(Artist.status == "active")
+    )
+
+    # Price filters
+    if min_price is not None:
+        artist_query = artist_query.where(Artist.price_single >= min_price)
+    if max_price is not None:
+        artist_query = artist_query.where(Artist.price_single <= max_price)
+
+    # Category filter via join
+    if matched_categories:
+        artist_query = (
+            artist_query
+            .join(ArtistCategory, Artist.id == ArtistCategory.artist_id)
+            .join(Category, ArtistCategory.category_id == Category.id)
+            .where(Category.slug.in_(matched_categories))
+            .distinct()
+        )
+
+    artists_result = await db.execute(artist_query)
+    artists = artists_result.scalars().unique().all()
+
+    # 4. Fetch upcoming tour dates for distance calc
+    tour_dates_by_artist: dict[int, list] = {}
+    if community_lat is not None and community_lng is not None:
+        td_result = await db.execute(
+            select(ArtistTourDate).where(
+                ArtistTourDate.start_date >= date.today(),
+                ArtistTourDate.latitude.isnot(None),
+                ArtistTourDate.longitude.isnot(None),
+            )
+        )
+        for td in td_result.scalars().all():
+            tour_dates_by_artist.setdefault(td.artist_id, []).append(td)
+
+    # 5. Build discover items
+    items: list[DiscoverArtistItem] = []
+    for artist in artists:
+        artist_cat_slugs = [c.slug for c in artist.categories]
+
+        # Interest score
+        interest_score = calculate_interest_score(community_event_types, artist_cat_slugs)
+
+        # Matched event types for this artist
+        artist_matched_events: list[str] = []
+        for et in community_event_types:
+            et_cats = EVENT_TYPE_TO_CATEGORIES.get(et, [])
+            if any(s in artist_cat_slugs for s in et_cats):
+                artist_matched_events.append(et)
+
+        # Nearest tour date within radius
+        nearest_tour: NearbyTourDateInfo | None = None
+        if community_lat is not None and community_lng is not None:
+            artist_tour_dates = tour_dates_by_artist.get(artist.id, [])
+            best_dist = float("inf")
+            for td in artist_tour_dates:
+                dist = haversine_distance(
+                    community_lat, community_lng,
+                    float(td.latitude), float(td.longitude),
+                )
+                if dist < best_dist:
+                    best_dist = dist
+                    nearest_tour = NearbyTourDateInfo(
+                        location=td.location,
+                        start_date=td.start_date,
+                        distance_km=round(dist, 1),
+                    )
+
+        # touring_only filter
+        if touring_only:
+            if nearest_tour is None or nearest_tour.distance_km > radius_km:
+                continue
+
+        items.append(DiscoverArtistItem(
+            id=artist.id,
+            name_he=artist.name_he,
+            name_en=artist.name_en,
+            bio_en=artist.bio_en,
+            profile_image=artist.profile_image,
+            price_single=artist.price_single,
+            city=artist.city,
+            country=artist.country,
+            is_featured=artist.is_featured,
+            categories=[
+                {"id": c.id, "name_he": c.name_he, "name_en": c.name_en, "slug": c.slug, "icon": c.icon, "sort_order": c.sort_order}
+                for c in artist.categories
+            ],
+            subcategories=artist.subcategories or [],
+            interest_score=interest_score,
+            matched_event_types=artist_matched_events,
+            nearest_tour_date=nearest_tour,
+        ))
+
+    # 6. Sort
+    if sort_by == "price_asc":
+        items.sort(key=lambda x: (x.price_single or 0,))
+    elif sort_by == "price_desc":
+        items.sort(key=lambda x: (x.price_single or 0,), reverse=True)
+    elif sort_by == "distance":
+        items.sort(key=lambda x: (x.nearest_tour_date.distance_km if x.nearest_tour_date else float("inf"),))
+    elif sort_by == "name":
+        items.sort(key=lambda x: (x.name_en or x.name_he).lower())
+    else:
+        # relevance: featured first, then touring-nearby, then interest_score desc
+        items.sort(
+            key=lambda x: (
+                not x.is_featured,
+                x.nearest_tour_date is None,
+                -x.interest_score,
+                (x.name_en or x.name_he).lower(),
+            )
+        )
+
+    total = len(items)
+    paged = items[offset : offset + limit]
+
+    return DiscoverResponse(
+        artists=paged,
+        total=total,
+        matched_categories=matched_categories,
+        community_event_types=community_event_types,
+    )
 
 
 @router.get("/{community_id}", response_model=CommunityResponse)
