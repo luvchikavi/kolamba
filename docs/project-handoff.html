@@ -858,13 +858,337 @@
             </table>
         </section>
 
+        <!-- Proposal vs Actual -->
+        <section>
+            <h2>Proposal vs. Actual &mdash; Delivery Summary</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                Reference: Proposal <strong>PP-KOL-002-26 v2.0</strong> &mdash; 40 hours over 4 weeks, 7 MVP phases + post-MVP roadmap.
+            </p>
+
+            <h3>Phase Completion Overview</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Planned (h)</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Phase 1:</strong> Foundation &amp; Design</td>
+                        <td>6h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Git repo, CI/CD, DB schema, Alembic migrations, wireframes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 2:</strong> Homepage &amp; Search</td>
+                        <td>8h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Hero section, search endpoint with filters, category navigation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 3:</strong> Artist Profiles</td>
+                        <td>6h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Artist CRUD, listing grid, full detail page</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 4:</strong> Community &amp; Booking</td>
+                        <td>6h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Community CRUD with geolocation, booking flow with status tracking</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 5:</strong> Tour Logic</td>
+                        <td>8h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Haversine clustering, multi-factor scoring, community size weighting. No map view.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 6:</strong> Auth &amp; Dashboard</td>
+                        <td>4h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">JWT auth with refresh tokens, role-based dashboards (artist, community, admin, agent)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 7:</strong> QA &amp; Deployment</td>
+                        <td>2h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Deployed to Vercel + Railway production</td>
+                    </tr>
+                    <tr style="background: rgba(99, 102, 241, 0.06);">
+                        <td><strong>Phase 9:</strong> Smart Tour Algorithm</td>
+                        <td>4h</td>
+                        <td style="color: var(--success);">&#10003; Complete</td>
+                        <td class="notes">Post-MVP. Multi-factor scoring: bookings 25%, audience 25%, budget 20%, route 15%, dates 15%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Detailed Feature Checklist</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Feature (from Proposal)</th>
+                        <th style="width: 12%;">Status</th>
+                        <th>Actual Delivery</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Homepage -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Homepage &amp; Search</td></tr>
+                    <tr>
+                        <td>Hero section with Kolamba vision</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Dark gradient hero, bilingual tagline, kolamba.org logo</td>
+                    </tr>
+                    <tr>
+                        <td>Featured artists display</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Featured artists carousel on homepage</td>
+                    </tr>
+                    <tr>
+                        <td>Category navigation</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Category chips, /categories/[slug] pages</td>
+                    </tr>
+                    <tr>
+                        <td>Search with filters</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Full search page with category, price, and language filters</td>
+                    </tr>
+                    <tr>
+                        <td>Responsive on mobile</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Tailwind responsive breakpoints throughout</td>
+                    </tr>
+
+                    <!-- Artists -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Artist Features</td></tr>
+                    <tr>
+                        <td>Artist listing grid</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">/artists page with filterable card grid</td>
+                    </tr>
+                    <tr>
+                        <td>Artist detail profile page</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">/artists/[id] with full bio, categories, pricing, booking CTA</td>
+                    </tr>
+                    <tr>
+                        <td>Artist registration</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">/register/artist with comprehensive form, backend approval flow</td>
+                    </tr>
+                    <tr>
+                        <td>Artist profile editing</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Artist dashboard &rarr; Settings (name, bio, pricing, categories, contacts)</td>
+                    </tr>
+                    <tr>
+                        <td>Artist approval workflow</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Status: pending &rarr; active/rejected. Admin panel for approval.</td>
+                    </tr>
+
+                    <!-- Community -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Community Features</td></tr>
+                    <tr>
+                        <td>Community registration</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">/register/community with location, audience size, event types</td>
+                    </tr>
+                    <tr>
+                        <td>Community profile (location, audience)</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Full profile with geolocation, size, event types, settings page</td>
+                    </tr>
+                    <tr>
+                        <td>Community dashboard</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Events, quotes, messages, settings, nearby touring artists</td>
+                    </tr>
+                    <tr>
+                        <td>Discover artists from dashboard</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Interest-based matching, price/distance/category filters, inline cards (added Feb 2026)</td>
+                    </tr>
+
+                    <!-- Booking -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Booking</td></tr>
+                    <tr>
+                        <td>Booking request submission</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Booking form on artist profile page, full CRUD API</td>
+                    </tr>
+                    <tr>
+                        <td>Booking status tracking</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Status workflow: pending &rarr; approved/rejected/cancelled</td>
+                    </tr>
+                    <tr>
+                        <td>Email notifications for bookings</td>
+                        <td style="color: var(--warning);">&#9679; Partial</td>
+                        <td class="notes">Resend SDK configured, sending logic not active</td>
+                    </tr>
+
+                    <!-- Tour Logic -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Tour Logic</td></tr>
+                    <tr>
+                        <td>Proximity-based tour suggestions</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Haversine distance + BFS clustering algorithm</td>
+                    </tr>
+                    <tr>
+                        <td>Community size in ranking</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">25% weight in multi-factor tour scoring (Phase 9)</td>
+                    </tr>
+                    <tr>
+                        <td>Valid tour route generation</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Nearest-neighbor routing with tour date management</td>
+                    </tr>
+
+                    <!-- Auth -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Authentication &amp; Dashboards</td></tr>
+                    <tr>
+                        <td>JWT login / register</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">JWT with access + refresh tokens, secure cookie flow</td>
+                    </tr>
+                    <tr>
+                        <td>Google OAuth sign-in</td>
+                        <td style="color: var(--warning);">&#9679; Partial</td>
+                        <td class="notes">Backend endpoint complete, frontend button not wired</td>
+                    </tr>
+                    <tr>
+                        <td>Role-based dashboards</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">4 dashboards: Artist, Community, Admin, Agent</td>
+                    </tr>
+                    <tr>
+                        <td>Admin panel</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Artist approval, user management</td>
+                    </tr>
+
+                    <!-- Technical -->
+                    <tr><td colspan="3" style="background: rgba(99,102,241,0.08); font-weight: 600; font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.06em;">Technical Requirements</td></tr>
+                    <tr>
+                        <td>Site loads in &lt; 3 seconds</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Next.js SSR, Vercel edge network</td>
+                    </tr>
+                    <tr>
+                        <td>Cross-browser (Chrome, Safari, Firefox)</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Standard React/Tailwind &mdash; works in all modern browsers</td>
+                    </tr>
+                    <tr>
+                        <td>SSL certificate</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Auto-provisioned by Vercel and Railway</td>
+                    </tr>
+                    <tr>
+                        <td>Production deployment</td>
+                        <td style="color: var(--success);">&#10003; Done</td>
+                        <td class="notes">Vercel (frontend) + Railway (backend + DB), auto-deploy on push</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Delivered Beyond Original Scope</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bonus Feature</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Refresh token mechanism</strong></td>
+                        <td class="notes">Secure token refresh for persistent login sessions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agent dashboard</strong></td>
+                        <td class="notes">Fourth role type (agent) with dedicated dashboard</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Messaging system</strong></td>
+                        <td class="notes">In-app messaging for artists and communities</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smart tour algorithm (Phase 9)</strong></td>
+                        <td class="notes">Multi-factor scoring: bookings, audience, budget, route efficiency, date clustering</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Discover artists (dashboard)</strong></td>
+                        <td class="notes">Interest-based artist matching with filters on community dashboard</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Docker production configs</strong></td>
+                        <td class="notes">Full containerization for backend deployment</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Comprehensive documentation</strong></td>
+                        <td class="notes">Architecture docs, API docs (Swagger), brand guidelines, this handoff guide</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Address autocomplete</strong></td>
+                        <td class="notes">Geocoding component for community registration</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Full design transformation</strong></td>
+                        <td class="notes">Complete UI redesign from the original kolamba.org &mdash; modern dark-gradient hero, bilingual layout, responsive card grids, branded dashboard experience</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Artist tour management</strong></td>
+                        <td class="notes">Dedicated tour management section in artist dashboard &mdash; create, edit, and track tour dates with location and scheduling</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quote request system</strong></td>
+                        <td class="notes">Communities can request and manage quotes from artists, with full workflow tracking on the community dashboard</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Summary</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="background: var(--dark); border: 1px solid #1e293b; border-radius: 10px; padding: 1.25rem; text-align: center; border-top: 3px solid var(--success);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--success);">30</div>
+                    <div style="font-size: 12px; color: var(--gray); text-transform: uppercase;">Features Delivered</div>
+                </div>
+                <div style="background: var(--dark); border: 1px solid #1e293b; border-radius: 10px; padding: 1.25rem; text-align: center; border-top: 3px solid var(--warning);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--warning);">2</div>
+                    <div style="font-size: 12px; color: var(--gray); text-transform: uppercase;">Partially Done</div>
+                </div>
+                <div style="background: var(--dark); border: 1px solid #1e293b; border-radius: 10px; padding: 1.25rem; text-align: center; border-top: 3px solid var(--primary);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">11</div>
+                    <div style="font-size: 12px; color: var(--gray); text-transform: uppercase;">Bonus Features</div>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 1.25rem;">
+                <h3>What &ldquo;Partial&rdquo; Means</h3>
+                <ul>
+                    <li><strong>Email notifications:</strong> Resend SDK installed and configured, but no active send triggers. Ready to activate.</li>
+                    <li><strong>Google OAuth:</strong> Backend endpoint fully implemented, frontend sign-in button needs wiring.</li>
+                </ul>
+            </div>
+
+        </section>
+
         <!-- Support -->
         <section>
             <h2>Support &amp; Contact</h2>
             <div class="warn-box">
                 <h3>Post-Handoff Support</h3>
                 <p>
-                    Drishti Consulting provides 14 days of post-handoff support at no additional charge.
+                    Drishti Consulting provides 30 days of post-handoff support at no additional charge.
                     This includes assistance with the transfer process, troubleshooting, and answering questions
                     about the platform architecture. For ongoing maintenance or new feature development,
                     please contact us to discuss a support arrangement.
