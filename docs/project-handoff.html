@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolamba - Project Handoff Guide | Drishti Consulting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--darker);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        /* Header Bar */
+        .header-bar {
+            background: var(--dark);
+            border-bottom: 3px solid;
+            border-image: var(--gradient) 1;
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .header-logo svg {
+            width: 42px;
+            height: 42px;
+        }
+        .header-company {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .header-company .drishti { color: var(--primary); }
+        .header-company .consulting { color: #e2e8f0; }
+        .header-tagline {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            letter-spacing: 0.03em;
+        }
+        .header-doc {
+            text-align: right;
+            font-size: 12px;
+            color: var(--gray);
+        }
+        .header-doc-type {
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 2rem;
+        }
+
+        /* Meta Cards */
+        .meta {
+            display: flex;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            flex: 1;
+            min-width: 200px;
+            border-top: 3px solid var(--primary);
+        }
+        .meta-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-top: 0.25rem;
+        }
+        .meta-value a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .meta-value a:hover { text-decoration: underline; }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h2::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin: 1.25rem 0 0.5rem;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--dark);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            margin-bottom: 1rem;
+        }
+        th {
+            background: rgba(99, 102, 241, 0.08);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #1e293b;
+        }
+        td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid #0f172a;
+            font-size: 14px;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(99, 102, 241, 0.04); }
+
+        .url { color: var(--primary); text-decoration: none; }
+        .url:hover { text-decoration: underline; }
+        .mono {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--accent);
+        }
+        .notes { color: #94a3b8; font-size: 13px; }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .service-card {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .service-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--light);
+            margin-bottom: 0.25rem;
+        }
+        .service-url { font-size: 12px; }
+        .service-url a { color: var(--primary); text-decoration: none; }
+        .service-url a:hover { text-decoration: underline; }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .dot-green { background: var(--success); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+        .status-text { font-size: 12px; color: #94a3b8; margin-top: 0.5rem; }
+
+        /* Info Boxes */
+        .info-box {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .info-box h3 {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 0.4rem 0;
+        }
+        .info-box p, .info-box li {
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .info-box code {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .info-box ul {
+            margin: 0.5rem 0 0 1.25rem;
+        }
+        .info-box li {
+            margin-bottom: 0.25rem;
+        }
+
+        .warn-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .warn-box h3 {
+            color: var(--warning);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 0.4rem 0;
+        }
+        .warn-box p {
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        /* Steps */
+        .step {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 4rem;
+        }
+        .step-number {
+            position: absolute;
+            left: 1.25rem;
+            top: 1.25rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--gradient);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--light);
+            margin-bottom: 0.35rem;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        .step-desc a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .step-desc a:hover { text-decoration: underline; }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 0.5rem 0 0.5rem 2rem;
+            position: relative;
+            font-size: 14px;
+            border-bottom: 1px solid #0f172a;
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.7rem;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #334155;
+            border-radius: 4px;
+        }
+
+        /* Env var blocks */
+        .env-block {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 0.75rem 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+        .env-key { color: var(--accent); }
+        .env-eq { color: #475569; }
+        .env-val { color: var(--success); }
+        .env-comment { color: #475569; font-style: italic; }
+        .env-placeholder { color: var(--warning); }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            border-top: 3px solid;
+            border-image: var(--gradient) 1;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .footer-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .footer-logo svg {
+            width: 50px;
+            height: 50px;
+        }
+        .footer-divider {
+            width: 3px;
+            height: 70px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        .footer-content { line-height: 1.5; }
+        .footer-company {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 1px;
+        }
+        .footer-company .drishti { color: var(--primary); }
+        .footer-company .consulting { color: #e2e8f0; }
+        .footer-slogan {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+        .footer-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .footer-title {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        .footer-contact {
+            font-size: 11px;
+            color: var(--primary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .footer-contact span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .footer-contact svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--primary);
+        }
+        .footer-bottom {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #1e293b;
+            font-size: 11px;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        @media print {
+            body { background: white; color: #1e293b; }
+            .header-bar { border-bottom-color: var(--primary); }
+            .step, .service-card, .meta-item, table { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="header-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                    <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                </svg>
+            </div>
+            <div>
+                <div class="header-company">
+                    <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                </div>
+                <div class="header-tagline">Focused Vision. Precise Execution.</div>
+            </div>
+        </div>
+        <div class="header-doc">
+            <div class="header-doc-type">Project Handoff Guide</div>
+            <div>PC-KOL-001-26 &bull; Kolamba Platform</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Kolamba &mdash; Project Handoff Guide</h1>
+        <p class="subtitle">Everything you need to own and operate the Kolamba platform &mdash; February 2026</p>
+
+        <div class="meta">
+            <div class="meta-item">
+                <div class="meta-label">Project</div>
+                <div class="meta-value">Kolamba Platform</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Document</div>
+                <div class="meta-value">PC-KOL-001-26</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Date</div>
+                <div class="meta-value">February 10, 2026</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Prepared By</div>
+                <div class="meta-value">Drishti Consulting</div>
+            </div>
+        </div>
+
+        <!-- Architecture Overview -->
+        <section>
+            <h2>Architecture Overview</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name">Frontend (Vercel)</div>
+                    <div class="service-url"><a href="https://kolamba.vercel.app" target="_blank">kolamba.vercel.app</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Next.js + TypeScript + Tailwind CSS</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Backend API (Railway)</div>
+                    <div class="service-url"><a href="https://kolamba-api-production.up.railway.app/api/docs" target="_blank">kolamba-api-production.up.railway.app</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>FastAPI + SQLAlchemy (Python)</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Database (Railway)</div>
+                    <div class="service-url">PostgreSQL 15 (managed)</div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Automatic backups by Railway</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Media Storage (Cloudinary)</div>
+                    <div class="service-url"><a href="https://console.cloudinary.com" target="_blank">console.cloudinary.com</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Image uploads &amp; hosting</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Source Code (GitHub)</div>
+                    <div class="service-url"><a href="https://github.com/luvchikavi/kolamba" target="_blank">github.com/luvchikavi/kolamba</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Git repository + CI/CD</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Authentication (Google)</div>
+                    <div class="service-url"><a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a></div>
+                    <div class="status-text"><span class="status-dot dot-green"></span>Google OAuth Sign-In</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What Gets Transferred -->
+        <section>
+            <h2>What Gets Transferred</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Transfer Method</th>
+                        <th>What You Get</th>
+                        <th>Monthly Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>GitHub Repository</strong></td>
+                        <td>Repository transfer</td>
+                        <td>Full source code, commit history, CI/CD workflows</td>
+                        <td>Free</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vercel Project</strong></td>
+                        <td>Project transfer</td>
+                        <td>Frontend hosting, auto-deploy on git push, environment variables</td>
+                        <td>Free (Hobby) / $20 (Pro)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Railway Project</strong></td>
+                        <td>Project transfer</td>
+                        <td>Backend API server, PostgreSQL database with all data</td>
+                        <td>~$5&ndash;15 (usage-based)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cloudinary Account</strong></td>
+                        <td>Credential handover</td>
+                        <td>Image/media hosting, all uploaded files</td>
+                        <td>Free (25GB) / $89 (Plus)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Google Cloud Project</strong></td>
+                        <td>Owner role transfer</td>
+                        <td>OAuth login credentials for Google Sign-In</td>
+                        <td>Free</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Domain</strong></td>
+                        <td>Registrar transfer</td>
+                        <td>kolamba.com / kolamba.org domain ownership</td>
+                        <td>~$12/year</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Transfer Steps -->
+        <section>
+            <h2>Transfer Steps</h2>
+
+            <h3>Phase 1: Account Setup (Client)</h3>
+            <p class="notes" style="margin-bottom: 1rem;">Create accounts on these platforms before the transfer call. All have free tiers.</p>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">Create a GitHub account</div>
+                <div class="step-desc">
+                    Go to <a href="https://github.com/signup" target="_blank">github.com/signup</a> &mdash; the repository will be transferred to this account.
+                    If you already have one, share your username.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">Create a Vercel account</div>
+                <div class="step-desc">
+                    Go to <a href="https://vercel.com/signup" target="_blank">vercel.com/signup</a> &mdash; sign up with your GitHub account for seamless integration.
+                    The Hobby plan (free) is sufficient to start.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-title">Create a Railway account</div>
+                <div class="step-desc">
+                    Go to <a href="https://railway.app" target="_blank">railway.app</a> &mdash; sign up with your GitHub account.
+                    Add a payment method (required for production hosting, usage-based billing ~$5&ndash;15/month).
+                </div>
+            </div>
+
+            <h3>Phase 2: Transfer (Done Together)</h3>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-title">Transfer the GitHub repository</div>
+                <div class="step-desc">
+                    Drishti will initiate the transfer from <strong>github.com/luvchikavi/kolamba</strong> &rarr; your account.
+                    You will receive an email to accept the transfer. All code, branches, and history are preserved.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-title">Transfer the Vercel project</div>
+                <div class="step-desc">
+                    Drishti will transfer the Vercel project to your account. After accepting:
+                    reconnect the GitHub repository (now under your account) in Vercel project settings, and
+                    verify the environment variables are set (see Environment Variables section below).
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">6</div>
+                <div class="step-title">Transfer the Railway project</div>
+                <div class="step-desc">
+                    Drishti will transfer the Railway project (backend + database) to your account.
+                    The database and all its data transfer with the project. Verify environment variables after accepting.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">7</div>
+                <div class="step-title">Transfer Cloudinary &amp; Google OAuth</div>
+                <div class="step-desc">
+                    Drishti will hand over Cloudinary account credentials (or help you create a new account).
+                    For Google OAuth, Drishti will add you as Owner on the Google Cloud project, then remove themselves.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">8</div>
+                <div class="step-title">Transfer domain (if applicable)</div>
+                <div class="step-desc">
+                    Domain transfer via the registrar. DNS records will need to point to your Vercel and Railway deployments.
+                    Drishti will assist with DNS configuration during handoff.
+                </div>
+            </div>
+
+            <h3>Phase 3: Security (Client)</h3>
+
+            <div class="step">
+                <div class="step-number">9</div>
+                <div class="step-title">Rotate all secrets</div>
+                <div class="step-desc">
+                    After transfer, generate new values for <code>SECRET_KEY</code> and any API keys you wish to rotate.
+                    Update them in Railway and Vercel environment variables. This ensures only you have access.
+                </div>
+            </div>
+        </section>
+
+        <!-- Environment Variables -->
+        <section>
+            <h2>Environment Variables Reference</h2>
+
+            <h3>Railway Backend (already configured &mdash; verify after transfer)</h3>
+            <div class="env-block">
+                <span class="env-comment"># Database (auto-managed by Railway)</span><br>
+                <span class="env-key">DATABASE_URL</span><span class="env-eq">=</span><span class="env-val">postgresql+asyncpg://...</span><br><br>
+                <span class="env-comment"># Security &mdash; generate a new random 64-char string after transfer</span><br>
+                <span class="env-key">SECRET_KEY</span><span class="env-eq">=</span><span class="env-placeholder">&lt;generate-new-secret&gt;</span><br>
+                <span class="env-key">ALGORITHM</span><span class="env-eq">=</span><span class="env-val">HS256</span><br>
+                <span class="env-key">ACCESS_TOKEN_EXPIRE_MINUTES</span><span class="env-eq">=</span><span class="env-val">15</span><br>
+                <span class="env-key">REFRESH_TOKEN_EXPIRE_DAYS</span><span class="env-eq">=</span><span class="env-val">7</span><br><br>
+                <span class="env-comment"># CORS &mdash; update with your domain</span><br>
+                <span class="env-key">CORS_ORIGINS</span><span class="env-eq">=</span><span class="env-val">https://kolamba.vercel.app</span><br><br>
+                <span class="env-comment"># Cloudinary (media uploads)</span><br>
+                <span class="env-key">CLOUDINARY_CLOUD_NAME</span><span class="env-eq">=</span><span class="env-placeholder">&lt;from-cloudinary-dashboard&gt;</span><br>
+                <span class="env-key">CLOUDINARY_API_KEY</span><span class="env-eq">=</span><span class="env-placeholder">&lt;from-cloudinary-dashboard&gt;</span><br>
+                <span class="env-key">CLOUDINARY_API_SECRET</span><span class="env-eq">=</span><span class="env-placeholder">&lt;from-cloudinary-dashboard&gt;</span><br><br>
+                <span class="env-comment"># Google OAuth</span><br>
+                <span class="env-key">GOOGLE_CLIENT_ID</span><span class="env-eq">=</span><span class="env-placeholder">&lt;from-google-cloud-console&gt;</span><br>
+                <span class="env-key">GOOGLE_CLIENT_SECRET</span><span class="env-eq">=</span><span class="env-placeholder">&lt;from-google-cloud-console&gt;</span><br><br>
+                <span class="env-comment"># Email (optional &mdash; needed for sending emails)</span><br>
+                <span class="env-key">RESEND_API_KEY</span><span class="env-eq">=</span><span class="env-placeholder">&lt;from-resend.com-if-needed&gt;</span><br>
+            </div>
+
+            <h3>Vercel Frontend (already configured &mdash; verify after transfer)</h3>
+            <div class="env-block">
+                <span class="env-key">NEXT_PUBLIC_API_URL</span><span class="env-eq">=</span><span class="env-val">https://kolamba-api-production.up.railway.app</span><br>
+                <span class="env-key">NEXT_PUBLIC_GOOGLE_CLIENT_ID</span><span class="env-eq">=</span><span class="env-placeholder">&lt;same-google-client-id-as-backend&gt;</span><br>
+            </div>
+        </section>
+
+        <!-- Key URLs -->
+        <section>
+            <h2>Key URLs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>What</th>
+                        <th>URL</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Live Website</td>
+                        <td><a class="url" href="https://kolamba.vercel.app" target="_blank">kolamba.vercel.app</a></td>
+                        <td class="notes">Frontend &mdash; auto-deploys when you push to GitHub</td>
+                    </tr>
+                    <tr>
+                        <td>Backend API</td>
+                        <td><a class="url" href="https://kolamba-api-production.up.railway.app/api" target="_blank">kolamba-api-production.up.railway.app/api</a></td>
+                        <td class="notes">REST API &mdash; auto-deploys from GitHub</td>
+                    </tr>
+                    <tr>
+                        <td>API Documentation</td>
+                        <td><a class="url" href="https://kolamba-api-production.up.railway.app/api/docs" target="_blank">.../api/docs</a></td>
+                        <td class="notes">Interactive Swagger docs for all endpoints</td>
+                    </tr>
+                    <tr>
+                        <td>Health Check</td>
+                        <td><a class="url" href="https://kolamba-api-production.up.railway.app/api/health" target="_blank">.../api/health</a></td>
+                        <td class="notes">Returns {"status":"healthy"} when backend is running</td>
+                    </tr>
+                    <tr>
+                        <td>GitHub Repo</td>
+                        <td><a class="url" href="https://github.com/luvchikavi/kolamba" target="_blank">github.com/luvchikavi/kolamba</a></td>
+                        <td class="notes">Will change to your username after transfer</td>
+                    </tr>
+                    <tr>
+                        <td>Railway Dashboard</td>
+                        <td><a class="url" href="https://railway.app/dashboard" target="_blank">railway.app/dashboard</a></td>
+                        <td class="notes">Backend server + database management</td>
+                    </tr>
+                    <tr>
+                        <td>Vercel Dashboard</td>
+                        <td><a class="url" href="https://vercel.com/dashboard" target="_blank">vercel.com/dashboard</a></td>
+                        <td class="notes">Frontend deployment management</td>
+                    </tr>
+                    <tr>
+                        <td>Cloudinary Dashboard</td>
+                        <td><a class="url" href="https://console.cloudinary.com" target="_blank">console.cloudinary.com</a></td>
+                        <td class="notes">View and manage uploaded images</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- How Deployments Work -->
+        <section>
+            <h2>How Deployments Work</h2>
+            <div class="info-box">
+                <h3>Automatic Deployment (Zero Effort)</h3>
+                <p>
+                    Both the frontend and backend deploy automatically when code is pushed to the <code>main</code> branch on GitHub.
+                    You don't need to run any commands &mdash; just push your code.
+                </p>
+                <ul>
+                    <li><strong>Frontend:</strong> Vercel detects the push, builds Next.js, and deploys in ~60 seconds.</li>
+                    <li><strong>Backend:</strong> Railway detects the push, builds the Docker container, runs database migrations, and deploys in ~2 minutes.</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>Database Migrations</h3>
+                <p>
+                    Database schema changes are handled by <strong>Alembic</strong> (Python migration tool).
+                    Migrations run automatically on each Railway deployment via <code>start.sh</code>.
+                    No manual database management is needed.
+                </p>
+            </div>
+        </section>
+
+        <!-- Verification Checklist -->
+        <section>
+            <h2>Post-Transfer Verification Checklist</h2>
+            <div style="background: var(--dark); border: 1px solid #1e293b; border-radius: 10px; padding: 1.5rem;">
+                <ul class="checklist">
+                    <li>GitHub repo is accessible under your account</li>
+                    <li>You can clone and push to the repository</li>
+                    <li>Vercel project shows in your dashboard</li>
+                    <li>Vercel is connected to the GitHub repo and auto-deploys</li>
+                    <li>Frontend loads at kolamba.vercel.app</li>
+                    <li>Railway project shows in your dashboard</li>
+                    <li>Backend health check returns healthy</li>
+                    <li>Login and registration work on the website</li>
+                    <li>Google OAuth login works</li>
+                    <li>Image upload works (Cloudinary)</li>
+                    <li>Database has all existing data (check admin dashboard)</li>
+                    <li>New SECRET_KEY has been generated and set</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Common Operations -->
+        <section>
+            <h2>Common Operations</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>How To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>View server logs</td>
+                        <td class="notes">Railway dashboard &rarr; kolamba project &rarr; Backend service &rarr; Logs tab</td>
+                    </tr>
+                    <tr>
+                        <td>View deployment history</td>
+                        <td class="notes">Vercel dashboard &rarr; kolamba &rarr; Deployments tab</td>
+                    </tr>
+                    <tr>
+                        <td>Access database</td>
+                        <td class="notes">Railway dashboard &rarr; PostgreSQL service &rarr; Data tab (or use connection string with pgAdmin)</td>
+                    </tr>
+                    <tr>
+                        <td>Update environment variables</td>
+                        <td class="notes">Railway: Service &rarr; Variables tab. Vercel: Project &rarr; Settings &rarr; Environment Variables</td>
+                    </tr>
+                    <tr>
+                        <td>Rollback a deployment</td>
+                        <td class="notes">Vercel: Deployments &rarr; click previous deployment &rarr; Promote to Production</td>
+                    </tr>
+                    <tr>
+                        <td>Add a custom domain</td>
+                        <td class="notes">Vercel: Settings &rarr; Domains &rarr; Add &rarr; follow DNS instructions</td>
+                    </tr>
+                    <tr>
+                        <td>Approve pending artists</td>
+                        <td class="notes">Login as admin &rarr; Admin Dashboard &rarr; Artists &rarr; change status to "active"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Support -->
+        <section>
+            <h2>Support &amp; Contact</h2>
+            <div class="warn-box">
+                <h3>Post-Handoff Support</h3>
+                <p>
+                    Drishti Consulting provides 14 days of post-handoff support at no additional charge.
+                    This includes assistance with the transfer process, troubleshooting, and answering questions
+                    about the platform architecture. For ongoing maintenance or new feature development,
+                    please contact us to discuss a support arrangement.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-inner">
+            <div class="footer-row">
+                <div class="footer-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                        <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                    </svg>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-content">
+                    <div class="footer-company">
+                        <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                    </div>
+                    <div class="footer-slogan">Focus Your Vision. Build Your Future.</div>
+                    <div class="footer-name">Avi Luvchik, Ph.D.</div>
+                    <div class="footer-title">Founder & CEO</div>
+                    <div class="footer-contact">
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            +972 52 501 6720
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            avi@drishticonsulting.com
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            drishticonsulting.com
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>PC-KOL-001-26 &bull; Kolamba Project Handoff</span>
+                <span>&copy; 2026 Drishti Consulting. All rights reserved.</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
