@@ -131,8 +131,9 @@
 
 #### Users
 - Primary authentication entity
-- Roles: `artist`, `community`, `admin`
+- Roles: `artist`, `community`, `admin`, `agent`
 - Links to Artist or Community profile
+- `is_superuser` flag for admin access
 
 #### Artists
 - Hebrew and English content support
@@ -159,58 +160,137 @@
 
 ---
 
-## API Endpoints
+## API Endpoints (83 total)
 
-### Authentication (`/api/auth`)
+### Authentication (`/api/auth`) — 7 endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/register` | Register new user |
-| POST | `/login` | Login and get tokens |
+| POST | `/register` | Register new user (community/artist) |
+| POST | `/register/artist` | Register artist with profile |
+| POST | `/login` | Login and get tokens (OAuth2) |
 | POST | `/refresh` | Refresh access token |
-| GET | `/me` | Get current user |
+| POST | `/google` | Google OAuth authentication |
+| GET | `/me` | Get current user profile |
+| PUT | `/me` | Update current user profile |
 
-### Artists (`/api/artists`)
+### Artists (`/api/artists`) — 9 endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | List all artists (with filters) |
+| GET | `/` | List artists (filters: category, price, language) |
+| GET | `/featured` | List featured artists |
+| GET | `/me` | Get own artist profile |
+| PUT | `/me` | Update own artist profile |
 | GET | `/{id}` | Get artist by ID |
-| POST | `/` | Create artist (authenticated) |
-| PUT | `/{id}` | Update artist |
-| DELETE | `/{id}` | Delete artist |
+| GET | `/discover` | Discover artists (community dashboard) |
+| GET | `/categories` | Get categories with artist counts |
+| POST | `/seed` | Seed demo artist data |
+| GET | `/{id}/availability` | Get artist availability |
 
-### Communities (`/api/communities`)
+### Communities (`/api/communities`) — 12 endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | List all communities |
+| GET | `/me` | Get own community profile |
+| PUT | `/me` | Update own community profile |
+| GET | `/me/dashboard` | Community dashboard data |
+| GET | `/me/discover` | Discover artists for community |
 | GET | `/{id}` | Get community by ID |
-| POST | `/` | Create community |
 | PUT | `/{id}` | Update community |
+| GET | `/{id}/bookings` | Get community bookings |
+| GET | `/stats` | Community statistics |
+| POST | `/` | Create community profile |
+| GET | `/options/types` | List community type options |
+| GET | `/options/events` | List event type options |
 
-### Bookings (`/api/bookings`)
+### Bookings (`/api/bookings`) — 6 endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | List bookings |
-| GET | `/{id}` | Get booking by ID |
-| POST | `/` | Create booking request |
-| PUT | `/{id}/status` | Update booking status |
+| GET | `/` | List bookings (filters: status, artist, community) |
+| GET | `/my-bookings` | Get own bookings with artist names |
+| POST | `/` | Create booking request (rate limited) |
+| GET | `/{id}` | Get booking details |
+| PUT | `/{id}` | Update booking (approve/reject) |
+| DELETE | `/{id}` | Cancel booking |
 
-### Tours (`/api/tours`)
+### Tours (`/api/tours`) — 14 endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/suggestions` | Get AI-grouped tour suggestions |
-| GET | `/{id}` | Get tour details |
+| GET | `/suggestions/{artist_id}` | Get tour suggestions |
 | POST | `/` | Create tour from bookings |
+| GET | `/{id}` | Get tour details |
 | PUT | `/{id}` | Update tour |
+| POST | `/{id}/bookings/{booking_id}` | Add booking to tour |
+| DELETE | `/{id}/bookings/{booking_id}` | Remove booking from tour |
+| PUT | `/{id}/reorder` | Reorder tour stops |
+| GET | `/artist/{artist_id}` | Get tours for artist |
+| And more... | See `/api/docs` | Full tour management |
 
-### Categories (`/api/categories`)
+### Admin (`/api/admin`) — 12 endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/stats` | Dashboard statistics |
+| GET | `/users` | List all users |
+| PUT | `/users/{id}` | Update user |
+| POST | `/users/{id}/deactivate` | Deactivate user |
+| GET | `/artists` | List artists for review |
+| PUT | `/artists/{id}/status` | Approve/reject artist |
+| GET | `/bookings` | List all bookings |
+| PUT | `/bookings/{id}/status` | Update booking status |
+| POST | `/seed-superusers` | Seed admin accounts |
+| POST | `/seed-categories` | Seed categories |
+| POST | `/seed-communities` | Seed communities |
+| POST | `/seed-demo` | Seed demo data |
+
+### Agents (`/api/agents`) — 3 endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/me/artists` | Agent's artist roster |
+| GET | `/me/stats` | Agent dashboard stats |
+| GET | `/me/bookings` | Agent's bookings |
+
+### Conversations (`/api/conversations`) — 4 endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/{booking_id}` | Get conversation for booking |
+| POST | `/{booking_id}/messages` | Send message |
+| GET | `/my` | Get all my conversations |
+| PUT | `/{id}/read` | Mark conversation as read |
+
+### Uploads (`/api/uploads`) — 6 endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/image` | Upload image to Cloudinary |
+| POST | `/video` | Upload video |
+| POST | `/portfolio` | Upload portfolio images |
+| DELETE | `/{public_id}` | Delete uploaded file |
+| GET | `/my` | List own uploads |
+| GET | `/config` | Check upload config status |
+
+### Artist Tour Dates (`/api/artist-tour-dates`) — 6 endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List tour dates |
+| POST | `/` | Create tour date |
+| PUT | `/{id}` | Update tour date |
+| DELETE | `/{id}` | Delete tour date |
+| GET | `/artist/{artist_id}` | Tour dates for artist |
+| GET | `/upcoming` | Upcoming tour dates |
+
+### Categories (`/api/categories`) — 1 endpoint
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | List all categories |
 
-### Search (`/api/search`)
+### Search (`/api/search`) — 1 endpoint (rate limited)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | Search artists by query |
+
+### Other (`/api`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| POST | `/contact` | Contact form (rate limited) |
 
 ---
 
@@ -328,48 +408,50 @@ frontend/src/
 
 ---
 
+### Phase 10: Artist Features ✅
+- [x] Artist profile editing (self-service via `/me`)
+- [x] Media gallery (Cloudinary image/video uploads)
+- [x] Portfolio showcase (portfolio images, video URLs, Spotify links)
+- [x] Pricing configuration (price_single, price_tour, price tiers)
+- [ ] Calendar availability (partial — availability JSON field exists)
+
+### Phase 11: Community Features ✅
+- [x] Community dashboard with artist discovery
+- [x] Booking management interface
+- [x] Communication with artists (conversation system)
+- [x] My bookings view with artist names
+- [ ] Tour coordination tools (backend exists, frontend pending)
+
+### Phase 12: Admin Panel ✅
+- [x] Admin dashboard with stats
+- [x] User management (list, update, deactivate)
+- [x] Artist moderation (approve/reject with reasons)
+- [x] Booking management (status updates)
+- [x] Seed data management (superusers, categories, communities, demo data)
+
+### Phase 13: Notifications (Partial)
+- [x] Email service via Resend (welcome, booking, status change)
+- [x] Contact form with email delivery
+- [ ] In-app notifications
+- [ ] Tour proposal emails
+- [ ] Notification preferences
+
 ## Pending Development Phases
-
-### Phase 10: Artist Features (Next Priority)
-- [ ] Artist profile editing
-- [ ] Media gallery (images/videos)
-- [ ] Calendar availability
-- [ ] Pricing configuration
-- [ ] Portfolio showcase
-
-### Phase 11: Community Features
-- [ ] Community dashboard improvements
-- [ ] Booking management interface
-- [ ] Tour coordination tools
-- [ ] Communication with artists
-- [ ] Event history
-
-### Phase 12: Admin Panel
-- [ ] Admin dashboard
-- [ ] User management
-- [ ] Content moderation
-- [ ] Analytics and reporting
-- [ ] System configuration
-
-### Phase 13: Notifications
-- [ ] Email notifications (Resend integration)
-- [ ] Booking confirmations
-- [ ] Tour proposals
-- [ ] Reminder emails
 
 ### Phase 14: Advanced Features
 - [ ] Reviews and ratings
 - [ ] Favorite artists
-- [ ] Recommended artists algorithm
-- [ ] Advanced search filters
-- [ ] Map-based discovery
+- [ ] Map-based discovery (Leaflet/Mapbox)
+- [ ] Full-text search (PostgreSQL tsvector)
+- [ ] Geographic search ("artists near me")
 
 ### Phase 15: Production Readiness
 - [ ] Merge with kolamba.org domain
-- [ ] SSL certificate setup
-- [ ] Performance optimization
 - [ ] Error monitoring (Sentry)
 - [ ] Analytics integration
+- [x] Rate limiting ✅
+- [x] Structured logging ✅
+- [x] CORS configuration ✅
 
 ---
 
@@ -382,7 +464,18 @@ SECRET_KEY=your-secret-key-min-32-chars
 CORS_ORIGINS=https://kolamba.vercel.app,https://kolamba.org
 ENV=production
 DEBUG=false
-RESEND_API_KEY=optional-for-emails
+
+# Authentication
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Media uploads
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
+# Email
+RESEND_API_KEY=your-resend-api-key
 ```
 
 ### Frontend (Vercel)
@@ -403,7 +496,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with local database credentials
 alembic upgrade head
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 ```
 
 ### Frontend
@@ -411,7 +504,7 @@ uvicorn app.main:app --reload
 cd frontend
 npm install
 cp .env.example .env.local
-# Edit .env.local
+# Edit .env.local — set NEXT_PUBLIC_API_URL=http://127.0.0.1:8001
 npm run dev
 ```
 
@@ -419,8 +512,8 @@ npm run dev
 ```bash
 docker-compose up -d
 # Frontend: http://localhost:3000
-# Backend: http://localhost:8000
-# API Docs: http://localhost:8000/api/docs
+# Backend: http://localhost:8001 (maps to 8000 inside container)
+# API Docs: http://localhost:8001/api/docs
 ```
 
 ---
@@ -455,17 +548,19 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
 ### Implemented
 - [x] Password hashing with bcrypt
-- [x] JWT token authentication
-- [x] CORS configuration
+- [x] JWT token authentication (access + refresh tokens)
+- [x] Google OAuth 2.0 authentication
+- [x] CORS configuration (origin whitelist)
 - [x] Input validation with Pydantic
 - [x] SQL injection prevention (SQLAlchemy ORM)
+- [x] Rate limiting (slowapi — auth 5/min, search 30/min, booking 10/min, default 60/min)
+- [x] Structured audit logging (auth events, admin actions)
+- [x] Role-based access control (admin, agent, artist, community)
 
 ### Recommended for Production
-- [ ] Rate limiting
 - [ ] HTTPS enforcement
 - [ ] Security headers (CSP, HSTS)
-- [ ] Input sanitization for XSS
-- [ ] Audit logging
+- [ ] Error monitoring (Sentry)
 
 ---
 
@@ -496,4 +591,4 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
 ---
 
-*Document last updated: January 21, 2026*
+*Document last updated: February 15, 2026*

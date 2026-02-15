@@ -20,9 +20,9 @@ cd kolamba
 # Run setup script
 ./scripts/setup-dev.sh
 
-# Start backend (terminal 1)
+# Start backend (terminal 1) — port 8001 (8000 is reserved)
 cd backend && source venv/bin/activate
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 
 # Start frontend (terminal 2)
 cd frontend && npm run dev
@@ -38,8 +38,8 @@ docker-compose up
 
 ### Access the Application
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/api/docs
+- Backend API: http://localhost:8001
+- API Docs: http://localhost:8001/api/docs
 
 ## Project Structure
 
@@ -67,8 +67,11 @@ kolamba/
 ## Documentation
 
 - [Architecture Document](./docs/ARCHITECTURE.md) - Full technical specification
+- [Technical Documentation](./TECHNICAL_DOCUMENTATION.md) - Endpoints, schema, deployment
+- [Deployment Guide](./DEPLOYMENT.md) - Local dev & production setup
 - [Project Plan](./docs/PROJECT-PLAN.md) - Timeline and deliverables
-- API Documentation - (auto-generated at `/api/docs`)
+- [Local Dev Guide](./CLAUDE.md) - Port map and quick dev setup
+- API Documentation - auto-generated at `/api/docs`
 
 ## Tech Stack
 
@@ -77,17 +80,24 @@ kolamba/
 | Backend | Python 3.11 + FastAPI |
 | Frontend | Next.js 14 + TypeScript |
 | Database | PostgreSQL 15 |
-| Hosting | Railway |
-| CDN | Cloudflare |
+| Backend Hosting | Railway |
+| Frontend Hosting | Vercel |
+| Image CDN | Cloudinary |
 
-## MVP Features
+## Features
 
-- Homepage with artist search
-- Artist profiles (bio, categories, pricing, availability)
-- Community profiles (name, location, audience size)
-- Advanced search (category, price, language, region, dates)
-- Booking request flow
-- Tour suggestion algorithm
+- Homepage with artist search and categories
+- Artist profiles (bio, categories, pricing, portfolio, media)
+- Community profiles (type, location, event types)
+- Advanced search (category, price, language)
+- Booking request flow with conversation system
+- Tour suggestion algorithm (Haversine geographic clustering)
+- Admin dashboard (user/artist/booking management)
+- Agent dashboard (artist roster management)
+- Google OAuth authentication
+- Cloudinary image/video uploads
+- Rate limiting and structured logging
+- 83 API endpoints across 12 routers
 
 ## Project Info
 

@@ -334,9 +334,9 @@
 ## Section K: Documentation & Handoff (P3)
 
 ### K1. Update Project Documentation
-- [ ] **K1.1** Update `TECHNICAL_DOCUMENTATION.md` with current endpoint list (50+ endpoints vs documented 40)
-- [ ] **K1.2** Update `DEPLOYMENT.md` with correct port numbers and current Railway/Vercel setup
-- [ ] **K1.3** Update `README.md` with current project status and setup instructions
+- [x] **K1.1** Update `TECHNICAL_DOCUMENTATION.md` with current endpoint list ✅ 83 endpoints documented
+- [x] **K1.2** Update `DEPLOYMENT.md` with correct port numbers and Railway/Vercel setup ✅
+- [x] **K1.3** Update `README.md` with current project status and setup instructions ✅
 - [ ] **K1.4** Update handoff documents with final feature list and known issues
 
 ### K2. Create Operations Runbook
@@ -347,7 +347,7 @@
 - [ ] **K2.5** Document: How to monitor logs and health
 
 ### K3. API Documentation
-- [ ] **K3.1** Verify OpenAPI/Swagger docs at `/api/docs` are complete
+- [x] **K3.1** Verify OpenAPI/Swagger docs at `/api/docs` are complete ✅ Auto-generated from FastAPI
 - [ ] **K3.2** Add example request/response to key endpoints
 - [ ] **K3.3** Document error response formats
 

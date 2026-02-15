@@ -29,8 +29,8 @@ docker-compose logs -f
 
 # Access:
 # - Frontend: http://localhost:3000
-# - Backend API: http://localhost:8000
-# - API Docs: http://localhost:8000/docs
+# - Backend API: http://localhost:8001
+# - API Docs: http://localhost:8001/api/docs
 ```
 
 ### Manual Setup
@@ -53,8 +53,8 @@ cp .env.example .env
 # Run migrations
 alembic upgrade head
 
-# Start server
-uvicorn app.main:app --reload
+# Start server (port 8001 — port 8000 is reserved)
+uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
 ```
 
 #### Frontend
@@ -116,12 +116,26 @@ docker-compose -f docker-compose.prod.yml exec backend alembic upgrade head
 docker-compose -f docker-compose.prod.yml logs -f
 ```
 
-### Railway Deployment (Alternative)
+### Railway Deployment (Current Production)
 
 1. Connect your GitHub repository to Railway
-2. Create a PostgreSQL database
-3. Set environment variables in Railway dashboard
-4. Deploy backend and frontend as separate services
+2. Create a PostgreSQL database service
+3. Set environment variables in Railway dashboard:
+   - `DATABASE_URL` — Railway-provided PostgreSQL URL
+   - `SECRET_KEY` — min 32 chars
+   - `CORS_ORIGINS` — comma-separated allowed origins
+   - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth
+   - `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` — image uploads
+   - `RESEND_API_KEY` — transactional emails
+4. Backend auto-deploys from `main` branch via `railway.toml`
+
+### Vercel Deployment (Frontend)
+
+1. Import the repository in Vercel dashboard
+2. Set root directory to `frontend`
+3. Set environment variable:
+   - `NEXT_PUBLIC_API_URL=https://kolamba-production.up.railway.app`
+4. Auto-deploys from `main` branch
 
 ## Database Migrations
 
@@ -138,32 +152,44 @@ alembic downgrade -1
 
 ## API Documentation
 
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+- Swagger UI: `http://localhost:8001/api/docs`
+- ReDoc: `http://localhost:8001/api/redoc`
+- OpenAPI JSON: `http://localhost:8001/api/openapi.json`
 
 ## Key Endpoints
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /api/v1/artists` | List artists |
-| `GET /api/v1/artists/{id}` | Get artist details |
-| `GET /api/v1/categories` | List categories |
-| `POST /api/v1/bookings` | Create booking |
-| `GET /api/v1/tours/suggestions` | Get tour suggestions |
-| `POST /api/v1/auth/login` | User login |
-| `POST /api/v1/auth/register` | User registration |
+| `GET /api/artists` | List artists |
+| `GET /api/artists/{id}` | Get artist details |
+| `GET /api/categories` | List categories |
+| `POST /api/bookings` | Create booking |
+| `GET /api/tours/suggestions/{artist_id}` | Get tour suggestions |
+| `POST /api/auth/login` | User login |
+| `POST /api/auth/register` | User registration |
+| `GET /api/admin/stats` | Admin dashboard stats |
+| `GET /api/agents/me/artists` | Agent artist roster |
+
+**Total: 83 API endpoints** across 12 routers. See full list at `/api/docs`.
 
 ## Monitoring
 
 ### Health Check
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8001/api/health
 ```
 
 ### Docker Container Status
 ```bash
 docker-compose ps
 ```
+
+### Logs (Railway)
+- Railway Dashboard → Service → Logs tab
+- Backend has structured logging: request method, path, status, duration
+
+### Logs (Vercel)
+- Vercel Dashboard → Deployments → View Logs
 
 ## Troubleshooting
 
