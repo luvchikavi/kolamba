@@ -12,6 +12,8 @@ from app.models.tour import Tour, TourJoinRequest
 from app.models.booking import Booking
 from app.models.artist import Artist
 from app.models.community import Community
+from app.models.user import User
+from app.routers.auth import get_current_active_user
 from app.schemas.tour import (
     TourCreate,
     TourUpdate,
@@ -33,13 +35,15 @@ settings = get_settings()
 
 @router.post("/admin/create-test-tour")
 async def create_test_tour(
-    admin_secret: str = Query(..., description="Admin secret for authorization"),
     artist_id: int = Query(None, description="Artist ID (optional, uses first active artist if not provided)"),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a test tour for admin testing. Requires admin secret."""
-    if admin_secret != settings.secret_key:
-        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    """Create a test tour for admin testing. Requires superuser + development env."""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Superuser access required")
+    if settings.env != "development":
+        raise HTTPException(status_code=403, detail="Test endpoints are only available in development environment")
 
     # Get artist
     if artist_id:

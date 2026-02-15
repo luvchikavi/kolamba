@@ -455,20 +455,19 @@ class AdminPasswordReset(BaseModel):
     """Request body for admin password reset."""
     email: str
     new_password: str
-    admin_secret: str
 
 
 @router.post("/admin/reset-password")
 async def admin_reset_password(
     request: AdminPasswordReset,
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin endpoint to reset user password. Requires admin secret."""
-    # Verify admin secret (use the app's secret key for now)
-    if request.admin_secret != settings.secret_key:
+    """Admin endpoint to reset user password. Requires superuser."""
+    if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid admin secret",
+            detail="Superuser access required",
         )
 
     # Find user

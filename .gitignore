@@ -13,10 +13,12 @@ build/
 dist/
 *.egg-info/
 
-# Environment files
+# Environment files (NEVER commit secrets)
 .env
 .env.local
 .env.*.local
+.env.production
+.env.staging
 
 # IDE
 .idea/
@@ -41,3 +43,4 @@ npm-debug.log*
 # Misc
 *.pem
 .vercel
+.env*.local

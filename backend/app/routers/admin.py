@@ -410,12 +410,12 @@ async def toggle_artist_featured(
 
 @router.post("/seed-superusers")
 async def seed_superusers(
-    admin_secret: str = Query(..., description="Admin secret for authorization"),
+    superuser: User = Depends(get_superuser),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create superuser accounts. Requires admin secret."""
-    if admin_secret != settings.secret_key:
-        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    """Create superuser accounts. Requires superuser + development env."""
+    if settings.env != "development":
+        raise HTTPException(status_code=403, detail="Seed endpoints are only available in development environment")
 
     superusers_data = [
         {"email": "avi@kolamba.org", "name": "Avi Luvchik", "password": "Kolamba!26"},

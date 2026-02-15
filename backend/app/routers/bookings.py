@@ -15,7 +15,7 @@ from app.models.community import Community
 from app.models.user import User
 from app.models.conversation import Conversation
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
-from app.routers.auth import get_current_user, get_current_user_optional
+from app.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -33,9 +33,9 @@ class BookingCreateRequest(BaseModel):
 async def create_booking(
     request: BookingCreateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(get_current_user),
 ):
-    """Create new booking request."""
+    """Create new booking request. Requires authenticated community user."""
     # Verify artist exists
     artist_result = await db.execute(
         select(Artist).where(Artist.id == request.artist_id)
@@ -44,20 +44,34 @@ async def create_booking(
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
-    # Get community_id from authenticated user or use fallback
-    community_id = None
-    if current_user and current_user.role == "community":
-        community_result = await db.execute(
-            select(Community).where(Community.user_id == current_user.id)
+    # Require community role (or superuser for testing)
+    if current_user.role != "community" and not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403,
+            detail="Only community accounts can create bookings. Please register as a community first.",
         )
-        community = community_result.scalar_one_or_none()
-        if community:
-            community_id = community.id
 
-    # If no authenticated community, create without community_id for now
-    if community_id is None:
-        # For unauthenticated requests, we'll still allow booking but mark it
-        community_id = 1  # Fallback for MVP
+    # Get community_id from authenticated user
+    community_result = await db.execute(
+        select(Community).where(Community.user_id == current_user.id)
+    )
+    community = community_result.scalar_one_or_none()
+
+    if not community and not current_user.is_superuser:
+        raise HTTPException(
+            status_code=404,
+            detail="Community profile not found. Please complete your community registration.",
+        )
+
+    community_id = community.id if community else None
+
+    # Superuser fallback: use first community for testing
+    if community_id is None and current_user.is_superuser:
+        first_community = await db.execute(select(Community).limit(1))
+        fc = first_community.scalar_one_or_none()
+        if not fc:
+            raise HTTPException(status_code=400, detail="No communities exist in the database")
+        community_id = fc.id
 
     booking = Booking(
         artist_id=request.artist_id,

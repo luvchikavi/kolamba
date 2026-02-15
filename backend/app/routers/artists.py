@@ -212,13 +212,14 @@ async def update_artist(artist_id: int):
 
 @router.post("/seed")
 async def seed_artists(
-    admin_secret: str = Query(..., description="Admin secret for authorization"),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Seed the database with sample artists, communities, bookings, and conversations. Requires admin secret."""
-    # Verify admin secret
-    if admin_secret != settings.secret_key:
-        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    """Seed the database with sample artists, communities, bookings, and conversations. Requires superuser + development env."""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Superuser access required")
+    if settings.env != "development":
+        raise HTTPException(status_code=403, detail="Seed endpoints are only available in development environment")
 
     # Check if data already exists
     result = await db.execute(select(Artist).limit(1))
@@ -730,13 +731,14 @@ async def seed_artists(
 
 @router.post("/seed-tour-dates")
 async def seed_tour_dates(
-    admin_secret: str = Query(..., description="Admin secret for authorization"),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Seed tour dates for existing artists. Requires admin secret."""
-    # Verify admin secret
-    if admin_secret != settings.secret_key:
-        raise HTTPException(status_code=403, detail="Invalid admin secret")
+    """Seed tour dates for existing artists. Requires superuser + development env."""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Superuser access required")
+    if settings.env != "development":
+        raise HTTPException(status_code=403, detail="Seed endpoints are only available in development environment")
 
     # Check if tour dates already exist
     result = await db.execute(select(ArtistTourDate).limit(1))
