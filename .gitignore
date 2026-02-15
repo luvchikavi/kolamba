@@ -43,6 +43,10 @@ npm-debug.log*
 # Database backups
 backend/backups/
 
+# Design assets (use CDN/Figma links, not git)
+design/
+figma_screenshots/
+
 # Misc
 *.pem
 .vercel

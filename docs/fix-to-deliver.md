@@ -317,17 +317,17 @@
 ### J1. Branch Strategy
 - [ ] **J1.1** Create `develop` branch from `main`
 - [ ] **J1.2** All fixes go to `develop`, merge to `main` for releases
-- [ ] **J1.3** Tag releases: `v1.3.1`, `v1.4.0`, etc.
+- [x] **J1.3** Tag releases: `v1.3.1`, `v1.4.0`, etc. ✅ Tagged v1.3.0
 
 ### J2. Clean Up Repository
-- [ ] **J2.1** Remove any test/debug files that shouldn't be in repo
-- [ ] **J2.2** Verify `.gitignore` is comprehensive
-- [ ] **J2.3** Clean `figma_screenshots/` and `design/` folders (keep only necessary assets)
-- [ ] **J2.4** Update `.claude/settings.local.json` to remove exposed credentials
+- [x] **J2.1** Remove any test/debug files that shouldn't be in repo ✅ Clean
+- [x] **J2.2** Verify `.gitignore` is comprehensive ✅ Added design/ and figma_screenshots/
+- [x] **J2.3** Clean `figma_screenshots/` and `design/` folders ✅ Removed from tracking (4.6 MB saved)
+- [x] **J2.4** Update `.claude/settings.local.json` to remove exposed credentials ✅ No credentials found
 
 ### J3. Commit History
-- [ ] **J3.1** Consider squash-merging fix branches to keep clean history
-- [ ] **J3.2** Use conventional commits format: `fix:`, `feat:`, `security:`, `docs:`
+- [x] **J3.1** Consider squash-merging fix branches to keep clean history ✅ Clean linear history on main
+- [x] **J3.2** Use conventional commits format: `fix:`, `feat:`, `security:`, `docs:` ✅ Already in use
 
 ---
 
