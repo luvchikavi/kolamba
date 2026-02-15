@@ -102,6 +102,8 @@ export default function Header() {
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+                aria-expanded={showUserMenu}
+                aria-label="User menu"
               >
                 <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                   <span className="text-primary-600 font-semibold text-sm">
@@ -150,6 +152,8 @@ export default function Header() {
           className="md:hidden fixed top-4 right-4 p-2 rounded-lg bg-white shadow-lg text-slate-600 hover:bg-slate-100 z-50"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-menu"
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -157,8 +161,8 @@ export default function Header() {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden fixed top-20 left-4 right-4 bg-white rounded-2xl shadow-xl animate-fade-in-down z-40">
-          <nav className="p-4 flex flex-col gap-1">
+        <div id="mobile-menu" className="md:hidden fixed top-20 left-4 right-4 bg-white rounded-2xl shadow-xl animate-fade-in-down z-40">
+          <nav className="p-4 flex flex-col gap-1" aria-label="Mobile navigation">
             <Link
               href="/artists"
               className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"

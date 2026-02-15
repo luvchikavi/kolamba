@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+
+Sitemap: https://kolamba.vercel.app/sitemap.xml

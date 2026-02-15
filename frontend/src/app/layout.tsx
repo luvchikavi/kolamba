@@ -59,11 +59,13 @@ export const metadata: Metadata = {
     siteName: "Kolamba",
     locale: "en_US",
     type: "website",
+    images: [{ url: "/kolamba_logo.png", width: 512, height: 512, alt: "Kolamba logo" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Kolamba - The Jewish Culture Club",
     description: "Connecting Israeli artists with Jewish communities worldwide",
+    images: ["/kolamba_logo.png"],
   },
   robots: {
     index: true,
@@ -80,9 +82,12 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${frankRuhlLibre.variable}`}>
       <body className="font-sans">
         <Providers>
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-coral-600">
+            Skip to main content
+          </a>
           <div className="flex flex-col min-h-screen">
             <Header />
-            <main className="flex-1">{children}</main>
+            <main id="main-content" className="flex-1">{children}</main>
             <Footer />
           </div>
           <WelcomeModal />

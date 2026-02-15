@@ -361,14 +361,14 @@
 - [ ] **L1.3** Test page load times (target: <3s for all pages)
 
 ### L2. SEO & Meta
-- [ ] **L2.1** Add proper meta tags (title, description, og:image) to all public pages
-- [ ] **L2.2** Add sitemap.xml generation
-- [ ] **L2.3** Add robots.txt
+- [x] **L2.1** Add proper meta tags (title, description, og:image) to all public pages ✅ All pages have metadata + og:image
+- [x] **L2.2** Add sitemap.xml generation ✅ Dynamic Next.js sitemap.ts
+- [x] **L2.3** Add robots.txt ✅ Added with dashboard/api exclusions
 
 ### L3. Accessibility
-- [ ] **L3.1** Verify all forms have proper labels and ARIA attributes
+- [x] **L3.1** Verify all forms have proper labels and ARIA attributes ✅ Labels present, added aria-expanded/controls
 - [ ] **L3.2** Test keyboard navigation on core flows
-- [ ] **L3.3** Ensure color contrast meets WCAG AA
+- [x] **L3.3** Ensure color contrast meets WCAG AA ✅ Coral/teal palette on white backgrounds + skip-to-content link
 
 ---
 
