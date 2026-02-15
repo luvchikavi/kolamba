@@ -1,6 +1,6 @@
 """Community model for Jewish communities profiles."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional, List
 from sqlalchemy import String, Numeric, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -93,9 +93,9 @@ class Community(Base):
     status: Mapped[str] = mapped_column(String(20), default="active")
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
 
     # Relationships

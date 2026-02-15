@@ -1,6 +1,6 @@
 """Artist model for performer profiles."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Integer, Boolean, DateTime, Text, ForeignKey, ARRAY
 from sqlalchemy.dialects.postgresql import JSONB
@@ -82,13 +82,14 @@ class Artist(Base):
     rejection_reason: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="artist", foreign_keys=[user_id])
+    agent: Mapped[Optional["User"]] = relationship("User", foreign_keys=[agent_user_id], lazy="select")
     categories: Mapped[list["Category"]] = relationship(
         "Category",
         secondary="artist_categories",

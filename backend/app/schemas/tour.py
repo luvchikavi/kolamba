@@ -2,26 +2,10 @@
 
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, model_validator
 
 from app.schemas.booking import BookingResponse
-
-
-def calculate_price_tier(price: Optional[int]) -> Optional[str]:
-    """Calculate price tier from price.
-
-    $ = up to $2,000
-    $$ = $2,000 - $10,000
-    $$$ = above $10,000
-    """
-    if price is None:
-        return None
-    if price <= 2000:
-        return "$"
-    elif price <= 10000:
-        return "$$"
-    else:
-        return "$$$"
+from app.schemas.artist import calculate_price_tier
 
 
 class TourBase(BaseModel):
@@ -34,7 +18,13 @@ class TourBase(BaseModel):
     total_budget: Optional[int] = Field(None, ge=0)
     price_per_show: Optional[int] = Field(None, ge=0, description="Artist's price per show on this tour")
     min_tour_budget: Optional[int] = Field(None, ge=0, description="Minimum total revenue to confirm the tour")
-    description: Optional[str] = None
+    description: Optional[str] = Field(None, max_length=5000)
+
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if self.start_date and self.end_date and self.end_date < self.start_date:
+            raise ValueError("end_date must be on or after start_date")
+        return self
 
 
 class TourCreate(TourBase):

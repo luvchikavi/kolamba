@@ -498,7 +498,8 @@ async def google_auth(
     db: AsyncSession = Depends(get_db),
 ):
     """Authenticate with Google ID token."""
-    import httpx
+    from google.oauth2 import id_token as google_id_token
+    from google.auth.transport import requests as google_requests
 
     if not settings.google_client_id:
         raise HTTPException(
@@ -506,25 +507,17 @@ async def google_auth(
             detail="Google OAuth is not configured",
         )
 
-    # Verify the Google ID token using Google's tokeninfo endpoint
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(
-            f"https://oauth2.googleapis.com/tokeninfo?id_token={request.credential}"
+    # Verify the Google ID token using google-auth library (official method)
+    try:
+        token_data = google_id_token.verify_oauth2_token(
+            request.credential,
+            google_requests.Request(),
+            settings.google_client_id,
         )
-
-    if resp.status_code != 200:
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token",
-        )
-
-    token_data = resp.json()
-
-    # Verify audience matches our client ID
-    if token_data.get("aud") != settings.google_client_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token audience mismatch",
         )
 
     email = token_data.get("email")

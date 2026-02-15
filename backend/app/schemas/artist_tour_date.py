@@ -2,7 +2,7 @@
 
 from datetime import datetime, date
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ArtistTourDateBase(BaseModel):
@@ -11,7 +11,13 @@ class ArtistTourDateBase(BaseModel):
     location: str = Field(..., min_length=2, max_length=255)
     start_date: date
     end_date: Optional[date] = None
-    description: Optional[str] = None
+    description: Optional[str] = Field(None, max_length=1000)
+
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if self.end_date and self.end_date < self.start_date:
+            raise ValueError("end_date must be on or after start_date")
+        return self
 
 
 class ArtistTourDateCreate(ArtistTourDateBase):

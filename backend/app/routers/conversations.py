@@ -210,8 +210,8 @@ async def send_message(
     db.add(message)
 
     # Update conversation timestamp
-    from datetime import datetime
-    conversation.updated_at = datetime.utcnow()
+    from datetime import datetime, timezone
+    conversation.updated_at = datetime.now(timezone.utc)
 
     await db.commit()
     await db.refresh(message)
@@ -252,8 +252,8 @@ async def update_venue_info(
 
     conversation.venue_info = venue_info.model_dump(exclude_none=True)
 
-    from datetime import datetime
-    conversation.updated_at = datetime.utcnow()
+    from datetime import datetime, timezone
+    conversation.updated_at = datetime.now(timezone.utc)
 
     await db.commit()
 

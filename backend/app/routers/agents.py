@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.database import get_db
 from app.models.user import User
@@ -78,7 +78,7 @@ async def get_my_artists(
             select(ArtistTourDate)
             .where(
                 ArtistTourDate.artist_id == artist.id,
-                ArtistTourDate.start_date >= datetime.utcnow()
+                ArtistTourDate.start_date >= datetime.now(timezone.utc)
             )
         )
         tour_dates_count = len(tour_dates_result.scalars().all())
@@ -135,7 +135,7 @@ async def get_my_stats(
         tour_dates_result = await db.execute(
             select(ArtistTourDate).where(
                 ArtistTourDate.artist_id.in_(artist_ids),
-                ArtistTourDate.start_date >= datetime.utcnow()
+                ArtistTourDate.start_date >= datetime.now(timezone.utc)
             )
         )
         upcoming_tour_dates = len(tour_dates_result.scalars().all())

@@ -1,6 +1,6 @@
 """Conversation and Message models for inbox messaging."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Integer, DateTime, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
@@ -29,9 +29,9 @@ class Conversation(Base):
     venue_info: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc)
     )
 
     # Relationships
@@ -60,7 +60,7 @@ class Message(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="messages")

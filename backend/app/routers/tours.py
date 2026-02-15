@@ -24,8 +24,8 @@ from app.schemas.tour import (
     TourJoinRequestResponse,
     TourOpportunityResponse,
     TourOpportunityArtist,
-    calculate_price_tier,
 )
+from app.schemas.artist import calculate_price_tier
 from app.services.tour_grouping import suggest_tours, find_nearby_tours
 from app.config import get_settings
 
