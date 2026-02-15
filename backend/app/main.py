@@ -1,23 +1,42 @@
 """Kolamba Backend - FastAPI Application Entry Point."""
 
+import logging
+import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
 from app.routers import auth, artists, communities, categories, bookings, search, tours, admin, artist_tour_dates, agents, uploads, conversations
 
 settings = get_settings()
 
+from app.rate_limit import limiter
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG if settings.debug else logging.INFO,
+    format="%(asctime)s %(levelname)-8s [%(name)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("kolamba")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan context manager."""
-    # Startup
-    print("Starting Kolamba API...")
+    logger.info("Starting Kolamba API (env=%s, debug=%s)", settings.env, settings.debug)
+    if not settings.cloudinary_cloud_name:
+        logger.warning("Cloudinary not configured — file uploads will be unavailable")
+    if not settings.resend_api_key:
+        logger.warning("Resend API key not set — emails will be unavailable")
+    if not settings.google_client_id:
+        logger.warning("Google OAuth not configured — Google sign-in will be unavailable")
     yield
-    # Shutdown
-    print("Shutting down Kolamba API...")
+    logger.info("Shutting down Kolamba API...")
 
 
 app = FastAPI(
@@ -30,6 +49,10 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
+# Rate limiting
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # CORS middleware - allow Vercel preview URLs via regex
 app.add_middleware(
     CORSMiddleware,
@@ -39,6 +62,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "%s %s %d %.0fms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])

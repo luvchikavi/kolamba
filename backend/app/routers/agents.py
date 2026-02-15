@@ -1,8 +1,7 @@
 """Agents router - endpoints for talent agents to manage their artists."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import Optional
@@ -62,28 +61,33 @@ async def get_my_artists(
         .order_by(Artist.created_at.desc())
     )
     artists = result.scalars().all()
+    artist_ids = [a.id for a in artists]
 
-    # Get booking and tour date counts for each artist
-    response = []
-    for artist in artists:
-        # Count pending bookings
+    # Batch query: count pending bookings per artist
+    booking_counts: dict[int, int] = {}
+    if artist_ids:
         bookings_result = await db.execute(
-            select(Booking)
-            .where(Booking.artist_id == artist.id, Booking.status == "pending")
+            select(Booking.artist_id, func.count(Booking.id))
+            .where(Booking.artist_id.in_(artist_ids), Booking.status == "pending")
+            .group_by(Booking.artist_id)
         )
-        pending_bookings = len(bookings_result.scalars().all())
+        booking_counts = dict(bookings_result.all())
 
-        # Count upcoming tour dates
+    # Batch query: count upcoming tour dates per artist
+    tour_date_counts: dict[int, int] = {}
+    if artist_ids:
         tour_dates_result = await db.execute(
-            select(ArtistTourDate)
+            select(ArtistTourDate.artist_id, func.count(ArtistTourDate.id))
             .where(
-                ArtistTourDate.artist_id == artist.id,
-                ArtistTourDate.start_date >= datetime.now(timezone.utc)
+                ArtistTourDate.artist_id.in_(artist_ids),
+                ArtistTourDate.start_date >= datetime.now(timezone.utc),
             )
+            .group_by(ArtistTourDate.artist_id)
         )
-        tour_dates_count = len(tour_dates_result.scalars().all())
+        tour_date_counts = dict(tour_dates_result.all())
 
-        response.append(AgentArtistResponse(
+    return [
+        AgentArtistResponse(
             id=artist.id,
             name_en=artist.name_en or artist.name_he,
             name_he=artist.name_he,
@@ -92,11 +96,11 @@ async def get_my_artists(
             country=artist.country,
             status=artist.status,
             created_at=artist.created_at,
-            pending_bookings=pending_bookings,
-            tour_dates_count=tour_dates_count,
-        ))
-
-    return response
+            pending_bookings=booking_counts.get(artist.id, 0),
+            tour_dates_count=tour_date_counts.get(artist.id, 0),
+        )
+        for artist in artists
+    ]
 
 
 @router.get("/me/stats", response_model=AgentDashboardStats)

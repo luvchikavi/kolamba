@@ -1,7 +1,7 @@
 """Bookings router - booking request management."""
 
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -17,6 +17,8 @@ from app.models.conversation import Conversation
 from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 from app.routers.auth import get_current_user
 
+from app.rate_limit import limiter
+
 router = APIRouter()
 
 
@@ -30,7 +32,9 @@ class BookingCreateRequest(BaseModel):
 
 
 @router.post("", response_model=BookingResponse)
+@limiter.limit("10/minute")
 async def create_booking(
+    req: Request,
     request: BookingCreateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),

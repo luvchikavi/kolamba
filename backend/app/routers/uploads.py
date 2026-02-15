@@ -1,5 +1,7 @@
 """Uploads router - file upload handling with Cloudinary."""
 
+import logging
+
 import cloudinary
 import cloudinary.uploader
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
@@ -12,15 +14,19 @@ from app.routers.auth import get_current_active_user
 
 settings = get_settings()
 router = APIRouter()
+logger = logging.getLogger("kolamba.uploads")
 
 # Configure Cloudinary
-if settings.cloudinary_cloud_name:
+if settings.cloudinary_cloud_name and settings.cloudinary_api_key and settings.cloudinary_api_secret:
     cloudinary.config(
         cloud_name=settings.cloudinary_cloud_name,
         api_key=settings.cloudinary_api_key,
         api_secret=settings.cloudinary_api_secret,
         secure=True,
     )
+    logger.info("Cloudinary configured (cloud=%s)", settings.cloudinary_cloud_name)
+elif settings.cloudinary_cloud_name:
+    logger.warning("Cloudinary partially configured — missing api_key or api_secret")
 
 
 class UploadResponse(BaseModel):

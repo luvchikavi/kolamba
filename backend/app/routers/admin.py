@@ -1,6 +1,8 @@
 """Admin router - endpoints for super user administration."""
 
+import logging
 from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,10 +18,12 @@ from app.models.artist_tour_date import ArtistTourDate
 from app.routers.auth import get_current_active_user
 from app.utils.security import get_password_hash
 from app.config import get_settings
+from app.services.email import send_artist_status_change
 
 settings = get_settings()
 
 router = APIRouter()
+logger = logging.getLogger("kolamba.admin")
 
 
 async def get_superuser(
@@ -256,6 +260,7 @@ async def update_user(
         if hasattr(user, field):
             setattr(user, field, value)
 
+    logger.info("Admin %s updated user id=%d fields=%s", superuser.email, user_id, list(update_dict.keys()))
     await db.commit()
     await db.refresh(user)
 
@@ -289,6 +294,7 @@ async def delete_user(
     # Soft delete
     user.is_active = False
     user.status = "inactive"
+    logger.info("Admin %s deactivated user id=%d email=%s", superuser.email, user.id, user.email)
     await db.commit()
 
     return {"message": f"User {user.email} has been deactivated"}
@@ -359,6 +365,7 @@ async def update_artist_status(
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
+    old_status = artist.status
     artist.status = status
 
     # Store or clear rejection reason
@@ -373,7 +380,20 @@ async def update_artist_status(
     elif status == "inactive" and artist.user:
         artist.user.status = "inactive"
 
+    logger.info(
+        "Admin %s changed artist id=%d status: %s -> %s",
+        superuser.email, artist_id, old_status, status,
+    )
     await db.commit()
+
+    # Send email notification to artist
+    if artist.user and status in ("active", "rejected"):
+        send_artist_status_change(
+            artist.user.email,
+            artist.name_en or artist.name_he or "Artist",
+            status,
+            reason=rejection_reason,
+        )
 
     return {
         "id": artist.id,
@@ -518,7 +538,9 @@ async def update_booking_status(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
+    old_status = booking.status
     booking.status = status
+    logger.info("Admin %s changed booking id=%d status: %s -> %s", superuser.email, booking_id, old_status, status)
     await db.commit()
 
     return {

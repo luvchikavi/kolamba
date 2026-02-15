@@ -1,6 +1,8 @@
 """Authentication router - login, register, tokens."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +26,10 @@ from app.config import get_settings
 settings = get_settings()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+logger = logging.getLogger("kolamba.auth")
+
+from app.rate_limit import limiter
+from app.services.email import send_welcome
 
 
 class RegisterRequest(BaseModel):
@@ -114,8 +120,10 @@ async def get_current_active_user(
 
 
 @router.post("/register", response_model=Token)
+@limiter.limit("5/minute")
 async def register(
     request: RegisterRequest,
+    req: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Register new user (artist, community, or admin)."""
@@ -149,6 +157,9 @@ async def register(
     await db.commit()
     await db.refresh(user)
 
+    logger.info("User registered: id=%d email=%s role=%s", user.id, user.email, user.role)
+    send_welcome(user.email, user.name or "there", user.role)
+
     # Create tokens
     access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
     refresh_token = create_refresh_token(data={"sub": user.id})
@@ -161,8 +172,10 @@ async def register(
 
 
 @router.post("/register/artist", response_model=Token)
+@limiter.limit("5/minute")
 async def register_artist(
     request: ArtistRegisterRequest,
+    req: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Register new artist with profile."""
@@ -317,7 +330,9 @@ async def register_artist(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
@@ -336,6 +351,7 @@ async def login(
         )
 
     if not verify_password(form_data.password, user.password_hash):
+        logger.warning("Failed login attempt for email=%s", form_data.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -347,6 +363,8 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive user",
         )
+
+    logger.info("User logged in: id=%d email=%s role=%s", user.id, user.email, user.role)
 
     # Create tokens
     access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
@@ -365,7 +383,9 @@ class RefreshRequest(BaseModel):
 
 
 @router.post("/refresh", response_model=Token)
+@limiter.limit("10/minute")
 async def refresh_token(
+    req: Request,
     request: RefreshRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -494,7 +514,9 @@ class GoogleAuthRequest(BaseModel):
 
 
 @router.post("/google", response_model=Token)
+@limiter.limit("5/minute")
 async def google_auth(
+    req: Request,
     request: GoogleAuthRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -547,6 +569,9 @@ async def google_auth(
         db.add(user)
         await db.commit()
         await db.refresh(user)
+        logger.info("Google OAuth new user: id=%d email=%s", user.id, user.email)
+    else:
+        logger.info("Google OAuth login: id=%d email=%s", user.id, user.email)
 
     if not user.is_active:
         raise HTTPException(

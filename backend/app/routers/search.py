@@ -1,7 +1,7 @@
 """Search router - artist search with filters."""
 
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import select, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -11,11 +11,15 @@ from app.models.artist import Artist
 from app.models.category import Category
 from app.schemas.artist import ArtistListResponse
 
+from app.rate_limit import limiter
+
 router = APIRouter()
 
 
 @router.get("/artists", response_model=list[ArtistListResponse])
+@limiter.limit("30/minute")
 async def search_artists(
+    request: Request,
     q: Optional[str] = Query(None, description="Search query (name, bio)"),
     category: Optional[str] = Query(None, description="Filter by category slug"),
     min_price: Optional[int] = Query(None, description="Minimum price (USD)"),
