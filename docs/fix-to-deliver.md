@@ -340,11 +340,11 @@
 - [ ] **K1.4** Update handoff documents with final feature list and known issues
 
 ### K2. Create Operations Runbook
-- [ ] **K2.1** Document: How to rotate secrets
-- [ ] **K2.2** Document: How to run database migrations
-- [ ] **K2.3** Document: How to backup/restore database
-- [ ] **K2.4** Document: How to rollback a deployment
-- [ ] **K2.5** Document: How to monitor logs and health
+- [x] **K2.1** Document: How to rotate secrets ✅ docs/OPERATIONS-RUNBOOK.md
+- [x] **K2.2** Document: How to run database migrations ✅
+- [x] **K2.3** Document: How to backup/restore database ✅
+- [x] **K2.4** Document: How to rollback a deployment ✅
+- [x] **K2.5** Document: How to monitor logs and health ✅
 
 ### K3. API Documentation
 - [x] **K3.1** Verify OpenAPI/Swagger docs at `/api/docs` are complete ✅ Auto-generated from FastAPI
