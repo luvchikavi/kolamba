@@ -40,6 +40,9 @@ htmlcov/
 *.log
 npm-debug.log*
 
+# Database backups
+backend/backups/
+
 # Misc
 *.pem
 .vercel
