@@ -3,14 +3,15 @@
  */
 
 // Normalize API URL - ensure it ends with /api
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Port 8001 = Kolamba FastAPI backend (8000 is Nectra/Django)
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 export const API_URL = rawApiUrl.endsWith("/api") ? rawApiUrl : `${rawApiUrl}/api`;
 
 interface RequestOptions extends RequestInit {
   token?: string;
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
 
   constructor(message: string, status: number) {
@@ -20,8 +21,53 @@ class ApiError extends Error {
   }
 }
 
+// Token refresh state to prevent concurrent refresh attempts
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = typeof window !== "undefined" ? localStorage.getItem("refresh_token") : null;
+  if (!refreshToken) return null;
+
+  try {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      // Refresh token is also expired — clear tokens and redirect
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
+      }
+      return null;
+    }
+
+    const data = await response.json();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+    }
+    return data.access_token;
+  } catch {
+    return null;
+  }
+}
+
+async function getValidToken(providedToken?: string): Promise<string | undefined> {
+  if (providedToken) return providedToken;
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  return token || undefined;
+}
+
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { token, ...fetchOptions } = options;
+  const { token: providedToken, ...fetchOptions } = options;
+
+  const token = await getValidToken(providedToken);
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -36,6 +82,38 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     ...fetchOptions,
     headers,
   });
+
+  // Handle 401 — try to refresh the token and retry once
+  if (response.status === 401 && !providedToken && typeof window !== "undefined" && localStorage.getItem("refresh_token")) {
+    // Use shared promise to prevent concurrent refresh calls
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshAccessToken().finally(() => {
+        isRefreshing = false;
+        refreshPromise = null;
+      });
+    }
+
+    const newToken = await (refreshPromise || refreshAccessToken());
+    if (newToken) {
+      // Retry the original request with the new token
+      const retryHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...options.headers,
+        Authorization: `Bearer ${newToken}`,
+      };
+      const retryResponse = await fetch(`${API_URL}${endpoint}`, {
+        ...fetchOptions,
+        headers: retryHeaders,
+      });
+
+      if (!retryResponse.ok) {
+        const error = await retryResponse.json().catch(() => ({ message: "An error occurred" }));
+        throw new ApiError(error.detail || error.message || "Request failed", retryResponse.status);
+      }
+      return retryResponse.json();
+    }
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "An error occurred" }));

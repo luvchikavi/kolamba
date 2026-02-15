@@ -3,22 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { CheckCircle, ChevronDown, X, Search, Upload, Image, Video, Music, FileText, Loader2, Plus, Trash2 } from "lucide-react";
-import { API_URL } from "@/lib/api";
+import { API_URL, api, Category } from "@/lib/api";
 import { showError } from "@/lib/toast";
-
-// The 10 official categories as specified by client
-const categories = [
-  "Music",
-  "Literature",
-  "Journalism",
-  "Film & Television",
-  "Religion & Judaism",
-  "Comedy",
-  "Theater",
-  "Visual Arts",
-  "Culinary",
-  "Inspiration",
-];
 
 const subcategories: Record<string, string[]> = {
   Music: [
@@ -221,6 +207,22 @@ export default function ArtistRegistrationPage() {
   const [isAgent, setIsAgent] = useState(false);
   const [submittedArtistsCount, setSubmittedArtistsCount] = useState(0);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const [apiCategories, setApiCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  // Fetch categories from API
+  useEffect(() => {
+    api.getCategories()
+      .then((cats) => setApiCategories(cats))
+      .catch(() => {
+        // Fallback: keep empty — the select will show no options
+        showError("Failed to load categories");
+      })
+      .finally(() => setCategoriesLoading(false));
+  }, []);
+
+  // Derive category names from API data
+  const categories = apiCategories.map((c) => c.name_en);
 
   // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
@@ -754,13 +756,14 @@ export default function ArtistRegistrationPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => handleCategoryChange(e.target.value)}
+                    disabled={categoriesLoading}
                     className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none appearance-none bg-white transition-colors ${
                       errors.category
                         ? "border-red-300 focus:border-red-400"
                         : "border-slate-300 focus:border-teal-400"
-                    }`}
+                    } ${categoriesLoading ? "opacity-50" : ""}`}
                   >
-                    <option value="">Select category</option>
+                    <option value="">{categoriesLoading ? "Loading categories..." : "Select category"}</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
                         {cat}
