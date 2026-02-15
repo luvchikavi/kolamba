@@ -268,22 +268,22 @@
 ## Section H: Frontend Improvements (P2)
 
 ### H1. Remove Unused Dependencies
-- [ ] **H1.1** Remove `zustand` from package.json (not used)
-- [ ] **H1.2** Either implement `next-intl` properly or remove it
-- [ ] **H1.3** Run `npm audit` and fix vulnerabilities
+- [x] **H1.1** Removed `zustand` from package.json (was not imported anywhere) ✅ 2026-02-15
+- [x] **H1.2** Removed `next-intl` from package.json (was not imported anywhere) ✅ 2026-02-15
+- [x] **H1.3** Upgraded Next.js 14.1.0 → 14.2.35 + eslint-config-next (fixed critical CVEs). Remaining vulns are dev-only/self-hosted ✅ 2026-02-15
 
 ### H2. Implement Contact Form
-- [ ] **H2.1** Complete CTA section contact form submission (`CTASection.tsx` TODO)
-- [ ] **H2.2** Connect to backend endpoint or email service
+- [x] **H2.1** Implemented contact form: backend `POST /api/contact` endpoint with rate limiting (3/min) ✅ 2026-02-15
+- [x] **H2.2** Connected CTASection.tsx → backend API → Resend email to admin. Replaced `alert()` with `toast` ✅ 2026-02-15
 
 ### H3. Improve Dashboard Experience
-- [ ] **H3.1** Add loading skeletons on all dashboard pages
-- [ ] **H3.2** Add empty state components ("No bookings yet", "No tours", etc.)
-- [ ] **H3.3** Add confirmation dialogs for destructive actions (cancel booking, delete tour)
+- [x] **H3.1** All 4 dashboard roles have loading skeletons (upgraded admin/agent from Loader2 to DashboardSkeleton) ✅ 2026-02-15
+- [x] **H3.2** Empty states already implemented: admin (4 sections), users, artists, community discover ✅ verified
+- [x] **H3.3** Confirmation dialogs exist: artist rejection modal (custom), booking cancel (confirm), user deactivation (confirm) ✅ verified
 
 ### H4. Fix AddressAutocomplete
-- [ ] **H4.1** Either implement the `AddressAutocomplete` component properly or remove placeholder
-- [ ] **H4.2** If implementing, integrate with Google Places API or OpenStreetMap Nominatim
+- [x] **H4.1** Component exists at `components/ui/AddressAutocomplete.tsx` with full implementation ✅ verified
+- [x] **H4.2** Already integrated with OpenStreetMap Nominatim (free geocoding, debounced search) ✅ verified
 
 ---
 
@@ -450,13 +450,13 @@ Post-delivery: Section M (v1.4 features)
 | E - Auth/OAuth | 13 | 6 | 46% |
 | F - Deployment | 12 | 8 | 67% |
 | G - Backend Improvements | 14 | 11 | 79% |
-| H - Frontend Improvements | 8 | 0 | 0% |
+| H - Frontend Improvements | 8 | 8 | 100% |
 | I - Testing | 9 | 0 | 0% |
 | J - Git Hygiene | 7 | 0 | 0% |
 | K - Documentation | 8 | 0 | 0% |
 | L - Polish | 9 | 0 | 0% |
 | M - v1.4 Features | 15 | 0 | 0% |
-| **TOTAL** | **149** | **67** | **45%** |
+| **TOTAL** | **149** | **75** | **50%** |
 
 ---
 
@@ -472,6 +472,7 @@ Post-delivery: Section M (v1.4 features)
 | 2026-02-15 | Section E: Auth verification (E1) — tested all flows, fixed timestamp/JWT bugs, verified CORS | Claude |
 | 2026-02-15 | Section F: Deployment fixes — CI pipeline, Docker compose, Railway/Vercel verification | Claude |
 | 2026-02-15 | Section G: Backend improvements — logging, rate limiting, email service, query optimization | Claude |
+| 2026-02-15 | Section H: Frontend improvements — removed unused deps, Next.js CVE fix, contact form, dashboard skeletons | Claude |
 
 ---
 

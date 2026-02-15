@@ -4,8 +4,9 @@ import logging
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -99,6 +100,31 @@ async def health_check():
     """Health check endpoint for monitoring."""
     return {"status": "healthy", "service": "kolamba-api"}
 
+
+
+class ContactRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+    message: str
+
+
+@app.post("/api/contact", tags=["Contact"])
+@limiter.limit("3/minute")
+async def contact_form(request: Request, body: ContactRequest):
+    """Submit a contact form message."""
+    from app.services.email import _send, is_configured
+
+    logger.info("Contact form from %s <%s>", body.full_name, body.email)
+
+    if is_configured():
+        _send(
+            "avi@kolamba.org",
+            f"Kolamba Contact: {body.full_name}",
+            f"<p><strong>From:</strong> {body.full_name} ({body.email})</p>"
+            f"<p><strong>Message:</strong></p><p>{body.message}</p>",
+        )
+
+    return {"message": "Thank you! We'll get back to you soon."}
 
 
 @app.get("/", tags=["Root"])

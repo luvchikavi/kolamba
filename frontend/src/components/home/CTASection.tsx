@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function CTASection() {
   const [formData, setFormData] = useState({
@@ -13,11 +15,24 @@ export default function CTASection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // TODO: Implement contact form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setFormData({ fullName: "", email: "", message: "" });
-    alert("Message sent! We'll get back to you soon.");
+    try {
+      const res = await fetch(`${API_URL}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          email: formData.email,
+          message: formData.message,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to send message");
+      setFormData({ fullName: "", email: "", message: "" });
+      toast.success("Message sent! We'll get back to you soon.");
+    } catch {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
