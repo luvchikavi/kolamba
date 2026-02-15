@@ -26,6 +26,9 @@ def get_password_hash(password: str) -> str:
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Create JWT access token."""
     to_encode = data.copy()
+    # JWT spec requires 'sub' to be a string
+    if "sub" in to_encode:
+        to_encode["sub"] = str(to_encode["sub"])
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -38,6 +41,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def create_refresh_token(data: dict) -> str:
     """Create JWT refresh token."""
     to_encode = data.copy()
+    # JWT spec requires 'sub' to be a string
+    if "sub" in to_encode:
+        to_encode["sub"] = str(to_encode["sub"])
     expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)

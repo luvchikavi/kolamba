@@ -37,7 +37,7 @@ class ArtistTourDate(Base):
     is_booked: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Timestamps
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     artist: Mapped["Artist"] = relationship("Artist", back_populates="tour_dates")

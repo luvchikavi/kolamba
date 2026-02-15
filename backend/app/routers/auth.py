@@ -75,7 +75,7 @@ async def get_current_user_optional(
         return None
 
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm], options={"verify_sub": False})
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id = payload.get("sub")
         if user_id is None:
             return None
@@ -372,13 +372,14 @@ async def refresh_token(
     """Refresh access token using refresh token."""
     try:
         payload = jwt.decode(request.refresh_token, settings.secret_key, algorithms=[settings.algorithm])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_id_str = payload.get("sub")
+        if user_id_str is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token",
             )
-    except JWTError:
+        user_id = int(user_id_str)
+    except (JWTError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
