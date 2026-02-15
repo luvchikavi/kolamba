@@ -34,15 +34,15 @@ class BookingCreateRequest(BaseModel):
 @router.post("", response_model=BookingResponse)
 @limiter.limit("10/minute")
 async def create_booking(
-    req: Request,
-    request: BookingCreateRequest,
+    request: Request,
+    body: BookingCreateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Create new booking request. Requires authenticated community user."""
     # Verify artist exists
     artist_result = await db.execute(
-        select(Artist).where(Artist.id == request.artist_id)
+        select(Artist).where(Artist.id == body.artist_id)
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
@@ -78,12 +78,12 @@ async def create_booking(
         community_id = fc.id
 
     booking = Booking(
-        artist_id=request.artist_id,
+        artist_id=body.artist_id,
         community_id=community_id,
-        requested_date=request.requested_date,
-        location=request.location,
-        budget=request.budget,
-        notes=request.notes,
+        requested_date=body.requested_date,
+        location=body.location,
+        budget=body.budget,
+        notes=body.notes,
         status="pending",
     )
     db.add(booking)

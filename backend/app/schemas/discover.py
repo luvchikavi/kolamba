@@ -2,7 +2,7 @@
 
 from datetime import date
 from typing import Optional
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, computed_field, field_validator
 
 from app.schemas.category import CategoryResponse
 from app.schemas.artist import calculate_price_tier
@@ -29,6 +29,11 @@ class DiscoverArtistItem(BaseModel):
     is_featured: bool = False
     categories: list[CategoryResponse] = []
     subcategories: list[str] = []
+
+    @field_validator("subcategories", "matched_event_types", mode="before")
+    @classmethod
+    def none_to_empty_list(cls, v):
+        return v if v is not None else []
 
     @computed_field
     @property

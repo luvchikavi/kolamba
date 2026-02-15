@@ -290,12 +290,12 @@
 ## Section I: Testing & QA (P2)
 
 ### I1. Backend Tests
-- [ ] **I1.1** Create test configuration (`conftest.py` with test DB, fixtures)
-- [ ] **I1.2** Write tests for auth endpoints (register, login, refresh, Google OAuth)
-- [ ] **I1.3** Write tests for CRUD operations (artists, communities, bookings)
+- [x] **I1.1** Create test configuration (`conftest.py` with test DB, fixtures) ✅
+- [x] **I1.2** Write tests for auth endpoints (register, login, refresh, Google OAuth) ✅ 10 tests
+- [x] **I1.3** Write tests for CRUD operations (artists, communities, bookings) ✅ 11 tests
 - [ ] **I1.4** Write tests for tour suggestion algorithm
-- [ ] **I1.5** Write tests for input validation (dates, required fields)
-- [ ] **I1.6** Write tests for role-based access control
+- [x] **I1.5** Write tests for input validation (dates, required fields) ✅ 6 tests
+- [x] **I1.6** Write tests for role-based access control ✅ 9 tests
 
 ### I2. Frontend Tests
 - [ ] **I2.1** Add Jest + React Testing Library to project

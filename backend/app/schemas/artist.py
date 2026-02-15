@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
 
 from app.schemas.category import CategoryResponse
 
@@ -49,6 +49,15 @@ class ArtistBase(BaseModel):
     video_urls: list[str] = []
     spotify_links: list[str] = []
     media_links: list[str] = []
+
+    @field_validator(
+        "languages", "performance_types", "subcategories",
+        "portfolio_images", "video_urls", "spotify_links", "media_links",
+        mode="before",
+    )
+    @classmethod
+    def none_to_empty_list(cls, v):
+        return v if v is not None else []
 
 
 class ArtistCreate(ArtistBase):
@@ -121,6 +130,11 @@ class ArtistListResponse(BaseModel):
     is_featured: bool
     categories: list[CategoryResponse] = []
     subcategories: list[str] = []
+
+    @field_validator("subcategories", mode="before")
+    @classmethod
+    def none_to_empty_list(cls, v):
+        return v if v is not None else []
 
     @computed_field
     @property

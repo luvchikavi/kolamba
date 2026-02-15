@@ -122,13 +122,13 @@ async def get_current_active_user(
 @router.post("/register", response_model=Token)
 @limiter.limit("5/minute")
 async def register(
-    request: RegisterRequest,
-    req: Request,
+    request: Request,
+    body: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Register new user (artist, community, or admin)."""
     # Validate role
-    if request.role not in ["artist", "community", "admin", "agent"]:
+    if body.role not in ["artist", "community", "admin", "agent"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Role must be 'artist', 'community', 'admin', or 'agent'",
@@ -136,7 +136,7 @@ async def register(
 
     # Check if email already exists
     existing_user = await db.execute(
-        select(User).where(User.email == request.email)
+        select(User).where(User.email == body.email)
     )
     if existing_user.scalar_one_or_none():
         raise HTTPException(
@@ -146,10 +146,10 @@ async def register(
 
     # Create user
     user = User(
-        email=request.email,
-        password_hash=get_password_hash(request.password),
-        name=request.name,
-        role=request.role,
+        email=body.email,
+        password_hash=get_password_hash(body.password),
+        name=body.name,
+        role=body.role,
         status="active",
         is_active=True,
     )
@@ -174,8 +174,8 @@ async def register(
 @router.post("/register/artist", response_model=Token)
 @limiter.limit("5/minute")
 async def register_artist(
-    request: ArtistRegisterRequest,
-    req: Request,
+    request: Request,
+    body: ArtistRegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Register new artist with profile."""
@@ -183,17 +183,17 @@ async def register_artist(
 
     agent_user = None
 
-    if request.is_agent_submission:
+    if body.is_agent_submission:
         # Agent mode: Check if agent already exists
         existing_agent = await db.execute(
-            select(User).where(User.email == request.email, User.role == "agent")
+            select(User).where(User.email == body.email, User.role == "agent")
         )
         agent_user = existing_agent.scalar_one_or_none()
 
         if not agent_user:
             # Check if email exists with different role
             existing_user = await db.execute(
-                select(User).where(User.email == request.email)
+                select(User).where(User.email == body.email)
             )
             if existing_user.scalar_one_or_none():
                 raise HTTPException(
@@ -204,9 +204,9 @@ async def register_artist(
             # Create agent user
             temp_password = secrets.token_urlsafe(16)
             agent_user = User(
-                email=request.email,
+                email=body.email,
                 password_hash=get_password_hash(temp_password),
-                name=request.name,
+                name=body.name,
                 role="agent",
                 status="active",
                 is_active=True,
@@ -215,7 +215,7 @@ async def register_artist(
             await db.flush()
 
         # Generate unique email for the artist (based on stage name + random suffix)
-        artist_email_base = request.artist_name.lower().replace(" ", ".").replace("'", "")
+        artist_email_base = body.artist_name.lower().replace(" ", ".").replace("'", "")
         artist_email = f"{artist_email_base}.{secrets.token_hex(4)}@artist.kolamba.com"
 
         # Create artist user account
@@ -223,7 +223,7 @@ async def register_artist(
         artist_user = User(
             email=artist_email,
             password_hash=get_password_hash(artist_password),
-            name=request.artist_name,
+            name=body.artist_name,
             role="artist",
             status="active",
             is_active=True,
@@ -234,7 +234,7 @@ async def register_artist(
     else:
         # Regular artist registration
         existing_user = await db.execute(
-            select(User).where(User.email == request.email)
+            select(User).where(User.email == body.email)
         )
         if existing_user.scalar_one_or_none():
             raise HTTPException(
@@ -243,13 +243,13 @@ async def register_artist(
             )
 
         # Use provided password or generate a temporary one
-        password = request.password if request.password else secrets.token_urlsafe(16)
+        password = body.password if body.password else secrets.token_urlsafe(16)
 
         # Create user with artist role
         user = User(
-            email=request.email,
+            email=body.email,
             password_hash=get_password_hash(password),
-            name=request.name,
+            name=body.name,
             role="artist",
             status="active",  # MVP: Auto-approve artists
             is_active=True,
@@ -258,7 +258,7 @@ async def register_artist(
         await db.flush()
 
     # Get categories by name (case-insensitive matching on name_en)
-    all_category_names = [request.category] + request.other_categories
+    all_category_names = [body.category] + body.other_categories
 
     # Fetch all categories and match by name (case-insensitive, with fuzzy matching)
     categories_result = await db.execute(select(Category))
@@ -281,29 +281,29 @@ async def register_artist(
     artist = Artist(
         user_id=user.id,
         agent_user_id=agent_user.id if agent_user else None,
-        name_he=request.artist_name,  # Using artist_name for name_he (primary)
-        name_en=request.artist_name,  # Also set English name
-        bio_en=request.bio,
-        city=request.city,
-        country=request.country,
-        languages=request.languages,
-        performance_types=request.performance_types,
-        subcategories=request.subcategories,
-        price_single=request.price_range_min,
-        price_tour=request.price_range_max,
-        phone=request.phone,
-        website=request.website,
-        instagram=request.instagram,
-        youtube=request.youtube,
-        facebook=request.facebook,
-        twitter=request.twitter,
-        linkedin=request.linkedin,
+        name_he=body.artist_name,  # Using artist_name for name_he (primary)
+        name_en=body.artist_name,  # Also set English name
+        bio_en=body.bio,
+        city=body.city,
+        country=body.country,
+        languages=body.languages,
+        performance_types=body.performance_types,
+        subcategories=body.subcategories,
+        price_single=body.price_range_min,
+        price_tour=body.price_range_max,
+        phone=body.phone,
+        website=body.website,
+        instagram=body.instagram,
+        youtube=body.youtube,
+        facebook=body.facebook,
+        twitter=body.twitter,
+        linkedin=body.linkedin,
         # Media fields
-        profile_image=request.profile_image,
-        video_urls=request.video_urls,
-        portfolio_images=request.portfolio_images,
-        spotify_links=request.spotify_links,
-        media_links=request.media_links,
+        profile_image=body.profile_image,
+        video_urls=body.video_urls,
+        portfolio_images=body.portfolio_images,
+        spotify_links=body.spotify_links,
+        media_links=body.media_links,
         status="pending",  # Requires admin approval
     )
 
@@ -385,13 +385,13 @@ class RefreshRequest(BaseModel):
 @router.post("/refresh", response_model=Token)
 @limiter.limit("10/minute")
 async def refresh_token(
-    req: Request,
-    request: RefreshRequest,
+    request: Request,
+    body: RefreshRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Refresh access token using refresh token."""
     try:
-        payload = jwt.decode(request.refresh_token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(body.refresh_token, settings.secret_key, algorithms=[settings.algorithm])
         user_id_str = payload.get("sub")
         if user_id_str is None:
             raise HTTPException(
@@ -516,8 +516,8 @@ class GoogleAuthRequest(BaseModel):
 @router.post("/google", response_model=Token)
 @limiter.limit("5/minute")
 async def google_auth(
-    req: Request,
-    request: GoogleAuthRequest,
+    request: Request,
+    body: GoogleAuthRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """Authenticate with Google ID token."""
@@ -533,7 +533,7 @@ async def google_auth(
     # Verify the Google ID token using google-auth library (official method)
     try:
         token_data = google_id_token.verify_oauth2_token(
-            request.credential,
+            body.credential,
             google_requests.Request(),
             settings.google_client_id,
         )
