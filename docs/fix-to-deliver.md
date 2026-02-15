@@ -51,27 +51,27 @@
 > These must be fixed BEFORE any production traffic.
 
 ### A1. Rotate & Remove Exposed Secrets
-- [ ] **A1.1** Rotate `SECRET_KEY` in Railway backend env vars (generate new 64-char key)
-- [ ] **A1.2** Rotate `GOOGLE_CLIENT_SECRET` in Google Cloud Console
-- [ ] **A1.3** Rotate `CLOUDINARY_API_SECRET` in Cloudinary dashboard
-- [ ] **A1.4** Rotate Railway PostgreSQL password
-- [ ] **A1.5** Remove hardcoded secrets from `backend/.env` (keep `.env.example` only)
-- [ ] **A1.6** Remove credentials from `.claude/settings.local.json` (JWT tokens, DB passwords)
-- [ ] **A1.7** Verify `.gitignore` covers: `.env`, `.env.local`, `.env.*.local`, `*.pem`
-- [ ] **A1.8** Consider using `git filter-branch` or BFG Repo-Cleaner to scrub secrets from git history
+- [ ] **A1.1** Rotate `SECRET_KEY` in Railway backend env vars (generate new 64-char key) *(manual - Railway dashboard)*
+- [ ] **A1.2** Rotate `GOOGLE_CLIENT_SECRET` in Google Cloud Console *(manual)*
+- [ ] **A1.3** Rotate `CLOUDINARY_API_SECRET` in Cloudinary dashboard *(manual)*
+- [ ] **A1.4** Rotate Railway PostgreSQL password *(manual)*
+- [x] **A1.5** Remove hardcoded secrets from `backend/.env` (keep `.env.example` only) ✅ 2026-02-15
+- [x] **A1.6** Remove credentials from `.claude/settings.local.json` (JWT tokens, DB passwords) ✅ 2026-02-15
+- [x] **A1.7** Verify `.gitignore` covers: `.env`, `.env.local`, `.env.*.local`, `*.pem` ✅ 2026-02-15
+- [ ] **A1.8** Consider using `git filter-branch` or BFG Repo-Cleaner to scrub secrets from git history *(deferred - secrets were in settings.local.json only, now cleaned)*
 
 ### A2. Remove Production Seed/Debug Endpoints
-- [ ] **A2.1** Remove or gate `POST /api/artists/seed` behind `ENV=development` check
-- [ ] **A2.2** Remove or gate `POST /api/artists/seed-tour-dates` behind `ENV=development` check
-- [ ] **A2.3** Remove or gate `POST /api/tours/admin/create-test-tour` behind `ENV=development` check
-- [ ] **A2.4** Remove or gate `POST /api/admin/seed-superusers` behind `ENV=development` check
-- [ ] **A2.5** Replace `admin_secret` query param auth with proper `is_superuser` RBAC check
+- [x] **A2.1** Gate `POST /api/artists/seed` behind `ENV=development` + `is_superuser` ✅ 2026-02-15
+- [x] **A2.2** Gate `POST /api/artists/seed-tour-dates` behind `ENV=development` + `is_superuser` ✅ 2026-02-15
+- [x] **A2.3** Gate `POST /api/tours/admin/create-test-tour` behind `ENV=development` + `is_superuser` ✅ 2026-02-15
+- [x] **A2.4** Gate `POST /api/admin/seed-superusers` behind `ENV=development` + `is_superuser` ✅ 2026-02-15
+- [x] **A2.5** Replace `admin_secret` query param with proper `is_superuser` RBAC ✅ 2026-02-15 (also fixed `/api/auth/admin/reset-password`)
 
 ### A3. Fix Authentication Security
-- [ ] **A3.1** Remove unauthenticated booking fallback (`community_id=1` hardcode in `bookings.py:60`)
-- [ ] **A3.2** Require authentication for booking creation
-- [ ] **A3.3** Implement JWT token blacklist/revocation on logout (Redis or DB table)
-- [ ] **A3.4** Add rate limiting middleware on auth endpoints (`/api/auth/login`, `/api/auth/register`)
+- [x] **A3.1** Remove unauthenticated booking fallback (`community_id=1` hardcode) ✅ 2026-02-15
+- [x] **A3.2** Require authentication for booking creation ✅ 2026-02-15
+- [ ] **A3.3** Implement JWT token blacklist/revocation on logout (Redis or DB table) *(deferred to Section G)*
+- [ ] **A3.4** Add rate limiting middleware on auth endpoints *(deferred to Section G)*
 
 **Files:**
 - `backend/app/routers/bookings.py`
@@ -455,7 +455,7 @@ Post-delivery: Section M (v1.4 features)
 
 | Section | Total Tasks | Done | % |
 |---------|------------|------|---|
-| A - Security | 16 | 0 | 0% |
+| A - Security | 16 | 10 | 63% |
 | B - Backend Critical | 17 | 0 | 0% |
 | C - Frontend Critical | 11 | 0 | 0% |
 | D - Database | 10 | 0 | 0% |
@@ -468,7 +468,7 @@ Post-delivery: Section M (v1.4 features)
 | K - Documentation | 8 | 0 | 0% |
 | L - Polish | 9 | 0 | 0% |
 | M - v1.4 Features | 15 | 0 | 0% |
-| **TOTAL** | **145** | **0** | **0%** |
+| **TOTAL** | **145** | **10** | **7%** |
 
 ---
 
@@ -477,6 +477,7 @@ Post-delivery: Section M (v1.4 features)
 | Date | Change | By |
 |------|--------|-----|
 | 2026-02-15 | Initial plan created from full codebase audit | Claude + Avi |
+| 2026-02-15 | Section A: Security fixes (A1.5-A1.7, A2.1-A2.5, A3.1-A3.2) completed | Claude |
 
 ---
 
