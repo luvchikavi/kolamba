@@ -86,53 +86,38 @@
 ## Section B: Backend Critical Fixes (P0-P1)
 
 ### B1. Fix Google OAuth Implementation (P0)
-- [ ] **B1.1** Replace `tokeninfo` endpoint call with proper `google-auth` library verification
-- [ ] **B1.2** Add `google-auth` and `google-auth-httplib2` to `requirements.txt`
-- [ ] **B1.3** Validate ID token using `google.oauth2.id_token.verify_oauth2_token()`
-- [ ] **B1.4** Test Google OAuth flow end-to-end (register + login)
-
-**File:** `backend/app/routers/auth.py`
+- [x] **B1.1** Replace `tokeninfo` endpoint with `google-auth` library's `verify_oauth2_token()` ✅ 2026-02-15
+- [x] **B1.2** Add `google-auth==2.27.0` to `requirements.txt` ✅ 2026-02-15
+- [x] **B1.3** Validate ID token using `google.oauth2.id_token.verify_oauth2_token()` ✅ 2026-02-15
+- [ ] **B1.4** Test Google OAuth flow end-to-end (register + login) *(manual testing required)*
 
 ### B2. Fix Agent-Artist Relationship (P1)
-- [ ] **B2.1** Add `agent` relationship to Artist model:
-  ```python
-  agent: Mapped[Optional["User"]] = relationship(
-      "User", foreign_keys=[agent_user_id], lazy="select"
-  )
-  ```
-- [ ] **B2.2** Fix agent registration to return temporary password or send setup email
-- [ ] **B2.3** Test agent → artist management flow
-
-**File:** `backend/app/models/artist.py`
+- [x] **B2.1** Add `agent` relationship to Artist model ✅ 2026-02-15
+- [ ] **B2.2** Fix agent registration to return temporary password or send setup email *(deferred to Section G - email)*
+- [ ] **B2.3** Test agent → artist management flow *(manual testing required)*
 
 ### B3. Fix Transaction Management (P1)
-- [ ] **B3.1** Wrap agent registration (User + Artist creation) in proper transaction with rollback
-- [ ] **B3.2** Wrap booking creation + conversation creation in transaction
-- [ ] **B3.3** Add try/except with `db.rollback()` for multi-step operations
-
-**Files:** `backend/app/routers/auth.py`, `backend/app/routers/bookings.py`
+- [x] **B3.1** Verified: SQLAlchemy async session context manager handles rollback on exceptions ✅ 2026-02-15
+- [x] **B3.2** Verified: `flush()` + `commit()` pattern is already safe — no commit until end ✅ 2026-02-15
+- [x] **B3.3** No additional try/except needed — `get_db()` uses `async with` which auto-rolls-back ✅ 2026-02-15
 
 ### B4. Fix Input Validation (P1)
-- [ ] **B4.1** Add validator: `requested_date` must be in the future (bookings)
-- [ ] **B4.2** Add validator: `end_date >= start_date` (tours)
-- [ ] **B4.3** Add validator: `end_date >= start_date` (artist tour dates)
-- [ ] **B4.4** Validate `venue_info` against `VenueInfoSchema` in conversations endpoint
-- [ ] **B4.5** Add max length validators on text fields (bio, notes, description)
-
-**Files:** `backend/app/schemas/booking.py`, `backend/app/schemas/tour.py`, `backend/app/schemas/artist_tour_date.py`, `backend/app/routers/conversations.py`
+- [x] **B4.1** Add validator: `requested_date` must be in the future (BookingCreate) ✅ 2026-02-15
+- [x] **B4.2** Add validator: `end_date >= start_date` (TourBase) ✅ 2026-02-15
+- [x] **B4.3** Add validator: `end_date >= start_date` (ArtistTourDateBase) ✅ 2026-02-15
+- [x] **B4.4** Verified: `venue_info` endpoint already uses `VenueInfoSchema` for validation ✅ 2026-02-15
+- [x] **B4.5** Add max_length on notes (2000), description (5000/1000) fields ✅ 2026-02-15
 
 ### B5. Fix Deprecated Code (P1)
-- [ ] **B5.1** Replace all `datetime.utcnow()` with `datetime.now(timezone.utc)`
-- [ ] **B5.2** Deduplicate `calculate_price_tier()` — create single utility function
-
-**Files:** `backend/app/routers/agents.py`, `backend/app/schemas/artist.py`, `backend/app/schemas/tour.py`
+- [x] **B5.1** Replace all `datetime.utcnow()` with `datetime.now(timezone.utc)` across 8 files (0 remaining) ✅ 2026-02-15
+- [x] **B5.2** Deduplicate `calculate_price_tier()` — single definition in `schemas/artist.py`, imported by tour.py and discover.py ✅ 2026-02-15
 
 ### B6. Add Missing Database Indexes (P1)
-- [ ] **B6.1** Add index on `Artist.status`
-- [ ] **B6.2** Add index on `Community.status`
-- [ ] **B6.3** Verify indexes on `Booking.artist_id`, `Booking.community_id`
-- [ ] **B6.4** Add index on `Booking.status`
-- [ ] **B6.5** Create Alembic migration for new indexes
+- [x] **B6.1** Add index `ix_artists_status` on `Artist.status` ✅ 2026-02-15
+- [x] **B6.2** Add index `ix_communities_status` on `Community.status` ✅ 2026-02-15
+- [x] **B6.3** Add indexes `ix_bookings_artist_id` and `ix_bookings_community_id` ✅ 2026-02-15
+- [x] **B6.4** Add index `ix_bookings_status` on `Booking.status` ✅ 2026-02-15
+- [x] **B6.5** Created Alembic migration `20260215_000021_add_status_indexes.py` ✅ 2026-02-15
 
 ---
 
@@ -456,7 +441,7 @@ Post-delivery: Section M (v1.4 features)
 | Section | Total Tasks | Done | % |
 |---------|------------|------|---|
 | A - Security | 16 | 10 | 63% |
-| B - Backend Critical | 17 | 0 | 0% |
+| B - Backend Critical | 17 | 14 | 82% |
 | C - Frontend Critical | 11 | 0 | 0% |
 | D - Database | 10 | 0 | 0% |
 | E - Auth/OAuth | 9 | 0 | 0% |
@@ -468,7 +453,7 @@ Post-delivery: Section M (v1.4 features)
 | K - Documentation | 8 | 0 | 0% |
 | L - Polish | 9 | 0 | 0% |
 | M - v1.4 Features | 15 | 0 | 0% |
-| **TOTAL** | **145** | **10** | **7%** |
+| **TOTAL** | **145** | **24** | **17%** |
 
 ---
 
@@ -478,6 +463,7 @@ Post-delivery: Section M (v1.4 features)
 |------|--------|-----|
 | 2026-02-15 | Initial plan created from full codebase audit | Claude + Avi |
 | 2026-02-15 | Section A: Security fixes (A1.5-A1.7, A2.1-A2.5, A3.1-A3.2) completed | Claude |
+| 2026-02-15 | Section B: Backend critical fixes (B1-B6) — OAuth, model, validation, indexes | Claude |
 
 ---
 
