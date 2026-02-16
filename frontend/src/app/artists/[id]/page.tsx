@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { isInAnyList, toggleFavorite } from "@/lib/favorites";
+import TourDatesCalendar from "@/components/calendar/TourDatesCalendar";
 
 interface Category {
   id: number;
@@ -327,6 +328,9 @@ export default function ArtistDetailPage({
               <div className="divider-gradient mb-6" />
               <p className="text-slate-600 leading-relaxed whitespace-pre-line">{artistBio}</p>
             </section>
+
+            {/* Tour Dates Calendar */}
+            <TourDatesCalendar artistId={artist.id} artistName={artistName} />
 
             {/* Performance Types */}
             {artist.performance_types && artist.performance_types.length > 0 && (

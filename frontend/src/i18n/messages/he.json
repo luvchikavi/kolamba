@@ -1,0 +1,111 @@
+{
+  "common": {
+    "signIn": "התחברות",
+    "signOut": "התנתקות",
+    "dashboard": "לוח בקרה",
+    "search": "חיפוש",
+    "loading": "טוען...",
+    "error": "משהו השתבש",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "delete": "מחיקה",
+    "edit": "עריכה",
+    "submit": "שליחה",
+    "back": "חזרה",
+    "viewAll": "צפייה בהכל",
+    "learnMore": "למידע נוסף",
+    "contactUs": "צרו קשר"
+  },
+  "header": {
+    "browseArtists": "גלו אמנים",
+    "communitySignUp": "הרשמת קהילה",
+    "artistSignUp": "הרשמת אמן",
+    "greeting": "שלום, {name}"
+  },
+  "home": {
+    "heroTitle": "מועדון התרבות היהודי",
+    "heroSubtitle": "כל העולם במה",
+    "heroDescription": "מחברים אמנים ישראליים עם קהילות יהודיות ברחבי העולם. הזמינו הופעות, סדנאות, הרצאות ואירועי תרבות.",
+    "exploreArtists": "גלו אמנים",
+    "findCommunities": "מצאו קהילות",
+    "featuredArtists": "אמנים מומלצים",
+    "recentTours": "סיבובי הופעות אחרונים",
+    "howItWorks": "איך זה עובד",
+    "step1Title": "גלו אמנים",
+    "step1Desc": "עיינו באוסף המאוצר שלנו של אמנים ומבצעים ישראליים מוכשרים.",
+    "step2Title": "שלחו בקשה",
+    "step2Desc": "פנו לאמנים עם פרטי האירוע והדרישות שלכם.",
+    "step3Title": "הזמינו ותהנו",
+    "step3Desc": "אשרו את ההזמנה והביאו חוויות תרבותיות מדהימות לקהילה שלכם."
+  },
+  "search": {
+    "title": "מצאו אמנים",
+    "placeholder": "חפשו אמנים, קטגוריות...",
+    "filters": "סינון",
+    "category": "קטגוריה",
+    "language": "שפה",
+    "location": "מיקום",
+    "noResults": "לא נמצאו אמנים התואמים את החיפוש.",
+    "clearFilters": "נקו סינון"
+  },
+  "artist": {
+    "about": "אודות",
+    "performanceTypes": "סוגי הופעות",
+    "portfolio": "תיק עבודות",
+    "videos": "סרטונים",
+    "pricing": "תמחור",
+    "singlePerformance": "הופעה בודדת",
+    "tour": "סיבוב הופעות",
+    "priceRange": "טווח מחירים",
+    "sendBookingRequest": "שלחו בקשת הזמנה",
+    "connect": "צרו קשר",
+    "pressMedia": "עיתונות ומדיה",
+    "tourSchedule": "לוח סיבוב הופעות",
+    "exportICal": "ייצוא ליומן",
+    "featured": "אמן מומלץ",
+    "notFound": "אמן לא נמצא",
+    "notFoundDesc": "האמן שחיפשתם לא קיים."
+  },
+  "booking": {
+    "title": "הזמנת {artistName}",
+    "eventDate": "תאריך אירוע",
+    "eventLocation": "מיקום אירוע",
+    "budget": "תקציב",
+    "notes": "הערות",
+    "submit": "שלחו בקשת הזמנה",
+    "success": "בקשת ההזמנה נשלחה בהצלחה!",
+    "error": "שליחת בקשת ההזמנה נכשלה"
+  },
+  "community": {
+    "title": "קהילות",
+    "joinUs": "הצטרפו כקהילה",
+    "members": "חברים",
+    "location": "מיקום"
+  },
+  "notifications": {
+    "title": "התראות",
+    "markAllRead": "סמנו הכל כנקרא",
+    "noNotifications": "אין התראות עדיין",
+    "newBooking": "בקשת הזמנה חדשה",
+    "bookingAccepted": "הזמנה אושרה",
+    "bookingDeclined": "הזמנה נדחתה"
+  },
+  "footer": {
+    "tagline": "מחברים אמנים ישראליים עם קהילות יהודיות ברחבי העולם.",
+    "quickLinks": "קישורים מהירים",
+    "resources": "משאבים",
+    "legal": "משפטי",
+    "privacyPolicy": "מדיניות פרטיות",
+    "termsOfService": "תנאי שימוש",
+    "copyright": "כל הזכויות שמורות."
+  },
+  "auth": {
+    "email": "דוא״ל",
+    "password": "סיסמה",
+    "forgotPassword": "שכחתם סיסמה?",
+    "noAccount": "אין לכם חשבון?",
+    "hasAccount": "כבר יש לכם חשבון?",
+    "register": "הרשמה",
+    "loginWithGoogle": "התחברות עם Google"
+  }
+}

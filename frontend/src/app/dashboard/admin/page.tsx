@@ -18,6 +18,29 @@ import {
   Plane,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+
+interface AnalyticsData {
+  monthly_growth: { month: string; users: number; artists: number; communities: number; bookings: number }[];
+  category_breakdown: { name: string; count: number }[];
+  booking_status: { name: string; count: number }[];
+}
+
+const CHART_COLORS = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#06b6d4", "#f59e0b", "#6366f1"];
 
 interface Stats {
   total_users: number;
@@ -113,6 +136,7 @@ export default function AdminDashboardPage() {
   const [pendingArtists, setPendingArtists] = useState<PendingArtist[]>([]);
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [recentTourDates, setRecentTourDates] = useState<RecentTourDate[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -141,13 +165,14 @@ export default function AdminDashboardPage() {
         return;
       }
 
-      // Fetch stats, recent users, pending artists, bookings, and tour dates in parallel
-      const [statsRes, usersRes, artistsRes, bookingsRes, tourDatesRes] = await Promise.all([
+      // Fetch stats, recent users, pending artists, bookings, tour dates, and analytics in parallel
+      const [statsRes, usersRes, artistsRes, bookingsRes, tourDatesRes, analyticsRes] = await Promise.all([
         fetch(`${API_URL}/admin/stats`, { headers }),
         fetch(`${API_URL}/admin/users?limit=5`, { headers }),
         fetch(`${API_URL}/admin/artists?status=pending&limit=5`, { headers }),
         fetch(`${API_URL}/admin/bookings?limit=5`, { headers }),
         fetch(`${API_URL}/admin/tour-dates?limit=5`, { headers }),
+        fetch(`${API_URL}/admin/analytics`, { headers }),
       ]);
 
       if (statsRes.ok) {
@@ -173,6 +198,11 @@ export default function AdminDashboardPage() {
       if (tourDatesRes.ok) {
         const tourDatesData = await tourDatesRes.json();
         setRecentTourDates(tourDatesData);
+      }
+
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json();
+        setAnalytics(analyticsData);
       }
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
@@ -298,6 +328,72 @@ export default function AdminDashboardPage() {
           color="bg-indigo-500"
         />
       </div>
+
+      {/* Analytics Charts */}
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Growth Over Time */}
+          <div className="card p-6 lg:col-span-2">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Platform Growth</h2>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={analytics.monthly_growth}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={2} name="Users" />
+                <Line type="monotone" dataKey="artists" stroke="#8b5cf6" strokeWidth={2} name="Artists" />
+                <Line type="monotone" dataKey="communities" stroke="#10b981" strokeWidth={2} name="Communities" />
+                <Line type="monotone" dataKey="bookings" stroke="#f97316" strokeWidth={2} name="Bookings" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Booking Status Breakdown */}
+          <div className="card p-6">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Booking Status</h2>
+            {analytics.booking_status.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={analytics.booking_status}
+                    dataKey="count"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                    label
+                  >
+                    {analytics.booking_status.map((_, index) => (
+                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-slate-500 text-center py-12">No booking data yet</p>
+            )}
+          </div>
+
+          {/* Category Breakdown */}
+          {analytics.category_breakdown.length > 0 && (
+            <div className="card p-6 lg:col-span-3">
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Artists by Category</h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={analytics.category_breakdown}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                  <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Artists" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
         {/* Pending Artists */}

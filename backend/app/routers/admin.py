@@ -160,6 +160,106 @@ async def get_admin_stats(
     )
 
 
+class AnalyticsPoint(BaseModel):
+    """Single data point for time-series charts."""
+    month: str
+    users: int = 0
+    artists: int = 0
+    communities: int = 0
+    bookings: int = 0
+
+
+class CategoryBreakdown(BaseModel):
+    """Category distribution data."""
+    name: str
+    count: int
+
+
+class AnalyticsResponse(BaseModel):
+    """Analytics data for dashboard charts."""
+    monthly_growth: list[AnalyticsPoint]
+    category_breakdown: list[CategoryBreakdown]
+    booking_status: list[CategoryBreakdown]
+
+
+@router.get("/analytics", response_model=AnalyticsResponse)
+async def get_analytics(
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get analytics data for admin dashboard charts."""
+    from datetime import date, timedelta
+    from app.models.category import Category as CategoryModel
+
+    # Monthly growth over last 6 months
+    monthly_growth = []
+    today = date.today()
+    for i in range(5, -1, -1):
+        # Start of month, i months ago
+        month_start = today.replace(day=1) - timedelta(days=i * 30)
+        month_start = month_start.replace(day=1)
+        if month_start.month == 12:
+            month_end = month_start.replace(year=month_start.year + 1, month=1, day=1)
+        else:
+            month_end = month_start.replace(month=month_start.month + 1, day=1)
+
+        label = month_start.strftime("%b %Y")
+
+        users_count = (await db.execute(
+            select(func.count(User.id)).where(User.created_at < month_end)
+        )).scalar() or 0
+
+        artists_count = (await db.execute(
+            select(func.count(Artist.id)).where(Artist.created_at < month_end)
+        )).scalar() or 0
+
+        communities_count = (await db.execute(
+            select(func.count(Community.id)).where(Community.created_at < month_end)
+        )).scalar() or 0
+
+        bookings_count = (await db.execute(
+            select(func.count(Booking.id)).where(Booking.created_at < month_end)
+        )).scalar() or 0
+
+        monthly_growth.append(AnalyticsPoint(
+            month=label,
+            users=users_count,
+            artists=artists_count,
+            communities=communities_count,
+            bookings=bookings_count,
+        ))
+
+    # Category breakdown (artists per category)
+    from app.models.category import ArtistCategory
+    cat_result = await db.execute(
+        select(CategoryModel.name_en, func.count(ArtistCategory.artist_id))
+        .join(ArtistCategory, CategoryModel.id == ArtistCategory.category_id)
+        .group_by(CategoryModel.name_en)
+        .order_by(func.count(ArtistCategory.artist_id).desc())
+        .limit(10)
+    )
+    category_breakdown = [
+        CategoryBreakdown(name=name or "Unknown", count=count)
+        for name, count in cat_result.all()
+    ]
+
+    # Booking status breakdown
+    status_result = await db.execute(
+        select(Booking.status, func.count(Booking.id))
+        .group_by(Booking.status)
+    )
+    booking_status = [
+        CategoryBreakdown(name=status, count=count)
+        for status, count in status_result.all()
+    ]
+
+    return AnalyticsResponse(
+        monthly_growth=monthly_growth,
+        category_breakdown=category_breakdown,
+        booking_status=booking_status,
+    )
+
+
 @router.get("/users")
 async def list_users(
     search: Optional[str] = Query(None, description="Search by email or name"),

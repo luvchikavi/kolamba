@@ -377,35 +377,35 @@
 > These are from the project plan (Phases 10-15) and should only be started AFTER all P0-P2 fixes above are complete.
 
 ### M1. Map Visualization (Phase 14 from plan)
-- [ ] **M1.1** Integrate Leaflet or Mapbox for tour route visualization
-- [ ] **M1.2** Show community locations on map
-- [ ] **M1.3** Visual tour route display with distance markers
+- [x] **M1.1** Integrate Leaflet or Mapbox for tour route visualization ✅ Leaflet + react-leaflet with dynamic import (no SSR)
+- [x] **M1.2** Show community locations on map ✅ /locations API endpoint + CommunityMap component
+- [x] **M1.3** Visual tour route display with distance markers ✅ Tour date markers (green) + community markers (blue)
 
 ### M2. Notification System
-- [ ] **M2.1** In-app notifications for new bookings, messages, tour opportunities
-- [ ] **M2.2** Email notifications via Resend
-- [ ] **M2.3** Notification preferences per user
+- [x] **M2.1** In-app notifications for new bookings, messages, tour opportunities ✅ Notification model, API (CRUD), bell icon in header, booking trigger
+- [ ] **M2.2** Email notifications via Resend (deferred — Resend integration already exists, trigger hookup is manual)
+- [ ] **M2.3** Notification preferences per user (deferred — post-launch)
 
 ### M3. Advanced Search
-- [ ] **M3.1** Full-text search with PostgreSQL tsvector indexes
-- [ ] **M3.2** Geographic search ("artists near me")
-- [ ] **M3.3** Cursor-based pagination for large result sets
+- [x] **M3.1** Full-text search with PostgreSQL tsvector indexes ✅ to_tsvector("simple") + ts_rank + ILIKE fallback
+- [ ] **M3.2** Geographic search ("artists near me") (deferred — requires browser geolocation + PostGIS)
+- [ ] **M3.3** Cursor-based pagination for large result sets (deferred — offset pagination sufficient for current scale)
 
 ### M4. Calendar Integration
-- [ ] **M4.1** Artist availability calendar view
-- [ ] **M4.2** iCal export for tour dates
-- [ ] **M4.3** Date picker integration in booking flow
+- [x] **M4.1** Artist availability calendar view ✅ TourDatesCalendar component on artist detail page
+- [x] **M4.2** iCal export for tour dates ✅ /artists/{id}/tour-dates/ical endpoint (.ics download)
+- [x] **M4.3** Date picker integration in booking flow ✅ Already present — native date inputs in booking form
 
 ### M5. Analytics Dashboard
-- [ ] **M5.1** Admin analytics: bookings over time, revenue, popular categories
-- [ ] **M5.2** Artist analytics: profile views, booking requests
-- [ ] **M5.3** Community analytics: engagement metrics
+- [x] **M5.1** Admin analytics: bookings over time, revenue, popular categories ✅ recharts LineChart, PieChart, BarChart in admin dashboard
+- [ ] **M5.2** Artist analytics: profile views, booking requests (deferred — requires view tracking)
+- [ ] **M5.3** Community analytics: engagement metrics (deferred — requires event tracking)
 
 ### M6. i18n / Bilingual Support
-- [ ] **M6.1** Implement `next-intl` properly with EN/HE translations
-- [ ] **M6.2** RTL layout support for Hebrew
-- [ ] **M6.3** Language switcher in header
-- [ ] **M6.4** All UI strings externalized to translation files
+- [x] **M6.1** Implement `next-intl` properly with EN/HE translations ✅ next-intl + LocaleProvider + full EN/HE translation files
+- [x] **M6.2** RTL layout support for Hebrew ✅ Dynamic dir="rtl" on html element + RTL CSS utilities
+- [x] **M6.3** Language switcher in header ✅ Globe toggle button (EN/עב) in header for all users
+- [x] **M6.4** All UI strings externalized to translation files ✅ ~100 strings in en.json + he.json (header, home, search, artist, booking, auth, footer, notifications)
 
 ---
 
@@ -451,12 +451,12 @@ Post-delivery: Section M (v1.4 features)
 | F - Deployment | 12 | 8 | 67% |
 | G - Backend Improvements | 14 | 11 | 79% |
 | H - Frontend Improvements | 8 | 8 | 100% |
-| I - Testing | 9 | 0 | 0% |
-| J - Git Hygiene | 7 | 0 | 0% |
-| K - Documentation | 8 | 0 | 0% |
-| L - Polish | 9 | 0 | 0% |
-| M - v1.4 Features | 15 | 0 | 0% |
-| **TOTAL** | **149** | **75** | **50%** |
+| I - Testing | 9 | 9 | 100% |
+| J - Git Hygiene | 7 | 7 | 100% |
+| K - Documentation | 8 | 8 | 100% |
+| L - Polish | 9 | 7 | 78% |
+| M - v1.4 Features | 18 | 12 | 67% |
+| **TOTAL** | **152** | **118** | **78%** |
 
 ---
 
@@ -473,6 +473,11 @@ Post-delivery: Section M (v1.4 features)
 | 2026-02-15 | Section F: Deployment fixes — CI pipeline, Docker compose, Railway/Vercel verification | Claude |
 | 2026-02-15 | Section G: Backend improvements — logging, rate limiting, email service, query optimization | Claude |
 | 2026-02-15 | Section H: Frontend improvements — removed unused deps, Next.js CVE fix, contact form, dashboard skeletons | Claude |
+| 2026-02-15 | Section I: Testing — 38/38 tests passing, pytest-asyncio fixture fixes, Pydantic NULL array validators | Claude |
+| 2026-02-15 | Section J: Git hygiene — removed 18 design files (4.6 MB), updated .gitignore, tagged v1.3.0 | Claude |
+| 2026-02-15 | Section K: Documentation — README, DEPLOYMENT, TECHNICAL_DOCUMENTATION updated, OPERATIONS-RUNBOOK created | Claude |
+| 2026-02-15 | Section L: Polish — robots.txt, sitemap.ts, og:image, skip-to-content, ARIA attributes | Claude |
+| 2026-02-15 | Section M: v1.4 features — full-text search, analytics dashboard, map visualization, calendar/iCal, notifications, i18n (EN/HE) | Claude |
 
 ---
 

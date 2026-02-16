@@ -1,7 +1,9 @@
 """Artist Tour Dates router - CRUD operations for artist tour announcements."""
 
 from typing import Optional
+from datetime import date as date_type, datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -85,6 +87,80 @@ async def get_artist_tour_dates(
     result = await db.execute(query)
     tour_dates = result.scalars().all()
     return tour_dates
+
+
+@router.get("/{artist_id}/tour-dates/ical")
+async def export_tour_dates_ical(
+    artist_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Export artist tour dates as iCal (.ics) file."""
+    # Get artist
+    artist_result = await db.execute(
+        select(Artist).where(Artist.id == artist_id)
+    )
+    artist = artist_result.scalar_one_or_none()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    # Get upcoming tour dates
+    query = (
+        select(ArtistTourDate)
+        .where(ArtistTourDate.artist_id == artist_id)
+        .where(ArtistTourDate.start_date >= date_type.today())
+        .order_by(ArtistTourDate.start_date)
+    )
+    result = await db.execute(query)
+    tour_dates = result.scalars().all()
+
+    artist_name = artist.name_en or artist.name_he or f"Artist {artist_id}"
+    now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+    # Build iCal content
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Kolamba//Tour Dates//EN",
+        f"X-WR-CALNAME:{artist_name} - Tour Dates",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+    ]
+
+    for td in tour_dates:
+        dtstart = td.start_date.strftime("%Y%m%d")
+        # For all-day events, DTEND is the day after the last day
+        if td.end_date:
+            dtend = (td.end_date + timedelta(days=1)).strftime("%Y%m%d")
+        else:
+            dtend = (td.start_date + timedelta(days=1)).strftime("%Y%m%d")
+
+        summary = f"{artist_name} - {td.location}"
+        description = td.description or ""
+
+        lines.extend([
+            "BEGIN:VEVENT",
+            f"UID:kolamba-tour-{td.id}@kolamba.app",
+            f"DTSTAMP:{now}",
+            f"DTSTART;VALUE=DATE:{dtstart}",
+            f"DTEND;VALUE=DATE:{dtend}",
+            f"SUMMARY:{summary}",
+            f"LOCATION:{td.location}",
+            f"DESCRIPTION:{description}",
+            "END:VEVENT",
+        ])
+
+    lines.append("END:VCALENDAR")
+
+    ical_content = "\r\n".join(lines) + "\r\n"
+    filename = f"{artist_name.replace(' ', '_')}_tour_dates.ics"
+
+    return Response(
+        content=ical_content,
+        media_type="text/calendar",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
 
 
 @router.post("/{artist_id}/tour-dates", response_model=ArtistTourDateResponse)

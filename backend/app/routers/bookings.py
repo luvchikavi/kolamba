@@ -18,6 +18,7 @@ from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse
 from app.routers.auth import get_current_user
 
 from app.rate_limit import limiter
+from app.routers.notifications import create_notification
 
 router = APIRouter()
 
@@ -92,6 +93,17 @@ async def create_booking(
     # Auto-create a conversation for this booking
     conversation = Conversation(booking_id=booking.id)
     db.add(conversation)
+
+    # Notify the artist about the new booking
+    community_name = community.name if community else "A community"
+    await create_notification(
+        db=db,
+        user_id=artist.user_id,
+        type="booking_new",
+        title="New Booking Request",
+        message=f"{community_name} has sent you a booking request for {body.location or 'an event'}.",
+        link=f"/dashboard/artist?tab=bookings",
+    )
 
     await db.commit()
     await db.refresh(booking)

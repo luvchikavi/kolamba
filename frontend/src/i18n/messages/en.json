@@ -1,0 +1,111 @@
+{
+  "common": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "dashboard": "Dashboard",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back",
+    "viewAll": "View All",
+    "learnMore": "Learn More",
+    "contactUs": "Contact Us"
+  },
+  "header": {
+    "browseArtists": "Browse Artists",
+    "communitySignUp": "Community Sign Up",
+    "artistSignUp": "Artist Sign Up",
+    "greeting": "Hi, {name}"
+  },
+  "home": {
+    "heroTitle": "The Jewish Culture Club",
+    "heroSubtitle": "All the world's a stage",
+    "heroDescription": "Connecting Israeli artists with Jewish communities worldwide. Book performances, workshops, lectures, and cultural events.",
+    "exploreArtists": "Explore Artists",
+    "findCommunities": "Find Communities",
+    "featuredArtists": "Featured Artists",
+    "recentTours": "Recent Tours",
+    "howItWorks": "How It Works",
+    "step1Title": "Discover Artists",
+    "step1Desc": "Browse our curated collection of talented Israeli artists and performers.",
+    "step2Title": "Send a Request",
+    "step2Desc": "Reach out to artists with your event details and requirements.",
+    "step3Title": "Book & Enjoy",
+    "step3Desc": "Confirm the booking and bring amazing cultural experiences to your community."
+  },
+  "search": {
+    "title": "Find Artists",
+    "placeholder": "Search artists, categories...",
+    "filters": "Filters",
+    "category": "Category",
+    "language": "Language",
+    "location": "Location",
+    "noResults": "No artists found matching your search.",
+    "clearFilters": "Clear Filters"
+  },
+  "artist": {
+    "about": "About",
+    "performanceTypes": "Performance Types",
+    "portfolio": "Portfolio",
+    "videos": "Videos",
+    "pricing": "Pricing",
+    "singlePerformance": "Single Performance",
+    "tour": "Tour",
+    "priceRange": "Price Range",
+    "sendBookingRequest": "Send Booking Request",
+    "connect": "Connect",
+    "pressMedia": "Press & Media",
+    "tourSchedule": "Tour Schedule",
+    "exportICal": "Export iCal",
+    "featured": "Featured Artist",
+    "notFound": "Artist Not Found",
+    "notFoundDesc": "The artist you're looking for doesn't exist."
+  },
+  "booking": {
+    "title": "Book {artistName}",
+    "eventDate": "Event Date",
+    "eventLocation": "Event Location",
+    "budget": "Budget",
+    "notes": "Notes",
+    "submit": "Submit Booking Request",
+    "success": "Booking request sent successfully!",
+    "error": "Failed to send booking request"
+  },
+  "community": {
+    "title": "Communities",
+    "joinUs": "Join as a Community",
+    "members": "Members",
+    "location": "Location"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications yet",
+    "newBooking": "New Booking Request",
+    "bookingAccepted": "Booking Accepted",
+    "bookingDeclined": "Booking Declined"
+  },
+  "footer": {
+    "tagline": "Connecting Israeli artists with Jewish communities worldwide.",
+    "quickLinks": "Quick Links",
+    "resources": "Resources",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "copyright": "All rights reserved."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "register": "Register",
+    "loginWithGoogle": "Sign in with Google"
+  }
+}

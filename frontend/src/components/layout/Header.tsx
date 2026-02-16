@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import LanguageSwitcher from "@/components/i18n/LanguageSwitcher";
 
 interface UserInfo {
   name: string | null;
@@ -96,8 +98,11 @@ export default function Header() {
             <span className="text-sm uppercase tracking-wide">Search</span>
           </Link>
 
-          {/* Right: User Menu or Sign In */}
+          {/* Right: Notifications + User Menu or Sign In */}
           {user ? (
+            <div className="flex items-center gap-1">
+              <LanguageSwitcher />
+              <NotificationBell />
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -134,14 +139,18 @@ export default function Header() {
                 </div>
               )}
             </div>
+            </div>
           ) : (
-            <Link
-              href="/login"
-              className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
-            >
-              <User size={18} />
-              <span className="text-sm uppercase tracking-wide hidden sm:inline">Sign In</span>
-            </Link>
+            <div className="flex items-center gap-1">
+              <LanguageSwitcher />
+              <Link
+                href="/login"
+                className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+              >
+                <User size={18} />
+                <span className="text-sm uppercase tracking-wide hidden sm:inline">Sign In</span>
+              </Link>
+            </div>
           )}
         </div>
       </div>

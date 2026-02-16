@@ -168,6 +168,64 @@ async def check_community_name(
     return DuplicateCheckResponse(exists=exists, similar_names=similar_names)
 
 
+class MapLocation(BaseModel):
+    """Location data for map visualization."""
+    id: int
+    name: str
+    latitude: float
+    longitude: float
+    type: str  # "community" or "tour_date"
+    details: Optional[str] = None
+
+
+@router.get("/locations", response_model=list[MapLocation])
+async def get_map_locations(
+    db: AsyncSession = Depends(get_db),
+):
+    """Get all communities and upcoming tour dates with coordinates for map display."""
+    locations: list[MapLocation] = []
+
+    # Communities with coordinates
+    result = await db.execute(
+        select(Community).where(
+            Community.status == "active",
+            Community.latitude.isnot(None),
+            Community.longitude.isnot(None),
+        )
+    )
+    for community in result.scalars().all():
+        locations.append(MapLocation(
+            id=community.id,
+            name=community.name,
+            latitude=float(community.latitude),
+            longitude=float(community.longitude),
+            type="community",
+            details=community.location,
+        ))
+
+    # Upcoming tour dates with coordinates
+    tour_result = await db.execute(
+        select(ArtistTourDate, Artist.name_en).join(
+            Artist, ArtistTourDate.artist_id == Artist.id
+        ).where(
+            ArtistTourDate.start_date >= date.today(),
+            ArtistTourDate.latitude.isnot(None),
+            ArtistTourDate.longitude.isnot(None),
+        )
+    )
+    for tour_date, artist_name in tour_result.all():
+        locations.append(MapLocation(
+            id=tour_date.id,
+            name=f"{artist_name or 'Artist'} Tour",
+            latitude=float(tour_date.latitude),
+            longitude=float(tour_date.longitude),
+            type="tour_date",
+            details=f"{tour_date.location} - {tour_date.start_date}",
+        ))
+
+    return locations
+
+
 @router.get("", response_model=list[CommunityResponse])
 async def list_communities(
     language: Optional[str] = Query(None, description="Filter by language"),

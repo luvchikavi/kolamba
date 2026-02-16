@@ -12,12 +12,17 @@
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@tanstack/react-query": "^5.17.15",
+    "@types/leaflet": "^1.9.21",
     "clsx": "^2.1.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.311.0",
     "next": "14.2.35",
+    "next-intl": "^4.8.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.49.3",
+    "react-leaflet": "^5.0.0",
+    "recharts": "^3.7.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.2.0",
     "zod": "^3.22.4"
