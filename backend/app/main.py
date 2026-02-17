@@ -77,6 +77,14 @@ async def log_requests(request: Request, call_next):
         response.status_code,
         duration_ms,
     )
+    # Add cache headers for public read endpoints
+    path = request.url.path
+    if request.method == "GET" and response.status_code == 200:
+        if any(path.startswith(p) for p in ["/api/categories", "/api/health"]):
+            response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+        elif any(path.startswith(p) for p in ["/api/artists", "/api/communities", "/api/search"]):
+            response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+
     return response
 
 
