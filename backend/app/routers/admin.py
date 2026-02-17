@@ -463,7 +463,7 @@ async def update_artist_status(
     artist = result.scalar_one_or_none()
 
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     old_status = artist.status
     artist.status = status
@@ -500,7 +500,7 @@ async def update_artist_status(
         "name_en": artist.name_en,
         "status": artist.status,
         "rejection_reason": artist.rejection_reason,
-        "message": f"Artist status updated to {status}",
+        "message": f"Talent status updated to {status}",
     }
 
 
@@ -516,7 +516,7 @@ async def toggle_artist_featured(
     artist = result.scalar_one_or_none()
 
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     artist.is_featured = is_featured
     await db.commit()

@@ -27,6 +27,7 @@ class CommunityBase(BaseModel):
     # Legacy field for backward compatibility
     audience_size: Optional[str] = None
     language: str = "English"
+    receive_artist_offers: bool = False
 
     @field_validator('member_count_max')
     @classmethod
@@ -57,6 +58,7 @@ class CommunityUpdate(BaseModel):
     phone: Optional[str] = Field(None, max_length=50)
     audience_size: Optional[str] = None
     language: Optional[str] = None
+    receive_artist_offers: Optional[bool] = None
 
 
 class CommunityResponse(CommunityBase):

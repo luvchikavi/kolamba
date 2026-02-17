@@ -102,7 +102,7 @@ function ArtistCard({ artist }: { artist: AgentArtist }) {
       </div>
       <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
         <Link
-          href={`/artists/${artist.id}`}
+          href={`/talents/${artist.id}`}
           target="_blank"
           className="flex-1 px-3 py-2 text-sm text-center text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center justify-center gap-1"
         >
@@ -110,7 +110,7 @@ function ArtistCard({ artist }: { artist: AgentArtist }) {
           <ExternalLink size={14} />
         </Link>
         <Link
-          href={`/dashboard/artist?artist_id=${artist.id}`}
+          href={`/dashboard/talent?artist_id=${artist.id}`}
           className="flex-1 px-3 py-2 text-sm text-center text-primary-600 hover:bg-primary-50 rounded-lg transition-colors inline-flex items-center justify-center gap-1"
         >
           Manage
@@ -230,15 +230,15 @@ export default function AgentDashboardPage() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-slate-900">Agent Dashboard</h1>
-              <p className="text-slate-500">Manage your artists and bookings</p>
+              <p className="text-slate-500">Manage your talents and bookings</p>
             </div>
             <div className="flex items-center gap-3">
               <Link
-                href="/register/artist"
+                href="/register/talent"
                 className="btn-primary"
               >
                 <Plus size={18} />
-                Add New Artist
+                Add New Talent
               </Link>
               <Link
                 href="/dashboard/agent/settings"
@@ -262,7 +262,7 @@ export default function AgentDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">{stats?.total_artists || 0}</p>
-                <p className="text-sm text-slate-500">Total Artists</p>
+                <p className="text-sm text-slate-500">Total Talents</p>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function AgentDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">{stats?.active_artists || 0}</p>
-                <p className="text-sm text-slate-500">Active Artists</p>
+                <p className="text-sm text-slate-500">Active Talents</p>
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function AgentDashboardPage() {
                 : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
-            My Artists ({artists.length})
+            My Talents ({artists.length})
           </button>
           <button
             onClick={() => setActiveTab("bookings")}
@@ -332,17 +332,17 @@ export default function AgentDashboardPage() {
               <div className="card p-8 text-center">
                 <Users size={48} className="text-slate-300 mx-auto mb-4" />
                 <h3 className="font-bold text-lg text-slate-900 mb-2">
-                  No Artists Yet
+                  No Talents Yet
                 </h3>
                 <p className="text-slate-500 mb-6">
-                  Start by adding your first artist to the platform.
+                  Start by adding your first talent to the platform.
                 </p>
                 <Link
-                  href="/register/artist"
+                  href="/register/talent"
                   className="btn-primary mx-auto"
                 >
                   <Plus size={18} />
-                  Add Your First Artist
+                  Add Your First Talent
                 </Link>
               </div>
             ) : (
@@ -364,7 +364,7 @@ export default function AgentDashboardPage() {
                   No Bookings Yet
                 </h3>
                 <p className="text-slate-500">
-                  When communities send booking requests to your artists, they&apos;ll appear here.
+                  When hosts send booking requests to your talents, they&apos;ll appear here.
                 </p>
               </div>
             ) : (

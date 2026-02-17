@@ -58,7 +58,7 @@ async def create_test_tour(
 
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="No active artist found")
+        raise HTTPException(status_code=404, detail="No active talent found")
 
     from datetime import date, timedelta
 
@@ -196,7 +196,7 @@ async def get_tour_suggestions(
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     suggestions = await suggest_tours(
         db=db,
@@ -226,12 +226,12 @@ async def get_nearby_tours(
     )
     community = community_result.scalar_one_or_none()
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     if community.latitude is None or community.longitude is None:
         raise HTTPException(
             status_code=400,
-            detail="Community location not set. Please update your profile with your address."
+            detail="Host location not set. Please update your profile with your address."
         )
 
     nearby = await find_nearby_tours(
@@ -275,7 +275,7 @@ async def request_to_join_tour(
     )
     community = community_result.scalar_one_or_none()
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     # Check if there's already a pending request
     existing_request = await db.execute(
@@ -420,7 +420,7 @@ async def create_tour(
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     # Create the tour
     tour = Tour(
@@ -566,7 +566,7 @@ async def add_booking_to_tour(
     if booking.artist_id != tour.artist_id:
         raise HTTPException(
             status_code=400,
-            detail="Booking does not belong to the tour's artist"
+            detail="Booking does not belong to the tour's talent"
         )
 
     # Add booking to tour

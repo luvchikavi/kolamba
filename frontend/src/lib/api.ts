@@ -385,13 +385,13 @@ export const api = {
       });
     }
     const query = searchParams.toString();
-    return api.get<ArtistListItem[]>(`/artists${query ? `?${query}` : ""}`);
+    return api.get<ArtistListItem[]>(`/talents${query ? `?${query}` : ""}`);
   },
 
   getFeaturedArtists: (limit = 4) =>
-    api.get<ArtistListItem[]>(`/artists/featured?limit=${limit}`),
+    api.get<ArtistListItem[]>(`/talents/featured?limit=${limit}`),
 
-  getArtist: (id: number) => api.get<Artist>(`/artists/${id}`),
+  getArtist: (id: number) => api.get<Artist>(`/talents/${id}`),
 
   // Search
   searchArtists: (params: SearchParams) => {
@@ -405,10 +405,10 @@ export const api = {
   },
 
   // Communities
-  getCommunities: () => api.get<Community[]>("/communities"),
-  getCommunity: (id: number) => api.get<Community>(`/communities/${id}`),
+  getCommunities: () => api.get<Community[]>("/hosts"),
+  getCommunity: (id: number) => api.get<Community>(`/hosts/${id}`),
   registerCommunity: (data: CommunityRegisterRequest) =>
-    api.post<Community>("/communities", data),
+    api.post<Community>("/hosts", data),
   discoverArtists: (communityId: number, params?: DiscoverParams) => {
     const searchParams = new URLSearchParams();
     if (params) {
@@ -420,7 +420,7 @@ export const api = {
     }
     const query = searchParams.toString();
     return api.get<DiscoverResponse>(
-      `/communities/${communityId}/discover-artists${query ? `?${query}` : ""}`
+      `/hosts/${communityId}/discover-artists${query ? `?${query}` : ""}`
     );
   },
 

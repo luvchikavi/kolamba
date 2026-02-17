@@ -18,16 +18,16 @@ export default function Footer() {
         {/* Links */}
         <div className="flex flex-wrap justify-center gap-8 md:gap-16 mb-8">
           <Link
-            href="/artists"
+            href="/talents"
             className="text-slate-800 hover:text-slate-900 font-medium uppercase tracking-wide text-sm"
           >
-            Artists
+            Talents
           </Link>
           <Link
-            href="/communities"
+            href="/hosts"
             className="text-slate-800 hover:text-slate-900 font-medium uppercase tracking-wide text-sm"
           >
-            Communities
+            Hosts
           </Link>
           <Link
             href="/about"
@@ -36,7 +36,7 @@ export default function Footer() {
             About Us
           </Link>
           <Link
-            href="/register/community"
+            href="/register/host"
             className="text-slate-800 hover:text-slate-900 font-medium uppercase tracking-wide text-sm"
           >
             Sign Up

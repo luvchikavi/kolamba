@@ -155,7 +155,7 @@ export default function TourOpportunityCard({
         </div>
         <div className="flex-1 min-w-0">
           <Link
-            href={`/artists/${tour.artist.id}`}
+            href={`/talents/${tour.artist.id}`}
             className="font-semibold text-slate-900 hover:text-primary-600 transition-colors line-clamp-1"
           >
             {artistName}
@@ -241,7 +241,7 @@ export default function TourOpportunityCard({
       {/* Actions */}
       <div className="px-4 pb-4 flex gap-2">
         <Link
-          href={`/artists/${tour.artist.id}`}
+          href={`/talents/${tour.artist.id}`}
           className="flex-1 btn-secondary text-center justify-center text-sm"
         >
           View Artist

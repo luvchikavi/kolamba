@@ -90,6 +90,7 @@ class Community(Base):
     # Community details (keeping audience_size for backward compatibility)
     audience_size: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # deprecated
     language: Mapped[str] = mapped_column(String(50), default="English")
+    receive_artist_offers: Mapped[bool] = mapped_column(default=False)
     status: Mapped[str] = mapped_column(String(20), default="active")
 
     # Timestamps

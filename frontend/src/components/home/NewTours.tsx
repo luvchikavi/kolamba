@@ -33,7 +33,7 @@ export default function NewTours() {
   const fetchTours = async () => {
     try {
       // Use the new efficient endpoint that returns tours with artist info
-      const res = await fetch(`${API_URL}/artists/tour-dates/recent?limit=8`);
+      const res = await fetch(`${API_URL}/talents/tour-dates/recent?limit=8`);
       if (!res.ok) return;
 
       const data: TourWithArtist[] = await res.json();
@@ -122,7 +122,7 @@ export default function NewTours() {
                   return (
                     <Link
                       key={`${tour.artist.id}-${tour.id}`}
-                      href={`/artists/${tour.artist.id}`}
+                      href={`/talents/${tour.artist.id}`}
                       className="flex-shrink-0 w-72 snap-start group"
                     >
                       <div className="card card-hover overflow-hidden">

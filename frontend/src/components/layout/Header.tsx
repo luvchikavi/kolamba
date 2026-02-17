@@ -59,9 +59,9 @@ export default function Header() {
 
   const getDashboardLink = () => {
     if (user?.is_superuser) return "/dashboard/admin";
-    if (user?.role === "artist") return "/dashboard/artist";
+    if (user?.role === "artist") return "/dashboard/talent";
     if (user?.role === "agent") return "/dashboard/agent";
-    if (user?.role === "community") return "/dashboard/community";
+    if (user?.role === "community") return "/dashboard/host";
     return "/";
   };
 
@@ -173,11 +173,11 @@ export default function Header() {
         <div id="mobile-menu" className="md:hidden fixed top-20 left-4 right-4 bg-white rounded-2xl shadow-xl animate-fade-in-down z-40">
           <nav className="p-4 flex flex-col gap-1" aria-label="Mobile navigation">
             <Link
-              href="/artists"
+              href="/talents"
               className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >
-              Browse Artists
+              Browse Talents
             </Link>
             <Link
               href="/search"
@@ -197,18 +197,18 @@ export default function Header() {
             </Link>
             <div className="flex flex-col gap-2 mt-2">
               <Link
-                href="/register/community"
+                href="/register/host"
                 className="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-medium text-center transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Community Sign Up
+                Host Sign Up
               </Link>
               <Link
-                href="/register/artist"
+                href="/register/talent"
                 className="px-4 py-3 border-2 border-slate-900 text-slate-900 hover:bg-slate-50 rounded-full font-medium text-center transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Artist Sign Up
+                Talent Sign Up
               </Link>
             </div>
           </nav>

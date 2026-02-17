@@ -62,11 +62,11 @@ export default function LoginPage() {
         if (user.is_superuser) {
           router.push("/dashboard/admin");
         } else if (user.role === "artist") {
-          router.push("/dashboard/artist");
+          router.push("/dashboard/talent");
         } else if (user.role === "agent") {
           router.push("/dashboard/agent");
         } else if (user.role === "community") {
-          router.push("/dashboard/community");
+          router.push("/dashboard/host");
         } else {
           router.push("/");
         }
@@ -146,11 +146,11 @@ export default function LoginPage() {
         if (user.is_superuser) {
           router.push("/dashboard/admin");
         } else if (user.role === "artist") {
-          router.push("/dashboard/artist");
+          router.push("/dashboard/talent");
         } else if (user.role === "agent") {
           router.push("/dashboard/agent");
         } else if (user.role === "community") {
-          router.push("/dashboard/community");
+          router.push("/dashboard/host");
         } else {
           router.push("/");
         }
@@ -292,11 +292,11 @@ export default function LoginPage() {
               Don&apos;t have an account?
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/register/artist" className="btn-secondary text-sm justify-center">
-                Join as Artist
+              <Link href="/register/talent" className="btn-secondary text-sm justify-center">
+                Join as Talent
               </Link>
-              <Link href="/register/community" className="btn-primary text-sm justify-center">
-                Register Community
+              <Link href="/register/host" className="btn-primary text-sm justify-center">
+                Register as Host
               </Link>
             </div>
           </div>

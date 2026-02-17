@@ -74,7 +74,7 @@ async def get_artist_tour_dates(
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     query = select(ArtistTourDate).where(ArtistTourDate.artist_id == artist_id)
 
@@ -101,7 +101,7 @@ async def export_tour_dates_ical(
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     # Get upcoming tour dates
     query = (
@@ -176,7 +176,7 @@ async def create_artist_tour_date(
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     # Geocode location if lat/long not provided
     latitude = tour_date_data.latitude

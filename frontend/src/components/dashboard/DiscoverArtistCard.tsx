@@ -20,7 +20,7 @@ export default function DiscoverArtistCard({ artist }: DiscoverArtistCardProps) 
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <Link href={`/artists/${artist.id}`}>
+      <Link href={`/talents/${artist.id}`}>
         {/* Image */}
         <div className="aspect-[4/3] bg-gradient-to-br from-pink-100 via-pink-50 to-slate-100 flex items-center justify-center relative">
           {artist.profile_image ? (
@@ -95,7 +95,7 @@ export default function DiscoverArtistCard({ artist }: DiscoverArtistCardProps) 
       {/* Action buttons */}
       <div className="px-4 pb-4 flex gap-2">
         <Link
-          href={`/artists/${artist.id}`}
+          href={`/talents/${artist.id}`}
           className="flex-1 text-center px-3 py-2 border-2 border-slate-900 rounded-full text-xs font-semibold hover:bg-slate-50 transition-colors"
         >
           View Profile

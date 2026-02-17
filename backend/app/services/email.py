@@ -85,9 +85,9 @@ def send_artist_status_change(
         subject = "Your Kolamba Profile is Approved!"
         html = f"""
         <h2>Congratulations, {artist_name}!</h2>
-        <p>Your artist profile has been <strong>approved</strong> and is now live on Kolamba.</p>
-        <p>Communities can now discover and book you for performances.</p>
-        <p>Visit <a href="https://kolamba.vercel.app/dashboard/artist">your dashboard</a> to manage your profile.</p>
+        <p>Your talent profile has been <strong>approved</strong> and is now live on Kolamba.</p>
+        <p>Hosts can now discover and book you for performances.</p>
+        <p>Visit <a href="https://kolamba.vercel.app/dashboard/talent">your dashboard</a> to manage your profile.</p>
         <p>— The Kolamba Team</p>
         """
     elif new_status == "rejected":

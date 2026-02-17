@@ -235,7 +235,7 @@ async def update_venue_info(
 ):
     """Update venue info for a conversation (community managers only)."""
     if current_user.role != "community" and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Only community managers can update venue info")
+        raise HTTPException(status_code=403, detail="Only host managers can update venue info")
 
     result = await db.execute(
         select(Conversation)

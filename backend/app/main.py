@@ -82,7 +82,7 @@ async def log_requests(request: Request, call_next):
     if request.method == "GET" and response.status_code == 200:
         if any(path.startswith(p) for p in ["/api/categories", "/api/health"]):
             response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-        elif any(path.startswith(p) for p in ["/api/artists", "/api/communities", "/api/search"]):
+        elif any(path.startswith(p) for p in ["/api/talents", "/api/hosts", "/api/search"]):
             response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
 
     return response
@@ -90,9 +90,9 @@ async def log_requests(request: Request, call_next):
 
 # Include routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(artists.router, prefix="/api/artists", tags=["Artists"])
-app.include_router(artist_tour_dates.router, prefix="/api/artists", tags=["Artist Tour Dates"])
-app.include_router(communities.router, prefix="/api/communities", tags=["Communities"])
+app.include_router(artists.router, prefix="/api/talents", tags=["Talents"])
+app.include_router(artist_tour_dates.router, prefix="/api/talents", tags=["Talent Tour Dates"])
+app.include_router(communities.router, prefix="/api/hosts", tags=["Hosts"])
 app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
 app.include_router(bookings.router, prefix="/api/bookings", tags=["Bookings"])
 app.include_router(search.router, prefix="/api/search", tags=["Search"])

@@ -92,7 +92,7 @@ async def get_my_artist_profile(
         )
         artist = result.scalar_one_or_none()
         if not artist:
-            raise HTTPException(status_code=404, detail="Artist not found")
+            raise HTTPException(status_code=404, detail="Talent not found")
         return artist
 
     # For superusers without artist_id, return first active artist for testing
@@ -108,7 +108,7 @@ async def get_my_artist_profile(
             return artist
 
     if current_user.role not in ("artist", "agent"):
-        raise HTTPException(status_code=403, detail="Not an artist account")
+        raise HTTPException(status_code=403, detail="Not a talent account")
 
     # Look up by user_id (artist role) or agent_user_id (agent role)
     if current_user.role == "agent":
@@ -126,7 +126,7 @@ async def get_my_artist_profile(
     artist = result.scalar_one_or_none()
 
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist profile not found")
+        raise HTTPException(status_code=404, detail="Talent profile not found")
 
     return artist
 
@@ -139,7 +139,7 @@ async def update_my_artist_profile(
 ):
     """Update current user's artist profile."""
     if current_user.role not in ("artist", "agent"):
-        raise HTTPException(status_code=403, detail="Not an artist account")
+        raise HTTPException(status_code=403, detail="Not a talent account")
 
     # Look up by user_id (artist role) or agent_user_id (agent role)
     if current_user.role == "agent":
@@ -157,7 +157,7 @@ async def update_my_artist_profile(
     artist = result.scalar_one_or_none()
 
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist profile not found")
+        raise HTTPException(status_code=404, detail="Talent profile not found")
 
     # Update fields
     update_dict = update_data.model_dump(exclude_unset=True)
@@ -193,7 +193,7 @@ async def get_artist(artist_id: int, db: AsyncSession = Depends(get_db)):
     artist = result.scalar_one_or_none()
 
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     return artist
 

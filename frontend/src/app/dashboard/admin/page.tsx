@@ -282,24 +282,24 @@ export default function AdminDashboardPage() {
           href="/dashboard/admin/users"
         />
         <StatCard
-          title="Total Artists"
+          title="Total Talents"
           value={stats?.total_artists || 0}
           icon={Music}
           color="bg-violet-500"
-          href="/dashboard/admin/artists"
+          href="/dashboard/admin/talents"
         />
         <StatCard
-          title="Communities"
+          title="Hosts"
           value={stats?.total_communities || 0}
           icon={Building2}
           color="bg-emerald-500"
         />
         <StatCard
-          title="Pending Artists"
+          title="Pending Talents"
           value={stats?.pending_artists || 0}
           icon={Clock}
           color="bg-amber-500"
-          href="/dashboard/admin/artists?status=pending"
+          href="/dashboard/admin/talents?status=pending"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
@@ -343,8 +343,8 @@ export default function AdminDashboardPage() {
                 <Tooltip />
                 <Legend />
                 <Line type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={2} name="Users" />
-                <Line type="monotone" dataKey="artists" stroke="#8b5cf6" strokeWidth={2} name="Artists" />
-                <Line type="monotone" dataKey="communities" stroke="#10b981" strokeWidth={2} name="Communities" />
+                <Line type="monotone" dataKey="artists" stroke="#8b5cf6" strokeWidth={2} name="Talents" />
+                <Line type="monotone" dataKey="communities" stroke="#10b981" strokeWidth={2} name="Hosts" />
                 <Line type="monotone" dataKey="bookings" stroke="#f97316" strokeWidth={2} name="Bookings" />
               </LineChart>
             </ResponsiveContainer>
@@ -380,14 +380,14 @@ export default function AdminDashboardPage() {
           {/* Category Breakdown */}
           {analytics.category_breakdown.length > 0 && (
             <div className="card p-6 lg:col-span-3">
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Artists by Category</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Talents by Category</h2>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={analytics.category_breakdown}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
                   <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Artists" />
+                  <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Talents" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -400,9 +400,9 @@ export default function AdminDashboardPage() {
         <div className="card">
           <div className="p-6 border-b border-slate-100">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Pending Artist Approvals</h2>
+              <h2 className="text-lg font-bold text-slate-900">Pending Talent Approvals</h2>
               <Link
-                href="/dashboard/admin/artists?status=pending"
+                href="/dashboard/admin/talents?status=pending"
                 className="text-sm text-primary-600 hover:text-primary-700 font-medium"
               >
                 View All
@@ -420,7 +420,7 @@ export default function AdminDashboardPage() {
                 <div key={artist.id} className="p-4 flex items-center justify-between">
                   <div>
                     <p className="font-medium text-slate-900">
-                      {artist.name_en || "Unnamed Artist"}
+                      {artist.name_en || "Unnamed Talent"}
                     </p>
                     <p className="text-sm text-slate-500">{artist.email}</p>
                     {artist.city && (
@@ -561,7 +561,7 @@ export default function AdminDashboardPage() {
               recentTourDates.map((tourDate) => (
                 <Link
                   key={tourDate.id}
-                  href={`/artists/${tourDate.artist_id}`}
+                  href={`/talents/${tourDate.artist_id}`}
                   className="p-4 hover:bg-slate-50 transition-colors block"
                 >
                   <div className="flex items-start justify-between">

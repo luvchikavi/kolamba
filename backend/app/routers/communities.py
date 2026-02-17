@@ -53,6 +53,7 @@ class CommunityRegisterRequest(BaseModel):
     # Legacy field
     audience_size: Optional[str] = Field(None, description="small, medium, or large (deprecated)")
     language: str = Field(default="English")
+    receive_artist_offers: bool = Field(default=False)
 
 
 class CommunityOptionsResponse(BaseModel):
@@ -87,7 +88,7 @@ async def get_my_community_profile(
 ):
     """Get current user's community profile."""
     if current_user.role != "community":
-        raise HTTPException(status_code=403, detail="Not a community account")
+        raise HTTPException(status_code=403, detail="Not a host account")
 
     result = await db.execute(
         select(Community).where(Community.user_id == current_user.id)
@@ -95,7 +96,7 @@ async def get_my_community_profile(
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community profile not found")
+        raise HTTPException(status_code=404, detail="Host profile not found")
 
     return community
 
@@ -108,7 +109,7 @@ async def update_my_community_profile(
 ):
     """Update current user's community profile."""
     if current_user.role != "community":
-        raise HTTPException(status_code=403, detail="Not a community account")
+        raise HTTPException(status_code=403, detail="Not a host account")
 
     result = await db.execute(
         select(Community).where(Community.user_id == current_user.id)
@@ -116,7 +117,7 @@ async def update_my_community_profile(
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community profile not found")
+        raise HTTPException(status_code=404, detail="Host profile not found")
 
     # If name is being updated, check for duplicates
     if update_data.name and update_data.name.lower() != community.name.lower():
@@ -129,7 +130,7 @@ async def update_my_community_profile(
         if existing.scalar_one_or_none():
             raise HTTPException(
                 status_code=400,
-                detail="A community with this name already exists."
+                detail="A host with this name already exists."
             )
 
     # Update fields
@@ -285,7 +286,7 @@ async def get_community_tour_opportunities(
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     if community.latitude is None or community.longitude is None:
         # Return empty list if location not set (instead of error)
@@ -319,7 +320,7 @@ async def get_nearby_touring_artists(
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     if community.latitude is None or community.longitude is None:
         return []
@@ -402,7 +403,7 @@ async def discover_artists(
     )
     community = result.scalar_one_or_none()
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     community_event_types: list[str] = community.event_types or []
     community_lat = float(community.latitude) if community.latitude is not None else None
@@ -553,7 +554,7 @@ async def get_community(community_id: int, db: AsyncSession = Depends(get_db)):
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     return community
 
@@ -578,7 +579,7 @@ async def create_community(
     if existing_community.scalar_one_or_none():
         raise HTTPException(
             status_code=400,
-            detail="A community with this name already exists. Please use a different name or contact support."
+            detail="A host with this name already exists. Please use a different name or contact support."
         )
 
     # Create user account
@@ -614,6 +615,7 @@ async def create_community(
         phone=request.phone,
         audience_size=request.audience_size,
         language=request.language,
+        receive_artist_offers=request.receive_artist_offers,
         status="active",
     )
     db.add(community)
@@ -636,7 +638,7 @@ async def update_community(
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     # If name is being updated, check for duplicates
     if update_data.name and update_data.name.lower() != community.name.lower():
@@ -649,7 +651,7 @@ async def update_community(
         if existing.scalar_one_or_none():
             raise HTTPException(
                 status_code=400,
-                detail="A community with this name already exists."
+                detail="A host with this name already exists."
             )
 
     # Update fields
@@ -672,7 +674,7 @@ async def delete_community(community_id: int, db: AsyncSession = Depends(get_db)
     community = result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     community.status = "inactive"
     await db.commit()

@@ -29,7 +29,7 @@ export default function FeaturedArtists() {
     setFavoriteIds(ids);
 
     // Fetch featured artists from API
-    fetch(`${API_URL}/artists/featured?limit=6`)
+    fetch(`${API_URL}/talents/featured?limit=6`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data: ArtistListItem[]) => setArtists(data))
       .catch(() => {})
@@ -85,7 +85,7 @@ export default function FeaturedArtists() {
             <span className="text-lg">,</span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight">
-            NEW ARTISTS
+            FEATURED TALENTS
           </h2>
           <div className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-2 flex items-center gap-2 text-pink-400 opacity-60">
             <span className="text-lg">~</span>

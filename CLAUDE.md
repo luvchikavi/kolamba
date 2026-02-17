@@ -33,13 +33,16 @@ lsof -i :8001 | grep LISTEN
 
 ## Running the Frontend
 
+**IMPORTANT**: Kolamba frontend MUST run on **port 3002** (matches Google OAuth config).
+
 ```bash
 cd /Users/aviluvchik/app/Kolamba/frontend
-npm run dev
+npm run dev -- -p 3002
 ```
 
-- Runs on: `http://localhost:3000`
+- Runs on: `http://localhost:3002`
 - Set `NEXT_PUBLIC_API_URL=http://127.0.0.1:8001` in `frontend/.env.local` if testing against local backend.
+- Google OAuth is configured for `localhost:3002` — do NOT use other ports.
 
 ## Key Directories
 
@@ -76,7 +79,7 @@ curl -s "http://127.0.0.1:8001/api/artists?limit=3"
 
 | Port | Service | Project |
 |------|---------|---------|
-| 3000 | Next.js frontend | Kolamba |
+| 3002 | Next.js frontend | **Kolamba** (Google OAuth configured here) |
 | 5432 | PostgreSQL | Shared |
 | 8000 | Django backend | Nectra (NOT Kolamba) |
 | 8001 | FastAPI backend | **Kolamba** |

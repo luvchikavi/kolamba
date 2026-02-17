@@ -22,8 +22,8 @@ const sidebarLinks = [
     icon: Users,
   },
   {
-    href: "/dashboard/admin/artists",
-    label: "Artists",
+    href: "/dashboard/admin/talents",
+    label: "Talents",
     icon: Music,
   },
 ];
@@ -73,18 +73,18 @@ export default function AdminLayout({
             </h3>
             <div className="space-y-1">
               <Link
-                href="/dashboard/artist"
+                href="/dashboard/talent"
                 className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg"
               >
                 <Music size={16} />
-                Artist Dashboard
+                Talent Dashboard
               </Link>
               <Link
-                href="/dashboard/community"
+                href="/dashboard/host"
                 className="flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg"
               >
                 <Building2 size={16} />
-                Community Dashboard
+                Host Dashboard
               </Link>
             </div>
           </div>

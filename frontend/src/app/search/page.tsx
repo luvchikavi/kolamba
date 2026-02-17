@@ -163,7 +163,7 @@ function SearchContent() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && updateSearch()}
-                placeholder="Search artists..."
+                placeholder="Search talents..."
                 className="input pl-12"
               />
             </div>
@@ -276,7 +276,7 @@ function SearchContent() {
                   <span>Searching...</span>
                 ) : (
                   <>
-                    Found <span className="font-semibold text-slate-900">{artists.length}</span> artists
+                    Found <span className="font-semibold text-slate-900">{artists.length}</span> talents
                     {query && <span> for &quot;{query}&quot;</span>}
                   </>
                 )}
@@ -328,7 +328,7 @@ function SearchContent() {
               <div className="text-center py-16">
                 <p className="text-5xl mb-4">😕</p>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Something went wrong</h3>
-                <p className="text-slate-600 mb-6">Unable to load artists. Please try again.</p>
+                <p className="text-slate-600 mb-6">Unable to load talents. Please try again.</p>
                 <button onClick={() => window.location.reload()} className="btn-primary">Retry</button>
               </div>
             )}
@@ -341,7 +341,7 @@ function SearchContent() {
                   const fav = favoriteIds.has(artist.id);
                   return (
                     <div key={artist.id} className="group card card-hover overflow-hidden relative">
-                      <Link href={`/artists/${artist.id}`}>
+                      <Link href={`/talents/${artist.id}`}>
                         <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center relative">
                           {artist.profile_image ? (
                             <img

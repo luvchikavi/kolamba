@@ -33,9 +33,9 @@ export default function AboutPage() {
             </div>
             <div className="divider-gradient mb-6" />
             <p className="text-slate-600 leading-relaxed text-lg">
-              Kolamba is a digital platform that connects Israeli and Jewish creators, artists, and speakers
-              with Jewish communities around the world. We bridge the gap between talented performers who lack
-              the means to reach diaspora communities and Jewish groups worldwide who struggle to discover
+              Kolamba is a digital platform that connects Israeli and Jewish creators, talents, and speakers
+              with Jewish hosts around the world. We bridge the gap between talented performers who lack
+              the means to reach diaspora communities and Jewish organizations worldwide who struggle to discover
               authentic Israeli and Jewish cultural offerings.
             </p>
             <p className="text-slate-600 leading-relaxed text-lg mt-4">
@@ -74,8 +74,8 @@ export default function AboutPage() {
                   <Users className="text-teal-600" size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900 mb-1">Hundreds of Artists</h3>
-                  <p className="text-sm text-slate-600">Access to Jewish artists spanning music, film, journalism, literature, and more</p>
+                  <h3 className="font-semibold text-slate-900 mb-1">Hundreds of Talents</h3>
+                  <p className="text-sm text-slate-600">Access to Jewish talents spanning music, film, journalism, literature, and more</p>
                 </div>
               </div>
 
@@ -85,7 +85,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">On the Map</h3>
-                  <p className="text-sm text-slate-600">Geographic visibility for touring artists to connect with nearby communities</p>
+                  <p className="text-sm text-slate-600">Geographic visibility for touring talents to connect with nearby hosts</p>
                 </div>
               </div>
 
@@ -95,7 +95,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Verified Reviews</h3>
-                  <p className="text-sm text-slate-600">Honest ratings and reviews from communities who have booked performers</p>
+                  <p className="text-sm text-slate-600">Honest ratings and reviews from hosts who have booked performers</p>
                 </div>
               </div>
 
@@ -105,7 +105,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Personalized Recommendations</h3>
-                  <p className="text-sm text-slate-600">Suggestions based on your community&apos;s preferences and past bookings</p>
+                  <p className="text-sm text-slate-600">Suggestions based on your organization&apos;s preferences and past bookings</p>
                 </div>
               </div>
 
@@ -115,7 +115,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Collaborative Booking</h3>
-                  <p className="text-sm text-slate-600">Join with nearby communities to share costs and bring top talent</p>
+                  <p className="text-sm text-slate-600">Join with nearby hosts to share costs and bring top talent</p>
                 </div>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function AboutPage() {
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Tech entrepreneur with expertise in digital transformation and platform development.
                   With a PhD in Physics from Imperial College London and experience leading technology
-                  initiatives, Avi builds the digital infrastructure connecting Israeli artists with
+                  initiatives, Avi builds the digital infrastructure connecting Israeli talents with
                   Jewish communities worldwide.
                 </p>
               </div>
@@ -213,7 +213,7 @@ export default function AboutPage() {
           <section className="card p-8 md:p-12 text-center">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">Get in Touch</h2>
             <p className="text-slate-600 mb-6 max-w-lg mx-auto">
-              Have questions about Kolamba? Want to learn more about how we can help your community
+              Have questions about Kolamba? Want to learn more about how we can help you
               discover amazing Jewish talent? We&apos;d love to hear from you.
             </p>
             <a

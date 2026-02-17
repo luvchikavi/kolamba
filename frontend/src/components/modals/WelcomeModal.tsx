@@ -70,7 +70,7 @@ export default function WelcomeModal() {
             Continue as Guest
           </button>
           <Link
-            href="/register/community"
+            href="/register/host"
             onClick={() => localStorage.setItem("kolamba_welcome_modal_seen", "true")}
             className="px-8 py-3.5 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors uppercase tracking-wide"
           >

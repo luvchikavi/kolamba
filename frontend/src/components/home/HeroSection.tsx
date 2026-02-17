@@ -60,16 +60,16 @@ export default function HeroSection() {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
           <Link
-            href="/register/community"
+            href="/register/host"
             className="px-8 py-3.5 bg-white text-slate-900 rounded-full font-semibold hover:bg-slate-100 transition-all duration-200 min-w-[200px] text-center uppercase tracking-wide text-sm"
           >
-            Community Sign Up
+            Host Sign Up
           </Link>
           <Link
-            href="/register/artist"
+            href="/register/talent"
             className="px-8 py-3.5 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-all duration-200 min-w-[200px] text-center uppercase tracking-wide text-sm"
           >
-            Artist Sign Up
+            Talent Sign Up
           </Link>
         </div>
 

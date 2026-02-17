@@ -296,7 +296,7 @@ export default function UsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         {user.role === "artist" && user.artist_id && (
                           <Link
-                            href={`/artists/${user.artist_id}`}
+                            href={`/talents/${user.artist_id}`}
                             target="_blank"
                             className="px-3 py-1 text-sm text-teal-600 hover:bg-teal-50 rounded-lg transition-colors inline-flex items-center gap-1"
                           >

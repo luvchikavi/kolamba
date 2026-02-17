@@ -47,13 +47,13 @@ async def create_booking(
     )
     artist = artist_result.scalar_one_or_none()
     if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Talent not found")
 
     # Require community role (or superuser for testing)
     if current_user.role != "community" and not current_user.is_superuser:
         raise HTTPException(
             status_code=403,
-            detail="Only community accounts can create bookings. Please register as a community first.",
+            detail="Only host accounts can create bookings. Please register as a host first.",
         )
 
     # Get community_id from authenticated user
@@ -65,7 +65,7 @@ async def create_booking(
     if not community and not current_user.is_superuser:
         raise HTTPException(
             status_code=404,
-            detail="Community profile not found. Please complete your community registration.",
+            detail="Host profile not found. Please complete your host registration.",
         )
 
     community_id = community.id if community else None
@@ -75,7 +75,7 @@ async def create_booking(
         first_community = await db.execute(select(Community).limit(1))
         fc = first_community.scalar_one_or_none()
         if not fc:
-            raise HTTPException(status_code=400, detail="No communities exist in the database")
+            raise HTTPException(status_code=400, detail="No hosts exist in the database")
         community_id = fc.id
 
     booking = Booking(
@@ -102,7 +102,7 @@ async def create_booking(
         type="booking_new",
         title="New Booking Request",
         message=f"{community_name} has sent you a booking request for {body.location or 'an event'}.",
-        link=f"/dashboard/artist?tab=bookings",
+        link=f"/dashboard/talent?tab=bookings",
     )
 
     await db.commit()
@@ -135,7 +135,7 @@ async def get_my_bookings(
 ):
     """Get bookings for the authenticated community with artist names."""
     if current_user.role != "community":
-        raise HTTPException(status_code=403, detail="Only communities can access this endpoint")
+        raise HTTPException(status_code=403, detail="Only hosts can access this endpoint")
 
     # Get the community for this user
     community_result = await db.execute(
@@ -144,7 +144,7 @@ async def get_my_bookings(
     community = community_result.scalar_one_or_none()
 
     if not community:
-        raise HTTPException(status_code=404, detail="Community not found")
+        raise HTTPException(status_code=404, detail="Host not found")
 
     # Get bookings with artist info
     result = await db.execute(

@@ -34,7 +34,7 @@ export default function TourDatesCalendar({ artistId, artistName }: TourDatesCal
     const fetchTourDates = async () => {
       try {
         const res = await fetch(
-          `${API_URL}/artists/${artistId}/tour-dates?include_past=false`
+          `${API_URL}/talents/${artistId}/tour-dates?include_past=false`
         );
         if (res.ok) {
           const data = await res.json();
@@ -92,7 +92,7 @@ export default function TourDatesCalendar({ artistId, artistName }: TourDatesCal
   };
 
   const handleExportIcal = () => {
-    window.open(`${API_URL}/artists/${artistId}/tour-dates/ical`, "_blank");
+    window.open(`${API_URL}/talents/${artistId}/tour-dates/ical`, "_blank");
   };
 
   if (tourDates.length === 0) {

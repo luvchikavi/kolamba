@@ -168,7 +168,7 @@ export default function BookingPage() {
   useEffect(() => {
     const fetchArtist = async () => {
       try {
-                const response = await fetch(`${API_URL}/artists/${artistId}`);
+                const response = await fetch(`${API_URL}/talents/${artistId}`);
         if (response.ok) {
           const data: ArtistInfo = await response.json();
           setArtist({
@@ -200,7 +200,7 @@ export default function BookingPage() {
 
         if (user.community_id) {
           try {
-            const commRes = await fetch(`${API_URL}/communities/${user.community_id}`, {
+            const commRes = await fetch(`${API_URL}/hosts/${user.community_id}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (commRes.ok) {
@@ -395,13 +395,14 @@ export default function BookingPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit booking request");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "Failed to submit booking request");
       }
 
       setIsSubmitted(true);
     } catch (error) {
       console.error("Booking submission failed:", error);
-      const errorMessage = "Failed to submit booking request. Please try again.";
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit booking request. Please try again.";
       setSubmitError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -422,12 +423,12 @@ export default function BookingPage() {
           </p>
           <div className="flex flex-col gap-3">
             <Link
-              href="/dashboard/community"
+              href="/dashboard/host"
               className="px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors"
             >
               Go to Dashboard
             </Link>
-            <Link href="/artists" className="text-slate-600 hover:text-slate-800 transition-colors">
+            <Link href="/talents" className="text-slate-600 hover:text-slate-800 transition-colors">
               Browse More Artists
             </Link>
           </div>
@@ -683,7 +684,7 @@ export default function BookingPage() {
                   <h3 className="font-semibold text-slate-900">Booking Summary</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-slate-500">Artist</p>
+                      <p className="text-slate-500">Talent</p>
                       <p className="font-medium">{artist.name}</p>
                     </div>
                     <div>
@@ -732,7 +733,7 @@ export default function BookingPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Community/Organization Name
+                        Host/Organization Name
                       </label>
                       <input
                         type="text"

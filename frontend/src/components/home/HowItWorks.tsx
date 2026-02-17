@@ -7,17 +7,17 @@ const faqs = [
   {
     question: "HOW DOES THE TOUR WORK?",
     answer:
-      "A tour is launched when an artist opens a tour on Kolamba by setting their availability, regions, and base fee. The tour becomes confirmed once a minimum number of bookings is reached, making it financially viable. From that point on, additional communities can join the route and book the artist as part of the same tour. Kolamba continuously optimizes the schedule and routing to maximize impact, efficiency, and earnings for everyone.",
+      "A tour is launched when a talent opens a tour on Kolamba by setting their availability, regions, and base fee. The tour becomes confirmed once a minimum number of bookings is reached, making it financially viable. From that point on, additional hosts can join the route and book the talent as part of the same tour. Kolamba continuously optimizes the schedule and routing to maximize impact, efficiency, and earnings for everyone.",
   },
   {
-    question: "WHO IS PAYING FOR THE ARTIST'S FLIGHT?",
+    question: "WHO IS PAYING FOR THE TALENT'S FLIGHT?",
     answer:
-      "Travel costs are typically shared among all participating communities on a tour. The more communities that join, the lower the cost per community. Kolamba helps coordinate this cost-sharing to ensure fair distribution based on distance and tour logistics.",
+      "Travel costs are typically shared among all participating hosts on a tour. The more hosts that join, the lower the cost per host. Kolamba helps coordinate this cost-sharing to ensure fair distribution based on distance and tour logistics.",
   },
   {
-    question: "WHAT HAPPENS IF THE ARTIST CANCELS?",
+    question: "WHAT HAPPENS IF THE TALENT CANCELS?",
     answer:
-      "In any event of a cancellation, Kolamba will work to find a suitable replacement artist or offer a full refund. Our booking agreements include clear cancellation policies to protect both communities and artists.",
+      "In any event of a cancellation, Kolamba will work to find a suitable replacement talent or offer a full refund. Our booking agreements include clear cancellation policies to protect both hosts and talents.",
   },
   {
     question: "IS SIGNING UP FREE?",

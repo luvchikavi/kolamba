@@ -73,7 +73,7 @@ export default function ArtistCard({
   };
 
   return (
-    <Link href={`/artists/${id}`} className="block group">
+    <Link href={`/talents/${id}`} className="block group">
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-teal-50">
