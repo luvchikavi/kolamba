@@ -145,6 +145,7 @@ export default function TourOpportunityCard({
               src={tour.artist.profile_image}
               alt={artistName}
               fill
+              unoptimized={tour.artist.profile_image.startsWith("http")}
               className="object-cover"
             />
           ) : (

@@ -29,6 +29,9 @@ export default function ArtistCard({
   onFavoriteToggle,
 }: ArtistCardProps) {
   const [favorited, setFavorited] = useState(isFavorited);
+  const [imgError, setImgError] = useState(false);
+  const isExternal = image?.startsWith("http");
+  const hasImage = image && !image.includes("placeholder") && !imgError;
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,12 +80,14 @@ export default function ArtistCard({
       <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-teal-50">
-          {image && !image.includes("placeholder") ? (
+          {hasImage ? (
             <Image
               src={image}
               alt={name}
               fill
+              unoptimized={isExternal}
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
