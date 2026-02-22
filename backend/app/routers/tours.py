@@ -1,5 +1,6 @@
 """Tours router - tour management and suggestions."""
 
+from datetime import date as date_type
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func as sa_func
@@ -8,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.tour import Tour, TourJoinRequest
+from app.models.tour import Tour, TourStop, TourJoinRequest
 from app.models.booking import Booking
 from app.models.artist import Artist
 from app.models.community import Community
@@ -19,6 +20,9 @@ from app.schemas.tour import (
     TourUpdate,
     TourResponse,
     TourSuggestion,
+    TourStopCreate,
+    TourStopUpdate,
+    TourStopResponse,
     NearbyTourResponse,
     JoinTourRequest,
     TourJoinRequestResponse,
@@ -31,6 +35,16 @@ from app.config import get_settings
 
 router = APIRouter()
 settings = get_settings()
+
+
+async def _load_tour_with_relations(db: AsyncSession, tour_id: int) -> Tour | None:
+    """Load a tour with bookings and stops eagerly loaded."""
+    result = await db.execute(
+        select(Tour)
+        .options(selectinload(Tour.bookings), selectinload(Tour.stops))
+        .where(Tour.id == tour_id)
+    )
+    return result.scalar_one_or_none()
 
 
 @router.post("/admin/create-test-tour")
@@ -398,6 +412,17 @@ async def update_join_request_status(
             status="approved",
         )
         db.add(booking)
+        await db.flush()
+
+        # Auto-create a TourStop for the new booking
+        stop = TourStop(
+            tour_id=tour_id,
+            booking_id=booking.id,
+            date=join_request.preferred_date or date_type.today(),
+            city=None,
+            status="confirmed",
+        )
+        db.add(stop)
         await db.commit()
 
         return {
@@ -433,6 +458,13 @@ async def create_tour(
         price_per_show=tour_data.price_per_show,
         min_tour_budget=tour_data.min_tour_budget,
         description=tour_data.description,
+        max_travel_hours=tour_data.max_travel_hours,
+        min_shows_per_week=tour_data.min_shows_per_week,
+        max_shows_per_week=tour_data.max_shows_per_week,
+        rest_day_rule=tour_data.rest_day_rule,
+        min_net_profit=tour_data.min_net_profit,
+        efficiency_score=tour_data.efficiency_score,
+        visa_status=tour_data.visa_status,
         status="pending",  # Artist announces availability, waiting for bookings
     )
     db.add(tour)
@@ -448,20 +480,22 @@ async def create_tour(
         )
         bookings = booking_result.scalars().all()
 
-        for booking in bookings:
+        for idx, booking in enumerate(bookings):
             booking.tour_id = tour.id
+            # Auto-create a TourStop for each booking
+            stop = TourStop(
+                tour_id=tour.id,
+                booking_id=booking.id,
+                date=booking.requested_date or date_type.today(),
+                city=booking.location,
+                sequence_order=idx,
+                status="confirmed" if booking.status in ("approved", "confirmed") else "inquiry",
+            )
+            db.add(stop)
 
     await db.commit()
-    await db.refresh(tour)
 
-    # Load relationships for response
-    result = await db.execute(
-        select(Tour)
-        .options(selectinload(Tour.bookings))
-        .where(Tour.id == tour.id)
-    )
-    tour = result.scalar_one()
-
+    tour = await _load_tour_with_relations(db, tour.id)
     return tour
 
 
@@ -474,7 +508,7 @@ async def list_tours(
     db: AsyncSession = Depends(get_db),
 ):
     """List tours with optional filters."""
-    query = select(Tour).options(selectinload(Tour.bookings))
+    query = select(Tour).options(selectinload(Tour.bookings), selectinload(Tour.stops))
 
     if artist_id:
         query = query.where(Tour.artist_id == artist_id)
@@ -491,13 +525,8 @@ async def list_tours(
 
 @router.get("/{tour_id}", response_model=TourResponse)
 async def get_tour(tour_id: int, db: AsyncSession = Depends(get_db)):
-    """Get tour details with all bookings."""
-    result = await db.execute(
-        select(Tour)
-        .options(selectinload(Tour.bookings))
-        .where(Tour.id == tour_id)
-    )
-    tour = result.scalar_one_or_none()
+    """Get tour details with all bookings and stops."""
+    tour = await _load_tour_with_relations(db, tour_id)
 
     if not tour:
         raise HTTPException(status_code=404, detail="Tour not found")
@@ -526,18 +555,116 @@ async def update_tour(
         setattr(tour, field, value)
 
     await db.commit()
-    await db.refresh(tour)
 
-    # Load relationships for response
-    result = await db.execute(
-        select(Tour)
-        .options(selectinload(Tour.bookings))
-        .where(Tour.id == tour.id)
-    )
-    tour = result.scalar_one()
-
+    tour = await _load_tour_with_relations(db, tour.id)
     return tour
 
+
+# --- Tour Stop endpoints ---
+
+@router.post("/{tour_id}/stops", response_model=TourStopResponse)
+async def create_tour_stop(
+    tour_id: int,
+    stop_data: TourStopCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a new stop on a tour (anchor show, open slot, or rest day)."""
+    # Verify tour exists
+    tour_result = await db.execute(select(Tour).where(Tour.id == tour_id))
+    tour = tour_result.scalar_one_or_none()
+    if not tour:
+        raise HTTPException(status_code=404, detail="Tour not found")
+
+    # If booking_id provided, verify it exists and belongs to same artist
+    if stop_data.booking_id:
+        booking_result = await db.execute(
+            select(Booking).where(Booking.id == stop_data.booking_id)
+        )
+        booking = booking_result.scalar_one_or_none()
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        if booking.artist_id != tour.artist_id:
+            raise HTTPException(status_code=400, detail="Booking does not belong to the tour's talent")
+
+        # Check booking isn't already linked to another stop
+        existing_stop = await db.execute(
+            select(TourStop).where(TourStop.booking_id == stop_data.booking_id)
+        )
+        if existing_stop.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Booking is already linked to a tour stop")
+
+    stop = TourStop(
+        tour_id=tour_id,
+        booking_id=stop_data.booking_id,
+        date=stop_data.date,
+        city=stop_data.city,
+        venue_name=stop_data.venue_name,
+        latitude=stop_data.latitude,
+        longitude=stop_data.longitude,
+        sequence_order=stop_data.sequence_order,
+        travel_from_prev=stop_data.travel_from_prev,
+        travel_cost=stop_data.travel_cost,
+        accommodation_cost=stop_data.accommodation_cost,
+        performance_fee=stop_data.performance_fee,
+        shared_logistics=stop_data.shared_logistics,
+        net_revenue=stop_data.net_revenue,
+        route_discount=stop_data.route_discount,
+        status=stop_data.status,
+        notes=stop_data.notes,
+    )
+    db.add(stop)
+    await db.commit()
+    await db.refresh(stop)
+
+    return stop
+
+
+@router.put("/{tour_id}/stops/{stop_id}", response_model=TourStopResponse)
+async def update_tour_stop(
+    tour_id: int,
+    stop_id: int,
+    update_data: TourStopUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Update a tour stop's details (logistics, financials, status)."""
+    result = await db.execute(
+        select(TourStop).where(TourStop.id == stop_id, TourStop.tour_id == tour_id)
+    )
+    stop = result.scalar_one_or_none()
+    if not stop:
+        raise HTTPException(status_code=404, detail="Tour stop not found")
+
+    update_dict = update_data.model_dump(exclude_unset=True)
+    for field, value in update_dict.items():
+        setattr(stop, field, value)
+
+    await db.commit()
+    await db.refresh(stop)
+
+    return stop
+
+
+@router.delete("/{tour_id}/stops/{stop_id}")
+async def delete_tour_stop(
+    tour_id: int,
+    stop_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove a stop from a tour."""
+    result = await db.execute(
+        select(TourStop).where(TourStop.id == stop_id, TourStop.tour_id == tour_id)
+    )
+    stop = result.scalar_one_or_none()
+    if not stop:
+        raise HTTPException(status_code=404, detail="Tour stop not found")
+
+    await db.delete(stop)
+    await db.commit()
+
+    return {"message": "Tour stop deleted successfully"}
+
+
+# --- Booking-to-Tour endpoints (kept for backwards compatibility) ---
 
 @router.post("/{tour_id}/bookings/{booking_id}")
 async def add_booking_to_tour(
@@ -545,7 +672,7 @@ async def add_booking_to_tour(
     booking_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    """Add a booking to an existing tour."""
+    """Add a booking to an existing tour. Auto-creates a TourStop."""
     # Get the tour
     tour_result = await db.execute(
         select(Tour).where(Tour.id == tour_id)
@@ -571,9 +698,26 @@ async def add_booking_to_tour(
 
     # Add booking to tour
     booking.tour_id = tour_id
+
+    # Auto-create a TourStop for this booking
+    # Get next sequence order
+    max_seq_result = await db.execute(
+        select(sa.func.max(TourStop.sequence_order)).where(TourStop.tour_id == tour_id)
+    )
+    max_seq = max_seq_result.scalar() or 0
+
+    stop = TourStop(
+        tour_id=tour_id,
+        booking_id=booking.id,
+        date=booking.requested_date or date_type.today(),
+        city=booking.location,
+        sequence_order=max_seq + 1,
+        status="confirmed" if booking.status in ("approved", "confirmed") else "inquiry",
+    )
+    db.add(stop)
     await db.commit()
 
-    return {"message": "Booking added to tour successfully"}
+    return {"message": "Booking added to tour successfully", "stop_id": stop.id}
 
 
 @router.delete("/{tour_id}/bookings/{booking_id}")
@@ -582,7 +726,7 @@ async def remove_booking_from_tour(
     booking_id: int,
     db: AsyncSession = Depends(get_db),
 ):
-    """Remove a booking from a tour."""
+    """Remove a booking from a tour. Also removes the associated TourStop."""
     # Get the booking
     booking_result = await db.execute(
         select(Booking).where(
@@ -595,6 +739,18 @@ async def remove_booking_from_tour(
         raise HTTPException(status_code=404, detail="Booking not found in tour")
 
     booking.tour_id = None
+
+    # Remove the associated TourStop
+    stop_result = await db.execute(
+        select(TourStop).where(
+            TourStop.tour_id == tour_id,
+            TourStop.booking_id == booking_id,
+        )
+    )
+    stop = stop_result.scalar_one_or_none()
+    if stop:
+        await db.delete(stop)
+
     await db.commit()
 
     return {"message": "Booking removed from tour successfully"}
@@ -619,7 +775,7 @@ async def delete_tour(tour_id: int, db: AsyncSession = Depends(get_db)):
     for booking in bookings:
         booking.tour_id = None
 
-    # Delete the tour
+    # Delete the tour (cascade will delete stops)
     await db.delete(tour)
     await db.commit()
 

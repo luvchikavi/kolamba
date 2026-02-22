@@ -307,6 +307,29 @@ export interface CommunityRegisterRequest {
   language?: string;
 }
 
+export interface TourStop {
+  id: number;
+  tour_id: number;
+  booking_id?: number;
+  date: string;
+  city?: string;
+  venue_name?: string;
+  latitude?: number;
+  longitude?: number;
+  sequence_order: number;
+  travel_from_prev?: string;
+  travel_cost?: number;
+  accommodation_cost?: number;
+  performance_fee?: number;
+  shared_logistics?: number;
+  net_revenue?: number;
+  route_discount?: number;
+  status: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Tour {
   id: number;
   artist_id: number;
@@ -315,11 +338,26 @@ export interface Tour {
   start_date?: string;
   end_date?: string;
   total_budget?: number;
+  price_per_show?: number;
+  min_tour_budget?: number;
   description?: string;
   status: string;
+  // Constraint fields
+  max_travel_hours?: number;
+  min_shows_per_week?: number;
+  max_shows_per_week?: number;
+  rest_day_rule?: string;
+  min_net_profit?: number;
+  efficiency_score?: number;
+  visa_status?: string;
+  // Computed
+  price_tier?: string;
+  confirmed_shows?: number;
+  confirmed_revenue?: number;
   created_at: string;
   updated_at: string;
   bookings: Booking[];
+  stops: TourStop[];
 }
 
 export interface TourSuggestion {
@@ -345,8 +383,55 @@ export interface TourCreateRequest {
   start_date?: string;
   end_date?: string;
   total_budget?: number;
+  price_per_show?: number;
+  min_tour_budget?: number;
   description?: string;
   booking_ids?: number[];
+  // Constraint fields
+  max_travel_hours?: number;
+  min_shows_per_week?: number;
+  max_shows_per_week?: number;
+  rest_day_rule?: string;
+  min_net_profit?: number;
+  visa_status?: string;
+}
+
+export interface TourStopCreateRequest {
+  date: string;
+  city?: string;
+  venue_name?: string;
+  booking_id?: number;
+  latitude?: number;
+  longitude?: number;
+  sequence_order?: number;
+  travel_from_prev?: string;
+  travel_cost?: number;
+  accommodation_cost?: number;
+  performance_fee?: number;
+  shared_logistics?: number;
+  net_revenue?: number;
+  route_discount?: number;
+  status?: string;
+  notes?: string;
+}
+
+export interface TourStopUpdateRequest {
+  date?: string;
+  city?: string;
+  venue_name?: string;
+  booking_id?: number;
+  latitude?: number;
+  longitude?: number;
+  sequence_order?: number;
+  travel_from_prev?: string;
+  travel_cost?: number;
+  accommodation_cost?: number;
+  performance_fee?: number;
+  shared_logistics?: number;
+  net_revenue?: number;
+  route_discount?: number;
+  status?: string;
+  notes?: string;
 }
 
 export interface AdminStats {
@@ -508,6 +593,14 @@ export const api = {
     api.post<{ message: string }>(`/tours/${tourId}/bookings/${bookingId}`),
   removeBookingFromTour: (tourId: number, bookingId: number) =>
     api.delete<{ message: string }>(`/tours/${tourId}/bookings/${bookingId}`),
+
+  // Tour Stops
+  createTourStop: (tourId: number, data: TourStopCreateRequest) =>
+    api.post<TourStop>(`/tours/${tourId}/stops`, data),
+  updateTourStop: (tourId: number, stopId: number, data: TourStopUpdateRequest) =>
+    api.put<TourStop>(`/tours/${tourId}/stops/${stopId}`, data),
+  deleteTourStop: (tourId: number, stopId: number) =>
+    api.delete<{ message: string }>(`/tours/${tourId}/stops/${stopId}`),
 
   // Admin endpoints
   admin: {

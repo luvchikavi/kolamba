@@ -6,7 +6,7 @@ from app.models.artist import Artist
 from app.models.community import Community
 from app.models.category import Category, ArtistCategory
 from app.models.booking import Booking
-from app.models.tour import Tour, TourBooking
+from app.models.tour import Tour, TourStop
 from app.models.artist_tour_date import ArtistTourDate
 from app.models.conversation import Conversation, Message
 from app.models.notification import Notification
@@ -20,7 +20,7 @@ __all__ = [
     "ArtistCategory",
     "Booking",
     "Tour",
-    "TourBooking",
+    "TourStop",
     "ArtistTourDate",
     "Conversation",
     "Message",

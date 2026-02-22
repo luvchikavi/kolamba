@@ -20,6 +20,15 @@ class TourBase(BaseModel):
     min_tour_budget: Optional[int] = Field(None, ge=0, description="Minimum total revenue to confirm the tour")
     description: Optional[str] = Field(None, max_length=5000)
 
+    # Tour constraint fields
+    max_travel_hours: Optional[float] = Field(None, ge=0, description="Max driving hours between consecutive shows")
+    min_shows_per_week: Optional[int] = Field(None, ge=0)
+    max_shows_per_week: Optional[int] = Field(None, ge=0)
+    rest_day_rule: Optional[str] = Field(None, max_length=100, description="e.g., every_wednesday, after_3_consecutive")
+    min_net_profit: Optional[float] = Field(None, ge=0, description="Target take-home after fees & logistics")
+    efficiency_score: Optional[int] = Field(None, ge=1, le=100, description="Recalculated on changes (1-100)")
+    visa_status: Optional[str] = Field(None, max_length=30, description="approved, in_process, not_required")
+
     @model_validator(mode="after")
     def validate_dates(self):
         if self.start_date and self.end_date and self.end_date < self.start_date:
@@ -47,6 +56,89 @@ class TourUpdate(BaseModel):
     description: Optional[str] = None
     status: Optional[str] = Field(None, pattern="^(pending|approved|completed|cancelled)$")
 
+    # Tour constraint fields
+    max_travel_hours: Optional[float] = Field(None, ge=0)
+    min_shows_per_week: Optional[int] = Field(None, ge=0)
+    max_shows_per_week: Optional[int] = Field(None, ge=0)
+    rest_day_rule: Optional[str] = Field(None, max_length=100)
+    min_net_profit: Optional[float] = Field(None, ge=0)
+    efficiency_score: Optional[int] = Field(None, ge=1, le=100)
+    visa_status: Optional[str] = Field(None, max_length=30)
+
+
+# --- TourStop schemas ---
+
+class TourStopCreate(BaseModel):
+    """Schema for creating a tour stop."""
+
+    date: date
+    city: Optional[str] = Field(None, max_length=255)
+    venue_name: Optional[str] = Field(None, max_length=255)
+    booking_id: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    sequence_order: int = 0
+    travel_from_prev: Optional[str] = Field(None, max_length=255)
+    travel_cost: Optional[float] = Field(None, ge=0)
+    accommodation_cost: Optional[float] = Field(None, ge=0)
+    performance_fee: Optional[float] = Field(None, ge=0)
+    shared_logistics: Optional[float] = Field(None, ge=0)
+    net_revenue: Optional[float] = None
+    route_discount: Optional[float] = Field(None, ge=0, le=100)
+    status: str = Field("open", pattern="^(confirmed|inquiry|recommended|open|rest_day)$")
+    notes: Optional[str] = None
+
+
+class TourStopUpdate(BaseModel):
+    """Schema for updating a tour stop."""
+
+    date: Optional[date] = None
+    city: Optional[str] = Field(None, max_length=255)
+    venue_name: Optional[str] = Field(None, max_length=255)
+    booking_id: Optional[int] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    sequence_order: Optional[int] = None
+    travel_from_prev: Optional[str] = Field(None, max_length=255)
+    travel_cost: Optional[float] = Field(None, ge=0)
+    accommodation_cost: Optional[float] = Field(None, ge=0)
+    performance_fee: Optional[float] = Field(None, ge=0)
+    shared_logistics: Optional[float] = Field(None, ge=0)
+    net_revenue: Optional[float] = None
+    route_discount: Optional[float] = Field(None, ge=0, le=100)
+    status: Optional[str] = Field(None, pattern="^(confirmed|inquiry|recommended|open|rest_day)$")
+    notes: Optional[str] = None
+
+
+class TourStopResponse(BaseModel):
+    """Schema for tour stop response."""
+
+    id: int
+    tour_id: int
+    booking_id: Optional[int] = None
+    date: date
+    city: Optional[str] = None
+    venue_name: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    sequence_order: int = 0
+    travel_from_prev: Optional[str] = None
+    travel_cost: Optional[float] = None
+    accommodation_cost: Optional[float] = None
+    performance_fee: Optional[float] = None
+    shared_logistics: Optional[float] = None
+    net_revenue: Optional[float] = None
+    route_discount: Optional[float] = None
+    status: str = "open"
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# --- Tour response ---
 
 class TourResponse(TourBase):
     """Schema for tour response."""
@@ -57,6 +149,7 @@ class TourResponse(TourBase):
     created_at: datetime
     updated_at: datetime
     bookings: list[BookingResponse] = []
+    stops: list[TourStopResponse] = []
 
     @computed_field
     @property

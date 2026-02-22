@@ -12,6 +12,7 @@ import {
   Clock,
   Plus,
   ChevronRight,
+  ChevronDown,
   Settings,
   Loader2,
   X,
@@ -42,6 +43,14 @@ interface Tour {
   status: string;
   confirmed_shows?: number;
   bookings: { id: number }[];
+  // Constraint fields
+  max_travel_hours?: number;
+  min_shows_per_week?: number;
+  max_shows_per_week?: number;
+  rest_day_rule?: string;
+  min_net_profit?: number;
+  efficiency_score?: number;
+  visa_status?: string;
 }
 
 interface Booking {
@@ -435,6 +444,12 @@ function CreateTourModal({
     price_per_show?: number;
     min_tour_budget?: number;
     description?: string;
+    max_travel_hours?: number;
+    min_shows_per_week?: number;
+    max_shows_per_week?: number;
+    rest_day_rule?: string;
+    min_net_profit?: number;
+    visa_status?: string;
   }) => void;
   isSubmitting: boolean;
 }) {
@@ -445,6 +460,13 @@ function CreateTourModal({
   const [pricePerShow, setPricePerShow] = useState("");
   const [minTourBudget, setMinTourBudget] = useState("");
   const [description, setDescription] = useState("");
+  const [showConstraints, setShowConstraints] = useState(false);
+  const [maxTravelHours, setMaxTravelHours] = useState("");
+  const [minShowsPerWeek, setMinShowsPerWeek] = useState("");
+  const [maxShowsPerWeek, setMaxShowsPerWeek] = useState("");
+  const [restDayRule, setRestDayRule] = useState("");
+  const [minNetProfit, setMinNetProfit] = useState("");
+  const [visaStatus, setVisaStatus] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -456,6 +478,12 @@ function CreateTourModal({
       price_per_show: pricePerShow ? parseInt(pricePerShow) : undefined,
       min_tour_budget: minTourBudget ? parseInt(minTourBudget) : undefined,
       description: description || undefined,
+      max_travel_hours: maxTravelHours ? parseFloat(maxTravelHours) : undefined,
+      min_shows_per_week: minShowsPerWeek ? parseInt(minShowsPerWeek) : undefined,
+      max_shows_per_week: maxShowsPerWeek ? parseInt(maxShowsPerWeek) : undefined,
+      rest_day_rule: restDayRule || undefined,
+      min_net_profit: minNetProfit ? parseFloat(minNetProfit) : undefined,
+      visa_status: visaStatus || undefined,
     });
   };
 
@@ -467,6 +495,13 @@ function CreateTourModal({
     setPricePerShow("");
     setMinTourBudget("");
     setDescription("");
+    setShowConstraints(false);
+    setMaxTravelHours("");
+    setMinShowsPerWeek("");
+    setMaxShowsPerWeek("");
+    setRestDayRule("");
+    setMinNetProfit("");
+    setVisaStatus("");
   };
 
   useEffect(() => {
@@ -608,6 +643,117 @@ function CreateTourModal({
               rows={3}
               className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
             />
+          </div>
+
+          {/* Collapsible Tour Constraints Section */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowConstraints(!showConstraints)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+            >
+              <span className="text-sm font-medium text-slate-700">Tour Constraints</span>
+              <ChevronDown
+                size={16}
+                className={`text-slate-400 transition-transform ${showConstraints ? "rotate-180" : ""}`}
+              />
+            </button>
+            {showConstraints && (
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Max Travel Hours Between Shows
+                  </label>
+                  <input
+                    type="number"
+                    value={maxTravelHours}
+                    onChange={(e) => setMaxTravelHours(e.target.value)}
+                    placeholder="e.g., 4"
+                    min="0"
+                    step="0.5"
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Min Shows / Week
+                    </label>
+                    <input
+                      type="number"
+                      value={minShowsPerWeek}
+                      onChange={(e) => setMinShowsPerWeek(e.target.value)}
+                      placeholder="e.g., 2"
+                      min="0"
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Max Shows / Week
+                    </label>
+                    <input
+                      type="number"
+                      value={maxShowsPerWeek}
+                      onChange={(e) => setMaxShowsPerWeek(e.target.value)}
+                      placeholder="e.g., 5"
+                      min="0"
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Rest Day Rule
+                  </label>
+                  <select
+                    value={restDayRule}
+                    onChange={(e) => setRestDayRule(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+                  >
+                    <option value="">None</option>
+                    <option value="every_wednesday">Every Wednesday</option>
+                    <option value="every_saturday">Every Saturday</option>
+                    <option value="after_3_consecutive">After 3 Consecutive Shows</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Minimum Net Profit Target (USD)
+                  </label>
+                  <div className="relative">
+                    <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="number"
+                      value={minNetProfit}
+                      onChange={(e) => setMinNetProfit(e.target.value)}
+                      placeholder="e.g., 8000"
+                      min="0"
+                      className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Visa Status
+                  </label>
+                  <select
+                    value={visaStatus}
+                    onChange={(e) => setVisaStatus(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+                  >
+                    <option value="">Not Set</option>
+                    <option value="not_required">Not Required</option>
+                    <option value="in_process">In Process</option>
+                    <option value="approved">Approved</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
@@ -826,6 +972,12 @@ export default function ArtistDashboardPage() {
     price_per_show?: number;
     min_tour_budget?: number;
     description?: string;
+    max_travel_hours?: number;
+    min_shows_per_week?: number;
+    max_shows_per_week?: number;
+    rest_day_rule?: string;
+    min_net_profit?: number;
+    visa_status?: string;
   }) => {
     if (!artistId) return;
 
@@ -848,6 +1000,12 @@ export default function ArtistDashboardPage() {
           price_per_show: data.price_per_show,
           min_tour_budget: data.min_tour_budget,
           description: data.description,
+          max_travel_hours: data.max_travel_hours,
+          min_shows_per_week: data.min_shows_per_week,
+          max_shows_per_week: data.max_shows_per_week,
+          rest_day_rule: data.rest_day_rule,
+          min_net_profit: data.min_net_profit,
+          visa_status: data.visa_status,
         }),
       });
 

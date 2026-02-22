@@ -11,7 +11,7 @@ from alembic import context
 
 # Import models and Base
 from app.database import Base
-from app.models import User, Artist, Community, Category, ArtistCategory, Booking, Tour, TourBooking
+from app.models import User, Artist, Community, Category, ArtistCategory, Booking, Tour, TourStop
 from app.config import get_settings
 
 # Alembic Config object
