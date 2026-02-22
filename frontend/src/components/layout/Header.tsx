@@ -6,7 +6,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import NotificationBell from "@/components/notifications/NotificationBell";
-import LanguageSwitcher from "@/components/i18n/LanguageSwitcher";
 
 interface UserInfo {
   name: string | null;
@@ -101,7 +100,6 @@ export default function Header() {
           {/* Right: Notifications + User Menu or Sign In */}
           {user ? (
             <div className="flex items-center gap-1">
-              <LanguageSwitcher />
               <NotificationBell />
             <div className="relative">
               <button
@@ -142,7 +140,6 @@ export default function Header() {
             </div>
           ) : (
             <div className="flex items-center gap-1">
-              <LanguageSwitcher />
               <Link
                 href="/login"
                 className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
