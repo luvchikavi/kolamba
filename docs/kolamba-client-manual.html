@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolamba - Platform Manual | Drishti Consulting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--darker);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        /* Header Bar */
+        .header-bar {
+            background: var(--dark);
+            border-bottom: 3px solid;
+            border-image: var(--gradient) 1;
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .header-logo svg {
+            width: 42px;
+            height: 42px;
+        }
+        .header-company {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .header-company .drishti { color: var(--primary); }
+        .header-company .consulting { color: #e2e8f0; }
+        .header-tagline {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            letter-spacing: 0.03em;
+        }
+        .header-doc {
+            text-align: right;
+            font-size: 12px;
+            color: var(--gray);
+        }
+        .header-doc-type {
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 2rem;
+        }
+
+        /* Meta Cards */
+        .meta {
+            display: flex;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            flex: 1;
+            min-width: 200px;
+            border-top: 3px solid var(--primary);
+        }
+        .meta-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-top: 0.25rem;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            border-left: 4px solid var(--accent);
+        }
+        .toc h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .toc ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .toc li {
+            padding: 0.3rem 0;
+            font-size: 14px;
+        }
+        .toc a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        /* Sections */
+        section { margin-bottom: 2.5rem; }
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h2::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin: 1.25rem 0 0.5rem;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--dark);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+            margin-bottom: 1rem;
+        }
+        th {
+            background: rgba(99, 102, 241, 0.08);
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #1e293b;
+        }
+        td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid #0f172a;
+            font-size: 14px;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(99, 102, 241, 0.04); }
+
+        .mono {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--accent);
+        }
+        .notes { color: #94a3b8; font-size: 13px; }
+
+        /* Info Boxes */
+        .info-box {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .info-box h3 {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 0.4rem 0;
+        }
+        .info-box p, .info-box li {
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .info-box code {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .info-box ul {
+            margin: 0.5rem 0 0 1.25rem;
+        }
+        .info-box li {
+            margin-bottom: 0.25rem;
+        }
+
+        .success-box {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-left: 4px solid var(--success);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .success-box h3 {
+            color: var(--success);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 0.4rem 0;
+        }
+        .success-box p, .success-box li {
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .warn-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .warn-box h3 {
+            color: var(--warning);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 0.4rem 0;
+        }
+        .warn-box p, .warn-box li {
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .warn-box ul {
+            margin: 0.5rem 0 0 1.25rem;
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-left: 4px solid var(--error);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+        .error-box h3 {
+            color: var(--error);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 0.4rem 0;
+        }
+        .error-box p {
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        /* Steps */
+        .step {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 4rem;
+        }
+        .step-number {
+            position: absolute;
+            left: 1.25rem;
+            top: 1.25rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--gradient);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--light);
+            margin-bottom: 0.35rem;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        .step-desc strong {
+            color: #cbd5e1;
+        }
+
+        /* Flow Diagram */
+        .flow-diagram {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.5rem 2rem;
+            margin: 1rem 0;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+            color: #94a3b8;
+        }
+        .flow-diagram .status {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .flow-diagram .action {
+            color: var(--success);
+        }
+        .flow-diagram .role {
+            color: var(--warning);
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .service-card {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .service-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+        .service-desc {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .dot-green { background: var(--success); box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+        .dot-blue { background: var(--secondary); box-shadow: 0 0 6px rgba(14, 165, 233, 0.4); }
+        .dot-yellow { background: var(--warning); box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+        .dot-red { background: var(--error); box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
+        .dot-gray { background: var(--gray); }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .badge-blue { background: rgba(14, 165, 233, 0.15); color: var(--secondary); }
+        .badge-yellow { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+        .badge-gray { background: rgba(100, 116, 139, 0.15); color: var(--gray); }
+        .badge-purple { background: rgba(139, 92, 246, 0.15); color: var(--accent); }
+
+        /* Footer */
+        .footer {
+            margin-top: 3rem;
+            border-top: 3px solid;
+            border-image: var(--gradient) 1;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .footer-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .footer-logo svg {
+            width: 50px;
+            height: 50px;
+        }
+        .footer-divider {
+            width: 3px;
+            height: 70px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        .footer-content { line-height: 1.5; }
+        .footer-company {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 1px;
+        }
+        .footer-company .drishti { color: var(--primary); }
+        .footer-company .consulting { color: #e2e8f0; }
+        .footer-slogan {
+            font-size: 10px;
+            color: var(--accent);
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+        .footer-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .footer-title {
+            font-size: 11px;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        .footer-contact {
+            font-size: 11px;
+            color: var(--primary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .footer-contact span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .footer-contact svg {
+            width: 12px;
+            height: 12px;
+            fill: var(--primary);
+        }
+        .footer-bottom {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #1e293b;
+            font-size: 11px;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        @media print {
+            body { background: white; color: #1e293b; }
+            .header-bar { border-bottom-color: var(--primary); }
+            .step, .service-card, .meta-item, table, .flow-diagram { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <div class="header-bar">
+        <div class="header-left">
+            <div class="header-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                    <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                </svg>
+            </div>
+            <div>
+                <div class="header-company">
+                    <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                </div>
+                <div class="header-tagline">Focused Vision. Precise Execution.</div>
+            </div>
+        </div>
+        <div class="header-doc">
+            <div class="header-doc-type">Platform Manual</div>
+            <div>PC-KOL-MAN-26 &bull; Kolamba Platform</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Kolamba &mdash; Platform Manual</h1>
+        <p class="subtitle">Complete guide to operating the Kolamba talent-community matching platform &mdash; February 2026</p>
+
+        <div class="meta">
+            <div class="meta-item">
+                <div class="meta-label">Document</div>
+                <div class="meta-value">PC-KOL-MAN-26</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Version</div>
+                <div class="meta-value">1.5</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Date</div>
+                <div class="meta-value">February 22, 2026</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Prepared By</div>
+                <div class="meta-value">Drishti Consulting</div>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ol>
+                <li><a href="#overview">Platform Overview</a></li>
+                <li><a href="#roles">User Roles</a></li>
+                <li><a href="#quote-flow">Quote &amp; Booking Flow</a></li>
+                <li><a href="#communication">Communication &amp; Messaging</a></li>
+                <li><a href="#tour-management">Tour Management</a></li>
+                <li><a href="#host-dashboard">Host Dashboard Guide</a></li>
+                <li><a href="#talent-dashboard">Talent Dashboard Guide</a></li>
+                <li><a href="#admin-dashboard">Admin Dashboard Guide</a></li>
+                <li><a href="#notifications">Notifications</a></li>
+                <li><a href="#status-reference">Status Reference</a></li>
+            </ol>
+        </div>
+
+        <!-- 1. Platform Overview -->
+        <section id="overview">
+            <h2>1. Platform Overview</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                Kolamba is a web platform that connects performing artists (talents) with communities (hosts) for live events, concerts, workshops, and tours. The platform handles discovery, booking, quoting, messaging, and tour planning.
+            </p>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-blue"></span>Discovery</div>
+                    <div class="service-desc">Hosts browse and search for talents by category, price, and location. Talents are displayed in a card grid with filters.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-green"></span>Booking &amp; Quotes</div>
+                    <div class="service-desc">Hosts send booking requests to talents. Talents submit price quotes. Hosts approve, decline, or request changes.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-yellow"></span>Communication</div>
+                    <div class="service-desc">Each booking creates a conversation thread. Both parties exchange messages, share venue details, and coordinate logistics.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-green"></span>Tour Management</div>
+                    <div class="service-desc">Talents create tours with dates, stops, constraints, and route planning. Bookings auto-generate tour stops.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. User Roles -->
+        <section id="roles">
+            <h2>2. User Roles</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Role</th>
+                        <th>Dashboard</th>
+                        <th>Capabilities</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-blue">Talent</span> (Artist)</td>
+                        <td class="mono">/dashboard/talent</td>
+                        <td class="notes">Manage profile, view booking requests, submit quotes, manage tours, send messages</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-green">Host</span> (Community)</td>
+                        <td class="mono">/dashboard/host</td>
+                        <td class="notes">Browse talents, send booking requests, manage quotes, share venue info, discover touring artists</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-yellow">Agent</span></td>
+                        <td class="mono">/dashboard/agent</td>
+                        <td class="notes">Manage multiple talent profiles, view bookings across managed artists</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-purple">Admin</span> (Superuser)</td>
+                        <td class="mono">/dashboard/admin</td>
+                        <td class="notes">User management, talent approval, platform stats, edit/delete users, view all dashboards</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <h3>Admin Sidebar</h3>
+                <p>Superusers see a persistent admin sidebar on every dashboard page. This sidebar provides quick access to Overview, Users, Talents management, plus "View As" links to switch to the Host or Talent dashboard perspectives.</p>
+            </div>
+        </section>
+
+        <!-- 3. Quote & Booking Flow -->
+        <section id="quote-flow">
+            <h2>3. Quote &amp; Booking Flow</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                The quote flow is the core booking process. It connects hosts who want to book a performance with talents who provide pricing.
+            </p>
+
+            <h3>Host Side &mdash; Sending a Booking Request</h3>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">Browse &amp; Select a Talent</div>
+                <div class="step-desc">
+                    Host logs in &rarr; clicks <strong>"Browse Talents"</strong> from the Host Dashboard.
+                    Selects a talent profile and clicks <strong>"Send Booking Request"</strong>.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">Fill the Booking Form</div>
+                <div class="step-desc">
+                    Host fills in the booking details:
+                    <strong>Event type</strong> (Concert, Workshop, Lecture, etc.),
+                    <strong>Preferred date</strong>,
+                    <strong>Location &amp; venue type</strong>,
+                    <strong>Expected audience size</strong>,
+                    <strong>Budget range</strong>, and
+                    <strong>Special requirements / notes</strong>.
+                    Submits the form and sees a "Quote Request Sent!" confirmation.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-title">Wait for Quote</div>
+                <div class="step-desc">
+                    The booking appears in the Host Dashboard &rarr; <strong>Quotes tab</strong> with status <span class="badge badge-yellow">Pending</span>.
+                    Also visible in the <strong>Messages tab</strong> with a conversation thread.
+                    Host can send messages to the talent while waiting.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-title">Receive &amp; Respond to Quote</div>
+                <div class="step-desc">
+                    When the talent submits a quote, status changes to <span class="badge badge-blue">Quote Received</span>.
+                    A quote card appears in the messages showing the <strong>quoted amount</strong>, <strong>what's included</strong>, and <strong>date submitted</strong>.
+                    Host has three options:
+                    <strong style="color: var(--success);">Approve</strong> &rarr; status becomes Approved,
+                    <strong style="color: var(--warning);">Request Changes</strong> &rarr; status returns to Pending,
+                    <strong style="color: var(--error);">Decline</strong> (with reason) &rarr; status becomes Declined.
+                </div>
+            </div>
+
+            <h3>Talent Side &mdash; Receiving &amp; Quoting</h3>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">Receive Booking Request</div>
+                <div class="step-desc">
+                    Talent gets a notification: <em>"[Host] has sent you a booking request for [location]"</em>.
+                    Booking appears in Talent Dashboard &rarr; <strong>Requests tab</strong> with status <span class="badge badge-yellow">Pending</span>.
+                    The Messages tab shows a conversation with event details: event type, date, location, audience size, budget, and notes.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">Submit a Quote</div>
+                <div class="step-desc">
+                    In the Messages view, a <strong>"Submit Quote"</strong> card appears.
+                    Talent fills in: <strong>Amount</strong> (required) and <strong>What's included</strong> (optional, e.g., "2-hour performance, sound equipment, travel costs").
+                    Clicks "Submit Quote" &rarr; status changes to <span class="badge badge-blue">Quote Sent</span>.
+                    An automatic message is added: <em>"Quote submitted: $2,500.00 &mdash; What's included: ..."</em>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-title">Wait for Response</div>
+                <div class="step-desc">
+                    The quote card shows a read-only summary with <em>"Waiting for host response"</em>.
+                    Talent can continue sending messages in the conversation thread.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-title">Receive Response</div>
+                <div class="step-desc">
+                    <strong style="color: var(--success);">If approved:</strong> Green banner &mdash; "Booking Approved!" &rarr; Status becomes <span class="badge badge-green">Approved</span>.<br>
+                    <strong style="color: var(--warning);">If changes requested:</strong> Status returns to Pending &rarr; Talent can submit a revised quote.<br>
+                    <strong style="color: var(--error);">If declined:</strong> Red banner with host's reason &rarr; Status becomes <span class="badge badge-red">Declined</span>.
+                </div>
+            </div>
+
+            <h3>Status Flow Diagram</h3>
+            <div class="flow-diagram"><span class="role">Host</span> sends booking request
+        &darr;
+   [ <span class="status">PENDING</span> ]  &larr;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&#8488;
+        &darr;                           |
+<span class="role">Talent</span> submits quote                |
+        &darr;                           |
+  [ <span class="status">QUOTE SENT</span> ]                  |
+        &darr;                           |
+<span class="role">Host</span> responds:                    |
+  &boxvr;&mdash; <span class="action">Approve</span>  &rarr; [ <span class="status">APPROVED</span> ]      |
+  &boxvr;&mdash; <span class="action">Decline</span>  &rarr; [ <span class="status">DECLINED</span> ]      |
+  &boxur;&mdash; <span class="action">Request Changes</span> &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&#8725;</div>
+        </section>
+
+        <!-- 4. Communication & Messaging -->
+        <section id="communication">
+            <h2>4. Communication &amp; Messaging</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                Every booking automatically creates a conversation thread between the host and talent. Messaging is integrated directly into the booking workflow.
+            </p>
+
+            <h3>How It Works</h3>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name">Automatic Thread Creation</div>
+                    <div class="service-desc">When a host sends a booking request, a conversation is automatically created. Both parties can message each other immediately.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name">Inbox View</div>
+                    <div class="service-desc">The Messages tab shows all conversations as a list with: contact name, last message preview, message count, booking status badge, and date.</div>
+                </div>
+            </div>
+
+            <h3>Host Messaging Features</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Quote Review Card</strong></td>
+                        <td class="notes">When a talent submits a quote, a card appears showing the amount, notes, and Approve / Decline / Request Changes buttons</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Booking Details Card</strong></td>
+                        <td class="notes">Shows artist name, event date, location, budget, status, and notes in each conversation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Venue Information Panel</strong></td>
+                        <td class="notes">Editable form with 16 fields: facility size, venue type, stage dimensions, sound system, lighting, camera availability, green room, catering, parking, accessibility, Wi-Fi, load-in access, expected attendance, audience type, and additional notes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Activity Log</strong></td>
+                        <td class="notes">Chronological message thread showing all messages with timestamps and sender role badges</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Send a Note</strong></td>
+                        <td class="notes">Text area at the bottom to send messages to the talent</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Talent Messaging Features</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Quote Submission Form</strong></td>
+                        <td class="notes">When a booking is Pending, a form appears to enter amount and "what's included" details</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Quote Status Display</strong></td>
+                        <td class="notes">After submitting, shows the quote summary with "Waiting for host response" indicator</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Venue Info Button</strong></td>
+                        <td class="notes">Read-only panel showing the host's venue details (talent cannot edit these)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Message Bubbles</strong></td>
+                        <td class="notes">Own messages appear right-aligned (blue), other's messages left-aligned (gray), with timestamps and sender names</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <h3>Venue Information Fields (Host-Editable)</h3>
+                <p>Hosts can share detailed venue information with talents through the messaging panel. This includes:</p>
+                <ul>
+                    <li><strong>Text fields:</strong> Facility size, venue type, stage dimensions, expected attendance, audience type, parking, accessibility, load-in access, additional notes</li>
+                    <li><strong>Yes/No fields:</strong> Sound system, lighting, camera available, green room, catering, Wi-Fi</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 5. Tour Management -->
+        <section id="tour-management">
+            <h2>5. Tour Management</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                Talents can plan and manage tours with multiple stops, constraints, and automatic booking integration.
+            </p>
+
+            <h3>Creating a Tour</h3>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-title">Start a New Tour</div>
+                <div class="step-desc">
+                    From the Talent Dashboard, click <strong>"Start a Tour"</strong>.
+                    Fill in the tour details:
+                    <strong>Tour Name</strong>,
+                    <strong>Region / Area</strong>,
+                    <strong>Start &amp; End Dates</strong>,
+                    <strong>Price per Show</strong>,
+                    <strong>Minimum Budget</strong>, and
+                    <strong>Description</strong>.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-title">Set Tour Constraints (Optional)</div>
+                <div class="step-desc">
+                    Expand the "Tour Constraints" section to set rules:
+                    <strong>Max Travel Hours</strong> between stops,
+                    <strong>Min/Max Shows per Week</strong>,
+                    <strong>Rest Day Rule</strong> (e.g., every Wednesday),
+                    <strong>Minimum Net Profit</strong>, and
+                    <strong>Visa Status</strong>.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-title">Publish the Tour</div>
+                <div class="step-desc">
+                    Click <strong>"Publish Tour"</strong> to create the tour. If you have existing bookings, they can be attached and will auto-generate tour stops.
+                </div>
+            </div>
+
+            <h3>Tour Detail Page</h3>
+            <p class="notes" style="margin-bottom: 1rem;">
+                Each tour has a detail page showing info cards (dates, confirmed shows, price per show, confirmed revenue), tour rules, and a stops table.
+            </p>
+
+            <h3>Tour Stops</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Stop Type</th>
+                        <th>Color</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-green">Confirmed</span></td>
+                        <td><span class="status-dot dot-green"></span>Green</td>
+                        <td class="notes">An anchor booking &mdash; confirmed show with venue and date</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-yellow">Open</span></td>
+                        <td><span class="status-dot dot-yellow"></span>Yellow</td>
+                        <td class="notes">Available date slot for hosts to book</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-gray">Rest Day</span></td>
+                        <td><span class="status-dot dot-gray"></span>Gray</td>
+                        <td class="notes">Blocked day per rest rules (no bookings)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-blue">Inquiry</span></td>
+                        <td><span class="status-dot dot-blue"></span>Blue</td>
+                        <td class="notes">Pending discussion / negotiation with a host</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-purple">Recommended</span></td>
+                        <td>&mdash;</td>
+                        <td class="notes">System-suggested stop based on tour algorithm scoring</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Stops Table Columns</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Date</strong></td>
+                        <td class="notes">Scheduled date for the stop (e.g., Sat, Mar 15)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>City / Venue</strong></td>
+                        <td class="notes">Location and venue name (TBD for open slots)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td class="notes">Confirmed, Open, Rest Day, Inquiry, or Recommended</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Travel</strong></td>
+                        <td class="notes">Estimated travel time from previous stop</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Est. Revenue</strong></td>
+                        <td class="notes">Expected payment for confirmed/inquiry stops</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Booking &rarr; Stop Auto-Creation</h3>
+            <div class="info-box">
+                <h3>Automatic Integration</h3>
+                <p>When a booking is added to a tour, the system automatically creates a linked TourStop. This happens in three ways:</p>
+                <ul>
+                    <li>Adding a booking to an existing tour</li>
+                    <li>Creating a tour with existing booking IDs</li>
+                    <li>Approved join request &mdash; auto-creates a stop for the new booking</li>
+                </ul>
+            </div>
+
+            <h3>Tour Constraints Reference</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Constraint</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Max Travel Hours</strong></td>
+                        <td class="notes">Maximum driving time between consecutive stops</td>
+                        <td class="mono">4 hours</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Min Shows/Week</strong></td>
+                        <td class="notes">Minimum number of performances per week</td>
+                        <td class="mono">2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max Shows/Week</strong></td>
+                        <td class="notes">Maximum number of performances per week</td>
+                        <td class="mono">5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rest Day Rule</strong></td>
+                        <td class="notes">Recurring rest day (blocked from bookings)</td>
+                        <td class="mono">Every Wednesday</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Min Net Profit</strong></td>
+                        <td class="notes">Minimum net profit target for the tour</td>
+                        <td class="mono">$8,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Visa Status</strong></td>
+                        <td class="notes">Travel visa requirements</td>
+                        <td class="mono">Not Required</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 6. Host Dashboard -->
+        <section id="host-dashboard">
+            <h2>6. Host Dashboard Guide</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                The host dashboard is the control center for community managers. Access it at <span class="mono">/dashboard/host</span>.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tab</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Overview</strong></td>
+                        <td class="notes">Stats summary: active bookings, pending quotes, messages, and recent activity</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Events / Quotes</strong></td>
+                        <td class="notes">All booking requests with status badges. Manage quotes &mdash; approve, decline, or request changes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Messages</strong></td>
+                        <td class="notes">Conversation threads with talents. View booking details, submit venue info, review quotes, and exchange messages</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Discover</strong></td>
+                        <td class="notes">Browse talents with filters (category, price, distance). Interest-based matching shows compatible artists</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Touring Artists</strong></td>
+                        <td class="notes">See artists currently on tour near your location</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Settings</strong></td>
+                        <td class="notes">Edit community profile: name, location, audience size, event types, contact details</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 7. Talent Dashboard -->
+        <section id="talent-dashboard">
+            <h2>7. Talent Dashboard Guide</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                The talent dashboard is the hub for artists to manage their career on Kolamba. Access it at <span class="mono">/dashboard/talent</span>.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tab</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Overview</strong></td>
+                        <td class="notes">Stats summary: upcoming shows, pending requests, total bookings, and recent activity</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Requests</strong></td>
+                        <td class="notes">Incoming booking requests from hosts with event details, dates, and budget info</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Messages</strong></td>
+                        <td class="notes">Conversation threads with hosts. Submit quotes, view venue info, and exchange messages</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tours</strong></td>
+                        <td class="notes">Create and manage tours. View tour detail pages with stops table, rules, and revenue tracking</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Settings</strong></td>
+                        <td class="notes">Edit artist profile: name (EN/HE), bio, pricing (single/tour), categories, city, social links, profile photo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 8. Admin Dashboard -->
+        <section id="admin-dashboard">
+            <h2>8. Admin Dashboard Guide</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                The admin dashboard is available to superusers. The admin sidebar is always visible at <span class="mono">/dashboard/admin</span> and persists when viewing Host or Talent dashboards.
+            </p>
+
+            <h3>Admin Sidebar Navigation</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Link</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Overview</strong></td>
+                        <td class="notes">Platform stats, growth charts (line), booking status breakdown (pie), artists by category (bar)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Users</strong></td>
+                        <td class="notes">Full user management table with search, role/status filters. Per-user actions: Edit (modal with profile details), Delete</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Talents</strong></td>
+                        <td class="notes">Talent management cards with status pills (All, Pending, Active, Rejected, Inactive). Actions: Approve, Reject (with reason), Deactivate, Toggle Featured</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>"View As" Quick Links</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Link</th>
+                        <th>Destination</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Talent Dashboard</strong></td>
+                        <td class="mono">/dashboard/talent</td>
+                        <td class="notes">View the platform from a talent's perspective</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Host Dashboard</strong></td>
+                        <td class="mono">/dashboard/host</td>
+                        <td class="notes">View the platform from a host's perspective</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>User Management Actions</h3>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-blue"></span>Edit User</div>
+                    <div class="service-desc">Click any user row or the "Edit" button. Opens a modal with: name, role, status, active toggle, and profile-specific fields (artist profile, community profile, or agent managed artists).</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-red"></span>Delete User</div>
+                    <div class="service-desc">Red "Delete" button on each user row (except superusers and already-deleted users). Shows confirmation dialog. Sets user to inactive/deleted status.</div>
+                </div>
+            </div>
+
+            <h3>Talent Management Actions</h3>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-green"></span>Approve</div>
+                    <div class="service-desc">For pending or rejected talents. Sets status to "active" and makes the profile visible on the public site.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-red"></span>Reject</div>
+                    <div class="service-desc">For pending talents. Opens a modal to select a reason (Incomplete Profile, Insufficient Portfolio, Not a Relevant Fit, Duplicate Account). Reason is visible to the talent.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-gray"></span>Deactivate</div>
+                    <div class="service-desc">For active talents. Sets status to "inactive" and hides the profile from public listings.</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-name"><span class="status-dot dot-yellow"></span>Toggle Featured</div>
+                    <div class="service-desc">Star icon on each talent card. Featured talents appear in the homepage carousel.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Notifications -->
+        <section id="notifications">
+            <h2>9. Notifications</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                The platform sends in-app notifications for key events. A notification bell with an unread count badge appears in the header.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Who Gets Notified</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>New booking request</td>
+                        <td><span class="badge badge-blue">Talent</span></td>
+                        <td class="notes">"[Host] has sent you a booking request for [location]"</td>
+                    </tr>
+                    <tr>
+                        <td>Quote submitted</td>
+                        <td><span class="badge badge-green">Host</span></td>
+                        <td class="notes">"[Talent] has submitted a quote of $X for your booking"</td>
+                    </tr>
+                    <tr>
+                        <td>Quote approved</td>
+                        <td><span class="badge badge-blue">Talent</span></td>
+                        <td class="notes">"[Host] has approved your quote of $X!"</td>
+                    </tr>
+                    <tr>
+                        <td>Quote declined</td>
+                        <td><span class="badge badge-blue">Talent</span></td>
+                        <td class="notes">"[Host] has declined your quote. Reason: [reason]"</td>
+                    </tr>
+                    <tr>
+                        <td>Changes requested</td>
+                        <td><span class="badge badge-blue">Talent</span></td>
+                        <td class="notes">"[Host] has requested changes to your quote: [reason]"</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <h3>Notification Features</h3>
+                <ul>
+                    <li>Unread count badge on the bell icon in the header</li>
+                    <li>Click to view all notifications in a dropdown</li>
+                    <li>Mark individual notifications as read</li>
+                    <li>"Mark all as read" button</li>
+                    <li>Auto-notify on new bookings and quote events</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 10. Status Reference -->
+        <section id="status-reference">
+            <h2>10. Status Reference</h2>
+
+            <h3>Booking / Quote Statuses</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Badge</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pending</td>
+                        <td><span class="badge badge-yellow">Pending</span></td>
+                        <td class="notes">Booking request sent, waiting for talent to submit a quote</td>
+                    </tr>
+                    <tr>
+                        <td>Quote Sent</td>
+                        <td><span class="badge badge-blue">Quote Sent</span></td>
+                        <td class="notes">Talent has submitted a price quote, waiting for host response</td>
+                    </tr>
+                    <tr>
+                        <td>Approved</td>
+                        <td><span class="badge badge-green">Approved</span></td>
+                        <td class="notes">Host accepted the quote &mdash; booking is confirmed</td>
+                    </tr>
+                    <tr>
+                        <td>Declined</td>
+                        <td><span class="badge badge-red">Declined</span></td>
+                        <td class="notes">Host rejected the quote (reason provided)</td>
+                    </tr>
+                    <tr>
+                        <td>Cancelled</td>
+                        <td><span class="badge badge-gray">Cancelled</span></td>
+                        <td class="notes">Booking was cancelled by either party</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>User Statuses</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Badge</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Active</td>
+                        <td><span class="badge badge-green">Active</span></td>
+                        <td class="notes">User account is active and profile is visible</td>
+                    </tr>
+                    <tr>
+                        <td>Pending</td>
+                        <td><span class="badge badge-yellow">Pending</span></td>
+                        <td class="notes">Awaiting admin approval (new talent registrations)</td>
+                    </tr>
+                    <tr>
+                        <td>Inactive</td>
+                        <td><span class="badge badge-gray">Inactive</span></td>
+                        <td class="notes">Account deactivated &mdash; profile hidden from public listings</td>
+                    </tr>
+                    <tr>
+                        <td>Rejected</td>
+                        <td><span class="badge badge-red">Rejected</span></td>
+                        <td class="notes">Talent application rejected by admin (with reason)</td>
+                    </tr>
+                    <tr>
+                        <td>Deleted</td>
+                        <td><span class="badge badge-red">Deleted</span></td>
+                        <td class="notes">User removed by admin &mdash; hidden from the website</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Tour Stop Statuses</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Badge</th>
+                        <th>Meaning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Confirmed</td>
+                        <td><span class="badge badge-green">Confirmed</span></td>
+                        <td class="notes">Show is booked and confirmed at a venue</td>
+                    </tr>
+                    <tr>
+                        <td>Open</td>
+                        <td><span class="badge badge-yellow">Open</span></td>
+                        <td class="notes">Date slot available for hosts to book</td>
+                    </tr>
+                    <tr>
+                        <td>Rest Day</td>
+                        <td><span class="badge badge-gray">Rest Day</span></td>
+                        <td class="notes">Blocked day &mdash; no performances scheduled</td>
+                    </tr>
+                    <tr>
+                        <td>Inquiry</td>
+                        <td><span class="badge badge-blue">Inquiry</span></td>
+                        <td class="notes">In discussion with a potential host</td>
+                    </tr>
+                    <tr>
+                        <td>Recommended</td>
+                        <td><span class="badge badge-purple">Recommended</span></td>
+                        <td class="notes">System-suggested based on tour algorithm</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Post-MVP -->
+        <section>
+            <h2>Coming Soon</h2>
+            <p class="notes" style="margin-bottom: 1rem;">
+                The following features are planned for future releases. Placeholder UI is visible in the messaging panel.
+            </p>
+            <div class="services-grid">
+                <div class="service-card" style="border-top: 3px solid var(--warning);">
+                    <div class="service-name">Deposit &amp; Payment</div>
+                    <div class="service-desc">Secure payment processing for booking deposits and final payments.</div>
+                </div>
+                <div class="service-card" style="border-top: 3px solid var(--warning);">
+                    <div class="service-name">Logistics &amp; Visa</div>
+                    <div class="service-desc">International booking coordination including travel logistics and visa management.</div>
+                </div>
+                <div class="service-card" style="border-top: 3px solid var(--warning);">
+                    <div class="service-name">Reviews &amp; Ratings</div>
+                    <div class="service-desc">Post-event reviews and ratings from both hosts and talents.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-inner">
+            <div class="footer-row">
+                <div class="footer-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="32" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="20" fill="none" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="10" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+                        <circle cx="50" cy="50" r="4" fill="#6366f1"/>
+                    </svg>
+                </div>
+                <div class="footer-divider"></div>
+                <div class="footer-content">
+                    <div class="footer-company">
+                        <span class="drishti">Drishti</span><span class="consulting">Consulting</span>
+                    </div>
+                    <div class="footer-slogan">Focus Your Vision. Build Your Future.</div>
+                    <div class="footer-name">Avi Luvchik, Ph.D.</div>
+                    <div class="footer-title">Founder & CEO</div>
+                    <div class="footer-contact">
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            +972 52 501 6720
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                            avi@drishticonsulting.com
+                        </span>
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            drishticonsulting.com
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>PC-KOL-MAN-26 &bull; Kolamba Platform Manual</span>
+                <span>&copy; 2026 Drishti Consulting. All rights reserved.</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

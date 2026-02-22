@@ -1,0 +1,125 @@
+ Tour Management Flow         
+                                                                                
+  1. Talent Creates a Tour (CreateTourModal)                                    
+
+  Path: Talent Dashboard → "Start a Tour" button
+
+  ┌─────────────────────────────────────────┐
+  │  Start a New Tour                       │
+  │                                         │
+  │  Tour Name *     [East Coast Spring...] │
+  │  Region / Area * [Northeast USA       ] │
+  │  Start Date *    [2026-03-15]           │
+  │  End Date *      [2026-04-15]           │
+  │  Price/Show      [$5,000]               │
+  │  Min Budget      [$10,000]              │
+  │  Description     [...]                  │
+  │                                         │
+  │  ▼ Tour Constraints (collapsible)       │
+  │  ┌─────────────────────────────────┐    │
+  │  │ Max Travel Hours  [4]           │    │
+  │  │ Min Shows/Week [2] Max [5]      │    │
+  │  │ Rest Day Rule  [Every Wednesday]│    │
+  │  │ Min Net Profit [$8,000]         │    │
+  │  │ Visa Status    [Not Required]   │    │
+  │  └─────────────────────────────────┘    │
+  │                                         │
+  │  [Cancel]  [Publish Tour]               │
+  └─────────────────────────────────────────┘
+
+  API: POST /api/tours with all fields including constraints → creates Tour
+  record. If booking_ids provided, auto-creates TourStop for each.
+
+  ---
+  2. Tour Detail Page — Rules + Stops Table
+
+  Path: /dashboard/talent/tours/{tourId}
+
+  Header:
+  ← Back to Dashboard
+  East Coast Spring Tour  [Pending] [Visa Not Required] [85%]
+  Northeast USA
+
+  Info Cards: Dates | Confirmed Shows | Price per Show | Confirmed Revenue
+
+  Tour Rules Card (only shown when constraints exist):
+  ┌─────────────────────────────────────────────┐
+  │ 🛡 Tour Rules                               │
+  │                                             │
+  │ ⏱ Max Travel: 4 hours  📅 Shows/Week: 2-5  │
+  │ 📅 Rest Day: Every Wed  💲 Min Profit: $8k  │
+  └─────────────────────────────────────────────┘
+
+  Stops Table:
+  ┌──────────────┬─────────────────┬───────────┬──────────────┬──────────────┐
+  │ Date         │ City / Venue    │ Status    │ Travel       │ Est. Revenue │
+  ├──────────────┼─────────────────┼───────────┼──────────────┼──────────────┤
+  │ Sat, Mar 15  │ Boston, MA      │ Confirmed │ -            │ $5,000       │
+  │              │ Community Ctr   │   (green) │              │              │
+  ├──────────────┼─────────────────┼───────────┼──────────────┼──────────────┤
+  │ Wed, Mar 19  │ TBD             │ Rest Day  │ -            │ -            │
+  │              │                 │   (gray)  │              │              │
+  ├──────────────┼─────────────────┼───────────┼──────────────┼──────────────┤
+  │ Fri, Mar 21  │ New York, NY    │ Open      │ 3.5hr drive  │ -            │
+  │              │                 │  (yellow) │              │              │
+  ├──────────────┼─────────────────┼───────────┼──────────────┼──────────────┤
+  │ Sat, Mar 22  │ Philadelphia    │ Inquiry   │ 2hr drive    │ $4,500       │
+  │              │ Synagogue       │   (blue)  │              │              │
+  └──────────────┴─────────────────┴───────────┴──────────────┴──────────────┘
+                                                      [+ Add Stop]
+
+  ---
+  3. Adding Stops
+
+  "Add Stop" modal allows creating:
+  - Confirmed Show — an anchor booking
+  - Open Slot — available date for hosts to book
+  - Rest Day — blocked day per rest rules
+  - Inquiry — pending discussion
+
+  API: POST /api/tours/{id}/stops
+
+  ---
+  4. Booking → Stop Auto-Creation
+
+  When a booking is added to a tour via:
+  - POST /api/tours/{id}/bookings/{booking_id} — auto-creates a linked TourStop
+  - Tour creation with booking_ids — auto-creates stops for each
+  - Approved join request — auto-creates stop for the new booking
+
+  ---
+  5. Stop Management
+
+  Action: Create stop
+  Endpoint: POST /api/tours/{id}/stops
+  ────────────────────────────────────────
+  Action: Update stop (logistics, financials, status)
+  Endpoint: PUT /api/tours/{id}/stops/{stop_id}
+  ────────────────────────────────────────
+  Action: Delete stop
+  Endpoint: DELETE /api/tours/{id}/stops/{stop_id}
+  ────────────────────────────────────────
+  Action: Add booking to tour (creates stop)
+  Endpoint: POST /api/tours/{id}/bookings/{booking_id}
+  ────────────────────────────────────────
+  Action: Remove booking from tour (removes stop)
+  Endpoint: DELETE /api/tours/{id}/bookings/{booking_id}
+
+  ---
+  Data Model
+
+  Tour (tours)
+   ├── constraint fields: max_travel_hours, min/max_shows_per_week,
+   │                      rest_day_rule, min_net_profit, efficiency_score,
+   │                      visa_status
+   ├── bookings[]  ←  Booking.tour_id FK (existing)
+   └── stops[]     ←  TourStop (new, replaces tour_bookings)
+                        ├── booking_id (optional FK, unique)
+                        ├── date, city, venue_name, lat/lng
+                        ├── sequence_order
+                        ├── travel_from_prev, travel_cost, accommodation_cost
+                        ├── performance_fee, shared_logistics, net_revenue
+                        ├── route_discount
+                        └── status: confirmed | open | rest_day | inquiry |
+  recommended
+

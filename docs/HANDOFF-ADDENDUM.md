@@ -1,13 +1,33 @@
-# Kolamba - Handoff Addendum (v1.4)
+# Kolamba - Handoff Addendum (v1.5)
 
-**Date:** 2026-02-17
+**Date:** 2026-02-22
 **Author:** Drishti Consulting
 
-This addendum supplements the original project handoff document with the final feature list, v1.4 additions, and known issues.
+This addendum supplements the original project handoff document with the final feature list, latest additions, and known issues.
 
 ---
 
-## Final Feature List (v1.4)
+## Changes in v1.5 (2026-02-22)
+
+### Admin Dashboard — Persistent Sidebar for Superusers
+- **Problem:** When a superuser navigated from `/dashboard/admin` to the Host or Talent dashboards (via "View As" links), the admin sidebar disappeared because it only rendered inside the admin layout.
+- **Fix:** Moved the admin sidebar into the shared dashboard layout (`frontend/src/app/dashboard/layout.tsx`). The sidebar now renders for any `is_superuser` user across all `/dashboard/*` routes — admin, host, and talent pages.
+- **Files changed:**
+  - `frontend/src/app/dashboard/layout.tsx` — Added admin sidebar (Overview, Users, Talents nav + "View As" quick links) with desktop sidebar and mobile horizontal pill nav
+  - `frontend/src/app/dashboard/admin/layout.tsx` — Simplified to passthrough (`<>{children}</>`) to avoid duplicate sidebar
+- **Result:** Superusers always see the admin sidebar with navigation to Users (delete/edit), Talents (approve/reject/deactivate), and quick links to view Host or Talent dashboards
+
+### Previous Updates (2026-02-17 to 2026-02-22)
+- Google OAuth onboarding flow for new users (role selection + profile creation)
+- External image domain support for artist profile photos (Cloudinary, Google)
+- Superuser dashboard routing fix — superusers now correctly land on `/dashboard/admin`
+- Tour constraint fields and TourStop model for tour planning
+- Admin user management improvements
+- Dashboard auth guard and role validation fixes
+
+---
+
+## Final Feature List (v1.4+)
 
 ### Core Platform (Delivered in v1.0-v1.3)
 - Artist registration with multi-step form + Cloudinary image uploads

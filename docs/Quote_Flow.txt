@@ -1,0 +1,128 @@
+---                                                                           
+  Kolamba — Quote Flow (End-to-End Process)                                     
+                                                                                
+  HOST SIDE                                                                     
+
+  1. Browse & Request a Booking
+  - Host logs into their account
+  - Clicks "Browse Talents" from the Host Dashboard
+  - Selects a talent profile → clicks "Send Booking Request"
+  - Fills in the booking form:
+    - Event type (Concert, Workshop, Lecture, etc.)
+    - Preferred date
+    - Location & venue type
+    - Expected audience size & description
+    - Budget range
+    - Special requirements / notes
+  - Submits the form → sees "Quote Request Sent!" confirmation
+
+  2. Host Dashboard — Waiting for Quote
+  - Booking appears in Host Dashboard → Quotes tab with status "Pending"
+  - Also visible in Host Dashboard → Messages tab with a conversation thread
+  - Host can send messages to the talent while waiting
+
+  3. Host Receives Quote
+  - When the talent submits a quote, the booking status changes to "Quote
+  Received" (blue badge)
+  - In Host Messages, a "Quote Received" card appears showing:
+    - Quoted amount (e.g., $2,500.00)
+    - What's included (notes from talent)
+    - Date submitted
+  - In Host Dashboard → Quotes tab, the quote amount appears on the booking card
+
+  4. Host Responds to Quote
+  Three options:
+  - Approve (green button) → Status changes to "Approved" → Talent is notified
+  - Request Changes (yellow button) → Status goes back to "Pending" → Talent can
+   submit a revised quote
+  - Decline (red button) → Host enters a reason → Status changes to "Declined" →
+   Talent is notified
+
+  ---
+  TALENT SIDE
+
+  1. Talent Receives Booking Request
+  - Talent gets a notification: "NYC Jewish Center has sent you a booking
+  request for New York"
+  - Booking appears in Talent Dashboard → Requests tab with status "Pending"
+  - Also visible in Talent Dashboard → Messages with a conversation thread
+  showing event details:
+    - Event type, date, location
+    - Audience size & description
+    - Host's budget & notes
+
+  2. Talent Submits a Quote
+  - In Talent Messages, when a conversation is selected and booking status is
+  "Pending":
+    - A "Submit Quote" card appears (blue background)
+    - Talent fills in:
+        - Amount (required) — the price for the performance
+      - What's included (optional) — e.g., "2-hour performance, sound equipment,
+   travel costs"
+    - Clicks "Submit Quote"
+  - Status changes to "Quote Sent" (blue badge)
+  - An automatic message is added to the conversation: "Quote submitted:
+  $2,500.00 — What's included: ..."
+  - Host receives a notification: "Avi Luvchik has submitted a quote of
+  $2,500.00 for your booking"
+
+  3. Talent Waits for Response
+  - The quote card changes to a read-only summary with "Waiting for host
+  response" badge
+  - Talent can continue sending messages in the conversation thread
+
+  4. Talent Receives Response
+  - If approved: Green banner — "Booking Approved!" → Status becomes "Approved"
+  - If changes requested: Status goes back to "Pending" → Talent can submit a
+  new quote with revised pricing
+  - If declined: Red banner — "Quote Declined" with the host's reason → Status
+  becomes "Declined"
+
+  ---
+  STATUS FLOW SUMMARY
+
+  Host sends booking request
+          ↓
+     [ PENDING ]  ←──────────────────┐
+          ↓                          │
+  Talent submits quote               │
+          ↓                          │
+    [ QUOTE SENT ]                   │
+          ↓                          │
+  Host responds:                     │
+    ├── Approve  → [ APPROVED ]      │
+    ├── Decline  → [ DECLINED ]      │
+    └── Request Changes ─────────────┘
+
+  ---
+  NOTIFICATIONS
+
+  Event: New booking request
+  Who Gets Notified: Talent
+  Message: "[Host] has sent you a booking request for [location]"
+  ────────────────────────────────────────
+  Event: Quote submitted
+  Who Gets Notified: Host
+  Message: "[Talent] has submitted a quote of $X for your booking"
+  ────────────────────────────────────────
+  Event: Quote approved
+  Who Gets Notified: Talent
+  Message: "[Host] has approved your quote of $X!"
+  ────────────────────────────────────────
+  Event: Quote declined
+  Who Gets Notified: Talent
+  Message: "[Host] has declined your quote. Reason: [reason]"
+  ────────────────────────────────────────
+  Event: Changes requested
+  Who Gets Notified: Talent
+  Message: "[Host] has requested changes to your quote: [reason]"
+
+  ---
+  POST-MVP (Coming Soon — Placeholder UI Only)
+
+  Three "Coming Soon" cards appear at the bottom of the messages detail panel:
+  - Deposit & Payment — Secure payment processing
+  - Logistics & Visa — International booking coordination
+  - Reviews & Ratings — Post-event reviews
+
+  These are visible in the UI but not functional yet.

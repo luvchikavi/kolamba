@@ -3,7 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Home, Loader2 } from "lucide-react";
+import {
+  LogOut,
+  Home,
+  Loader2,
+  LayoutDashboard,
+  Users,
+  Music,
+  Building2,
+  ChevronRight,
+} from "lucide-react";
 import { API_URL } from "@/lib/api";
 
 interface UserInfo {
@@ -50,6 +59,12 @@ function getCorrectDashboard(user: UserInfo): string {
   if (user.is_superuser) return "/dashboard/admin";
   return ROLE_TO_DASHBOARD[user.role] || "/";
 }
+
+const adminSidebarLinks = [
+  { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/admin/users", label: "Users", icon: Users },
+  { href: "/dashboard/admin/talents", label: "Talents", icon: Music },
+];
 
 export default function DashboardLayout({
   children,
@@ -178,7 +193,117 @@ export default function DashboardLayout({
       </div>
       {/* Spacer for the fixed bar */}
       <div className="h-12" />
-      {children}
+      {user.is_superuser ? (
+        <div className="min-h-[calc(100vh-3rem)] bg-slate-50">
+          <div className="flex">
+            {/* Admin Sidebar */}
+            <aside className="w-64 min-h-[calc(100vh-3rem)] bg-white border-r border-slate-100 p-4 hidden md:block">
+              <div className="mb-6">
+                <h2 className="text-lg font-bold text-slate-900">Admin Dashboard</h2>
+                <p className="text-sm text-slate-500">Manage Kolamba</p>
+              </div>
+              <nav className="space-y-1">
+                {adminSidebarLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                        isActive
+                          ? "bg-primary-50 text-primary-600"
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Icon size={18} />
+                      <span className="font-medium">{link.label}</span>
+                      {isActive && <ChevronRight size={16} className="ml-auto" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+              {/* Quick Links */}
+              <div className="mt-8 pt-6 border-t border-slate-100">
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                  View As
+                </h3>
+                <div className="space-y-1">
+                  <Link
+                    href="/dashboard/talent"
+                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
+                      pathname.startsWith("/dashboard/talent")
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Music size={16} />
+                    Talent Dashboard
+                  </Link>
+                  <Link
+                    href="/dashboard/host"
+                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
+                      pathname.startsWith("/dashboard/host")
+                        ? "bg-green-50 text-green-600"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Building2 size={16} />
+                    Host Dashboard
+                  </Link>
+                </div>
+              </div>
+            </aside>
+            {/* Main content */}
+            <div className="flex-1">
+              {/* Mobile nav */}
+              <div className="md:hidden bg-white border-b border-slate-100 p-4">
+                <div className="flex gap-2 overflow-x-auto">
+                  {adminSidebarLinks.map((link) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                          isActive
+                            ? "bg-primary-500 text-white"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    href="/dashboard/talent"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                      pathname.startsWith("/dashboard/talent")
+                        ? "bg-blue-500 text-white"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    Talent
+                  </Link>
+                  <Link
+                    href="/dashboard/host"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+                      pathname.startsWith("/dashboard/host")
+                        ? "bg-green-500 text-white"
+                        : "bg-slate-100 text-slate-600"
+                    }`}
+                  >
+                    Host
+                  </Link>
+                </div>
+              </div>
+              {children}
+            </div>
+          </div>
+        </div>
+      ) : (
+        children
+      )}
     </>
   );
 }
