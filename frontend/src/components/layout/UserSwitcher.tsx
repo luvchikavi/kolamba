@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Shield, X } from "lucide-react";
-import { API_URL } from "@/lib/api";
+import api, { API_URL } from "@/lib/api";
 
 interface UserInfo {
   id: number;
@@ -33,11 +33,8 @@ export default function UserSwitcher() {
     const impersonating = !!adminToken && adminToken !== token;
     setIsImpersonating(impersonating);
 
-    // Fetch current user info
-    fetch(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : null))
+    // Fetch current user info (uses api client which handles token refresh)
+    api.get<UserInfo & { is_superuser: boolean }>("/auth/me")
       .then((data) => {
         if (data) {
           // Show switcher if user is superuser OR if impersonating (admin token saved)
@@ -45,9 +42,10 @@ export default function UserSwitcher() {
             setCurrentUser(data);
             // If this is a superuser and no admin token saved yet, save it
             if (data.is_superuser && !adminToken) {
-              localStorage.setItem(ADMIN_TOKEN_KEY, token);
-              const refreshToken = localStorage.getItem("refresh_token");
-              if (refreshToken) localStorage.setItem(ADMIN_REFRESH_KEY, refreshToken);
+              const freshToken = localStorage.getItem("access_token");
+              if (freshToken) localStorage.setItem(ADMIN_TOKEN_KEY, freshToken);
+              const refreshTkn = localStorage.getItem("refresh_token");
+              if (refreshTkn) localStorage.setItem(ADMIN_REFRESH_KEY, refreshTkn);
             }
           }
         }

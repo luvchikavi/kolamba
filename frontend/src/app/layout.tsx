@@ -6,7 +6,11 @@ import Footer from "@/components/layout/Footer";
 import Providers from "@/lib/providers";
 import WelcomeModal from "@/components/modals/WelcomeModal";
 import { Toaster } from "@/components/ui/Toaster";
-import UserSwitcher from "@/components/layout/UserSwitcher";
+import dynamic from "next/dynamic";
+
+const UserSwitcher = dynamic(() => import("@/components/layout/UserSwitcher"), {
+  ssr: false,
+});
 
 // Body font - using Inter as fallback until Almoni is added
 const inter = Inter({
