@@ -1,6 +1,7 @@
 """Authentication router - login, register, tokens."""
 
 import logging
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -29,7 +30,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=Fals
 logger = logging.getLogger("kolamba.auth")
 
 from app.rate_limit import limiter
-from app.services.email import send_welcome
+from app.services.email import send_welcome, send_password_reset
 
 
 class RegisterRequest(BaseModel):
@@ -424,6 +425,84 @@ async def refresh_token(
         refresh_token=new_refresh_token,
         token_type="bearer",
     )
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Request body for forgot password."""
+    email: str
+
+
+@router.post("/forgot-password")
+@limiter.limit("3/minute")
+async def forgot_password(
+    request: Request,
+    body: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Send password reset email. Always returns 200 to prevent email enumeration."""
+    result = await db.execute(select(User).where(User.email == body.email))
+    user = result.scalar_one_or_none()
+
+    if user and user.is_active:
+        # Generate a reset token (1 hour expiry, purpose claim)
+        reset_token = create_access_token(
+            data={"sub": user.id, "purpose": "reset"},
+            expires_delta=timedelta(hours=1),
+        )
+        reset_link = f"{settings.frontend_url}/reset-password?token={reset_token}"
+        send_password_reset(user.email, reset_link)
+        logger.info("Password reset email sent: user_id=%d", user.id)
+    else:
+        logger.info("Password reset requested for unknown/inactive email: %s", body.email)
+
+    return {"message": "If an account exists for this email, a reset link has been sent."}
+
+
+class ResetPasswordRequest(BaseModel):
+    """Request body for resetting password."""
+    token: str
+    new_password: str
+
+
+@router.post("/reset-password")
+@limiter.limit("5/minute")
+async def reset_password(
+    request: Request,
+    body: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Reset password using a valid reset token."""
+    try:
+        payload = jwt.decode(body.token, settings.secret_key, algorithms=[settings.algorithm])
+        user_id_str = payload.get("sub")
+        purpose = payload.get("purpose")
+
+        if user_id_str is None or purpose != "reset":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid reset token",
+            )
+        user_id = int(user_id_str)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid reset token",
+        )
+
+    user.password_hash = get_password_hash(body.new_password)
+    await db.commit()
+    logger.info("Password reset successful: user_id=%d", user.id)
+
+    return {"message": "Password has been reset successfully."}
 
 
 class UserMeResponse(BaseModel):

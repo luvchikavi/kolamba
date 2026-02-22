@@ -57,6 +57,85 @@ def send_welcome(to: str, name: str, role: str) -> Optional[str]:
     return _send(to, subject, html)
 
 
+def send_password_reset(to: str, reset_link: str) -> Optional[str]:
+    """Send password reset email with a link containing the JWT token."""
+    subject = "Reset Your Kolamba Password"
+    html = f"""
+    <h2>Password Reset Request</h2>
+    <p>We received a request to reset your password. Click the link below to set a new password:</p>
+    <p><a href="{reset_link}" style="display:inline-block;padding:12px 24px;background:#0f172a;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Reset Password</a></p>
+    <p>This link will expire in 1 hour.</p>
+    <p>If you did not request a password reset, you can safely ignore this email.</p>
+    <p>— The Kolamba Team</p>
+    """
+    return _send(to, subject, html)
+
+
+def send_new_booking_request(
+    to: str, artist_name: str, community_name: str, location: str, date_str: str
+) -> Optional[str]:
+    """Notify talent of a new booking request."""
+    subject = f"New Booking Request from {community_name}"
+    html = f"""
+    <h2>New Booking Request</h2>
+    <p>Hi {artist_name},</p>
+    <p><strong>{community_name}</strong> has sent you a booking request:</p>
+    <ul>
+      <li><strong>Location:</strong> {location}</li>
+      <li><strong>Date:</strong> {date_str}</li>
+    </ul>
+    <p>Log in to your <a href="https://kolamba.vercel.app/dashboard/talent?tab=bookings">dashboard</a> to review and submit a quote.</p>
+    <p>— The Kolamba Team</p>
+    """
+    return _send(to, subject, html)
+
+
+def send_quote_submitted(
+    to: str, community_name: str, artist_name: str, amount: float
+) -> Optional[str]:
+    """Notify host that a talent submitted a quote."""
+    subject = f"Quote Received from {artist_name}"
+    html = f"""
+    <h2>Quote Received</h2>
+    <p>Hi {community_name},</p>
+    <p><strong>{artist_name}</strong> has submitted a quote of <strong>${amount:,.2f}</strong> for your booking.</p>
+    <p>Log in to your <a href="https://kolamba.vercel.app/dashboard/host/messages">dashboard</a> to review and respond.</p>
+    <p>— The Kolamba Team</p>
+    """
+    return _send(to, subject, html)
+
+
+def send_quote_approved(
+    to: str, artist_name: str, community_name: str, amount: float
+) -> Optional[str]:
+    """Notify talent that their quote was approved."""
+    subject = f"Quote Approved by {community_name}!"
+    html = f"""
+    <h2>Your Quote Was Approved!</h2>
+    <p>Hi {artist_name},</p>
+    <p>Great news! <strong>{community_name}</strong> has approved your quote of <strong>${amount:,.2f}</strong>.</p>
+    <p>Log in to your <a href="https://kolamba.vercel.app/dashboard/talent/messages">dashboard</a> to see the details.</p>
+    <p>— The Kolamba Team</p>
+    """
+    return _send(to, subject, html)
+
+
+def send_quote_declined(
+    to: str, artist_name: str, community_name: str, reason: str
+) -> Optional[str]:
+    """Notify talent that their quote was declined."""
+    subject = f"Quote Update from {community_name}"
+    html = f"""
+    <h2>Quote Declined</h2>
+    <p>Hi {artist_name},</p>
+    <p><strong>{community_name}</strong> has declined your quote.</p>
+    <p><strong>Reason:</strong> {reason}</p>
+    <p>You can reach out via the <a href="https://kolamba.vercel.app/dashboard/talent/messages">messaging dashboard</a> to discuss further.</p>
+    <p>— The Kolamba Team</p>
+    """
+    return _send(to, subject, html)
+
+
 def send_booking_confirmation(
     to: str, community_name: str, artist_name: str, date_str: str, location: str
 ) -> Optional[str]:

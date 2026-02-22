@@ -19,6 +19,16 @@ from app.routers.auth import get_current_user
 
 from app.rate_limit import limiter
 from app.routers.notifications import create_notification
+from app.services.email import (
+    send_new_booking_request,
+    send_quote_submitted,
+    send_quote_approved,
+    send_quote_declined,
+)
+
+import logging
+
+logger = logging.getLogger("kolamba.bookings")
 
 router = APIRouter()
 
@@ -112,6 +122,22 @@ async def create_booking(
         message=f"{community_name} has sent you a booking request for {body.location or 'an event'}.",
         link="/dashboard/talent?tab=bookings",
     )
+
+    # Send email to artist
+    try:
+        artist_user_result = await db.execute(select(User).where(User.id == artist.user_id))
+        artist_user = artist_user_result.scalar_one_or_none()
+        if artist_user:
+            artist_display = artist.name_en or artist.name_he or "Artist"
+            send_new_booking_request(
+                to=artist_user.email,
+                artist_name=artist_display,
+                community_name=community_name,
+                location=body.location or "TBD",
+                date_str=str(body.requested_date) if body.requested_date else "TBD",
+            )
+    except Exception as e:
+        logger.error("Failed to send booking email: %s", e)
 
     await db.commit()
     await db.refresh(booking)
@@ -348,6 +374,20 @@ async def submit_quote(
             link="/dashboard/host/messages",
         )
 
+        # Send email to host
+        try:
+            host_user_result = await db.execute(select(User).where(User.id == community.user_id))
+            host_user = host_user_result.scalar_one_or_none()
+            if host_user:
+                send_quote_submitted(
+                    to=host_user.email,
+                    community_name=community.name or "Host",
+                    artist_name=artist_name,
+                    amount=body.quote_amount,
+                )
+        except Exception as e:
+            logger.error("Failed to send quote submitted email: %s", e)
+
     await db.commit()
     await db.refresh(booking)
     return booking
@@ -405,6 +445,21 @@ async def respond_to_quote(
                 link="/dashboard/talent/messages",
             )
 
+            # Send email to artist
+            try:
+                artist_user_result = await db.execute(select(User).where(User.id == artist.user_id))
+                artist_user = artist_user_result.scalar_one_or_none()
+                if artist_user:
+                    artist_display = artist.name_en or artist.name_he or "Artist"
+                    send_quote_approved(
+                        to=artist_user.email,
+                        artist_name=artist_display,
+                        community_name=community_name,
+                        amount=booking.quote_amount,
+                    )
+            except Exception as e:
+                logger.error("Failed to send quote approved email: %s", e)
+
     elif body.action == "decline":
         booking.status = "declined"
         booking.decline_reason = body.decline_reason
@@ -420,6 +475,21 @@ async def respond_to_quote(
                 message=f"{community_name} has declined your quote. Reason: {reason_text}",
                 link="/dashboard/talent/messages",
             )
+
+            # Send email to artist
+            try:
+                artist_user_result = await db.execute(select(User).where(User.id == artist.user_id))
+                artist_user = artist_user_result.scalar_one_or_none()
+                if artist_user:
+                    artist_display = artist.name_en or artist.name_he or "Artist"
+                    send_quote_declined(
+                        to=artist_user.email,
+                        artist_name=artist_display,
+                        community_name=community_name,
+                        reason=reason_text,
+                    )
+            except Exception as e:
+                logger.error("Failed to send quote declined email: %s", e)
 
     elif body.action == "request_changes":
         booking.status = "pending"

@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
 
+    # Frontend
+    frontend_url: str = "http://localhost:3002"
+
     # Environment
     env: str = "development"
     debug: bool = True
