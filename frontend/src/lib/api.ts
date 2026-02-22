@@ -556,6 +556,14 @@ export const api = {
         { token }
       ),
   },
+
+  // Superuser impersonation
+  impersonation: {
+    listUsers: () =>
+      api.get<{ id: number; email: string; name: string | null; role: string; is_superuser: boolean }[]>("/auth/users"),
+    impersonate: (userId: number) =>
+      api.post<{ access_token: string; refresh_token: string; token_type: string }>("/auth/impersonate", { user_id: userId }),
+  },
 };
 
 export default api;

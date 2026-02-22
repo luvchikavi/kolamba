@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import Providers from "@/lib/providers";
 import WelcomeModal from "@/components/modals/WelcomeModal";
 import { Toaster } from "@/components/ui/Toaster";
+import UserSwitcher from "@/components/layout/UserSwitcher";
 
 // Body font - using Inter as fallback until Almoni is added
 const inter = Inter({
@@ -92,6 +93,7 @@ export default function RootLayout({
           </div>
           <WelcomeModal />
           <Toaster />
+          <UserSwitcher />
         </Providers>
       </body>
     </html>

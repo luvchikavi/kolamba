@@ -508,6 +508,84 @@ async def admin_reset_password(
     return {"message": f"Password updated for {request.email}"}
 
 
+# --- Superuser Impersonation ---
+
+
+class ImpersonateRequest(BaseModel):
+    """Request body for impersonation."""
+    user_id: int
+
+
+class UserListItem(BaseModel):
+    """User summary for impersonation list."""
+    id: int
+    email: str
+    name: Optional[str]
+    role: str
+    is_superuser: bool = False
+
+    class Config:
+        from_attributes = True
+
+
+@router.get("/users", response_model=list[UserListItem])
+async def list_users_for_impersonation(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List users for superuser impersonation. Requires superuser."""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Superuser access required",
+        )
+
+    result = await db.execute(
+        select(User).where(User.is_active == True).order_by(User.id).limit(50)
+    )
+    users = result.scalars().all()
+    return users
+
+
+@router.post("/impersonate", response_model=Token)
+async def impersonate_user(
+    body: ImpersonateRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Impersonate another user. Requires superuser."""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Superuser access required",
+        )
+
+    result = await db.execute(select(User).where(User.id == body.user_id))
+    target_user = result.scalar_one_or_none()
+
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    logger.info(
+        "Superuser impersonation: admin=%d (%s) -> target=%d (%s)",
+        current_user.id, current_user.email, target_user.id, target_user.email,
+    )
+
+    access_token = create_access_token(
+        data={"sub": target_user.id, "email": target_user.email, "role": target_user.role}
+    )
+    refresh_token = create_refresh_token(data={"sub": target_user.id})
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="bearer",
+    )
+
+
 class GoogleAuthRequest(BaseModel):
     """Request body for Google OAuth login."""
     credential: str  # Google ID token
