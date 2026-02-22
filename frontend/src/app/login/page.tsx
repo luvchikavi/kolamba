@@ -69,7 +69,7 @@ function LoginForm() {
           if (!user.is_superuser && !user.community_id && !user.artist_id) {
             router.push("/onboarding");
           } else if (user.is_superuser) {
-            router.push("/dashboard/host");
+            router.push("/dashboard/admin");
           } else if (user.role === "artist") {
             router.push("/dashboard/talent");
           } else if (user.role === "agent") {
@@ -161,7 +161,7 @@ function LoginForm() {
           if (!user.is_superuser && !user.community_id && !user.artist_id) {
             router.push("/onboarding");
           } else if (user.is_superuser) {
-            router.push("/dashboard/host");
+            router.push("/dashboard/admin");
           } else if (user.role === "artist") {
             router.push("/dashboard/talent");
           } else if (user.role === "agent") {

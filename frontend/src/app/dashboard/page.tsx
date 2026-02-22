@@ -28,7 +28,7 @@ export default function DashboardIndexPage() {
 
         const user = await res.json();
         if (user.is_superuser) {
-          router.replace("/dashboard/host");
+          router.replace("/dashboard/admin");
         } else if (user.role === "artist") {
           router.replace("/dashboard/talent");
         } else if (user.role === "agent") {

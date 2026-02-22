@@ -47,7 +47,7 @@ function canAccessDashboard(segment: string, user: UserInfo): boolean {
 }
 
 function getCorrectDashboard(user: UserInfo): string {
-  if (user.is_superuser) return "/dashboard/host";
+  if (user.is_superuser) return "/dashboard/admin";
   return ROLE_TO_DASHBOARD[user.role] || "/";
 }
 

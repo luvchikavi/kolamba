@@ -60,7 +60,7 @@ export default function Header() {
     if (user?.role === "artist") return "/dashboard/talent";
     if (user?.role === "agent") return "/dashboard/agent";
     if (user?.role === "community") return "/dashboard/host";
-    if (user?.is_superuser) return "/dashboard/host";
+    if (user?.is_superuser) return "/dashboard/admin";
     return "/";
   };
 
