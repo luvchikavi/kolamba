@@ -26,6 +26,8 @@ export default function NotificationBell() {
     if (!token) return;
     setIsLoggedIn(true);
 
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
     const fetchCount = async () => {
       try {
         const res = await fetch(`${API_URL}/notifications/count`, {
@@ -34,6 +36,10 @@ export default function NotificationBell() {
         if (res.ok) {
           const data = await res.json();
           setUnreadCount(data.unread_count);
+        } else if (res.status === 401) {
+          // Token expired/invalid — stop polling
+          if (intervalId) clearInterval(intervalId);
+          setIsLoggedIn(false);
         }
       } catch {
         // Silent fail
@@ -42,8 +48,8 @@ export default function NotificationBell() {
 
     fetchCount();
     // Poll every 30 seconds
-    const interval = setInterval(fetchCount, 30000);
-    return () => clearInterval(interval);
+    intervalId = setInterval(fetchCount, 30000);
+    return () => { if (intervalId) clearInterval(intervalId); };
   }, []);
 
   useEffect(() => {
