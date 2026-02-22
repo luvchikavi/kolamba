@@ -4,7 +4,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError, jwt
 from pydantic import BaseModel
@@ -583,6 +583,103 @@ async def impersonate_user(
         access_token=access_token,
         refresh_token=refresh_token,
         token_type="bearer",
+    )
+
+
+class CompleteProfileRequest(BaseModel):
+    """Request body for completing onboarding profile."""
+    role: str  # "community" or "artist"
+    community_name: Optional[str] = None
+    location: Optional[str] = None
+
+
+@router.post("/complete-profile", response_model=UserMeResponse)
+async def complete_profile(
+    body: CompleteProfileRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Complete onboarding profile for a new Google OAuth user."""
+    from app.models.community import Community
+    from app.services.geocoding import geocode_location
+
+    # Guard: check if user already has a profile
+    artist_result = await db.execute(
+        select(Artist.id).where(Artist.user_id == current_user.id)
+    )
+    if artist_result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Profile already completed")
+
+    community_result = await db.execute(
+        select(Community.id).where(Community.user_id == current_user.id)
+    )
+    if community_result.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Profile already completed")
+
+    if body.role not in ("community", "artist"):
+        raise HTTPException(status_code=400, detail="Role must be 'community' or 'artist'")
+
+    if body.role == "community":
+        if not body.community_name or not body.community_name.strip():
+            raise HTTPException(status_code=400, detail="Community name is required")
+        if not body.location or not body.location.strip():
+            raise HTTPException(status_code=400, detail="Location is required")
+
+        # Check duplicate community name (case-insensitive)
+        existing = await db.execute(
+            select(Community).where(
+                func.lower(Community.name) == body.community_name.strip().lower()
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=400,
+                detail="A host with this name already exists. Please use a different name.",
+            )
+
+        # Geocode location
+        coords = await geocode_location(body.location.strip())
+        lat = coords[0] if coords else None
+        lng = coords[1] if coords else None
+
+        # Create community
+        community = Community(
+            user_id=current_user.id,
+            name=body.community_name.strip(),
+            location=body.location.strip(),
+            latitude=lat,
+            longitude=lng,
+            status="active",
+        )
+        db.add(community)
+
+        # Update user role
+        current_user.role = "community"
+        await db.commit()
+        await db.refresh(community)
+
+        return UserMeResponse(
+            id=current_user.id,
+            email=current_user.email,
+            name=current_user.name,
+            role=current_user.role,
+            is_active=current_user.is_active,
+            is_superuser=current_user.is_superuser,
+            community_id=community.id,
+        )
+
+    # role == "artist"
+    current_user.role = "artist"
+    await db.commit()
+
+    return UserMeResponse(
+        id=current_user.id,
+        email=current_user.email,
+        name=current_user.name,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        is_superuser=current_user.is_superuser,
+        artist_id=None,
     )
 
 

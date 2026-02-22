@@ -12,6 +12,8 @@ interface UserInfo {
   name: string | null;
   role: string;
   is_superuser: boolean;
+  artist_id: number | null;
+  community_id: number | null;
 }
 
 const ROLE_TO_DASHBOARD: Record<string, string> = {
@@ -99,6 +101,13 @@ export default function DashboardLayout({
         }
 
         const userData: UserInfo = await res.json();
+
+        // Onboarding guard: redirect users without a profile
+        if (!userData.is_superuser && !userData.community_id && !userData.artist_id) {
+          router.replace("/onboarding");
+          return;
+        }
+
         setUser(userData);
 
         // Role validation

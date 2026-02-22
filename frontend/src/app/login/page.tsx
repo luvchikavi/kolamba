@@ -65,7 +65,10 @@ function LoginForm() {
 
         if (meRes.ok) {
           const user = await meRes.json();
-          if (user.is_superuser) {
+          // Onboarding check: new user without a profile
+          if (!user.is_superuser && !user.community_id && !user.artist_id) {
+            router.push("/onboarding");
+          } else if (user.is_superuser) {
             router.push("/dashboard/host");
           } else if (user.role === "artist") {
             router.push("/dashboard/talent");
@@ -154,7 +157,10 @@ function LoginForm() {
 
         if (meResponse.ok) {
           const user = await meResponse.json();
-          if (user.is_superuser) {
+          // Onboarding check: new user without a profile
+          if (!user.is_superuser && !user.community_id && !user.artist_id) {
+            router.push("/onboarding");
+          } else if (user.is_superuser) {
             router.push("/dashboard/host");
           } else if (user.role === "artist") {
             router.push("/dashboard/talent");
