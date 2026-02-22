@@ -2,162 +2,87 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Search,
-  User,
   MessageSquare,
-  Calendar,
-  Quote,
   Settings,
-  ExternalLink,
   Loader2,
+  Clock,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  Users,
   MapPin,
-  ArrowRight,
+  XCircle,
 } from "lucide-react";
 import { API_URL, DiscoverArtist, DiscoverResponse, DiscoverParams } from "@/lib/api";
 import DiscoverFilters from "@/components/dashboard/DiscoverFilters";
 import DiscoverArtistCard from "@/components/dashboard/DiscoverArtistCard";
 
-interface TourDate {
+interface Booking {
   id: number;
   artist_id: number;
-  location: string;
-  start_date: string;
-  end_date: string | null;
-  description: string | null;
-  is_booked: boolean;
+  artist_name?: string;
+  requested_date?: string;
+  location?: string;
+  budget?: number;
+  notes?: string;
+  status: string;
+  created_at: string;
 }
 
-interface NearbyTouringArtist {
-  artist_id: number;
-  artist_name: string;
-  profile_image: string | null;
-  tour_date: TourDate;
-  distance_km: number;
-}
-
-interface DashboardCounts {
-  messages: number;
-  pendingQuotes: number;
-  upcomingEvents: number;
-}
-
-interface UpcomingEvent {
+interface ConversationListItem {
   id: number;
-  artist_name: string;
-  location: string;
-  date: string;
+  booking_id: number;
+  artist_name: string | null;
+  community_name: string | null;
+  last_message: string | null;
+  message_count: number;
+  booking_status: string | null;
+  updated_at: string;
 }
 
-// Sidebar menu items (dynamic counts filled from API)
-const menuConfig = [
-  { label: "Messages", icon: MessageSquare, countKey: "messages" as const, href: "/dashboard/host/messages" },
-  { label: "Events", icon: Calendar, countKey: "upcomingEvents" as const, href: "/dashboard/host/events" },
-  { label: "Quotes", icon: Quote, countKey: "pendingQuotes" as const, href: "/dashboard/host/quotes" },
-  { label: "Settings", icon: Settings, href: "/dashboard/host/settings" },
-];
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700",
+    approved: "bg-emerald-100 text-emerald-700",
+    confirmed: "bg-emerald-100 text-emerald-700",
+    cancelled: "bg-red-100 text-red-700",
+    completed: "bg-blue-100 text-blue-700",
+  };
 
-function EventCard({ artist }: { artist: NearbyTouringArtist }) {
-  const formattedDate = new Date(artist.tour_date.start_date).toLocaleDateString("en-GB");
-  const distanceText = artist.distance_km < 1
-    ? "Less than 1 km away"
-    : `${Math.round(artist.distance_km)} km away`;
+  const icons: Record<string, React.ElementType> = {
+    pending: Clock,
+    approved: CheckCircle,
+    confirmed: CheckCircle,
+    cancelled: XCircle,
+    completed: CheckCircle,
+  };
+
+  const Icon = icons[status] || Clock;
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm flex">
-      {/* Artist Image */}
-      <div className="relative w-48 h-48 flex-shrink-0">
-        <Image
-          src={artist.profile_image || "/placeholder-artist.jpg"}
-          alt={artist.artist_name}
-          fill
-          className="object-cover"
-        />
-        {/* Date overlay */}
-        <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded">
-          {formattedDate}
-        </div>
-        {/* Location overlay */}
-        <div className="absolute bottom-10 left-3 text-white text-xs">
-          <p>Location:</p>
-          <p className="font-medium">{artist.tour_date.location}</p>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 p-5 flex flex-col justify-between">
-        <div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">{artist.artist_name}</h3>
-          <div className="flex items-center gap-1 text-sm text-slate-500 mb-1">
-            <MapPin size={14} />
-            <span>{distanceText}</span>
-          </div>
-          <p className="text-sm text-slate-500 mb-1">
-            <span className="font-medium">Date:</span> {formattedDate}
-            {artist.tour_date.end_date && ` - ${new Date(artist.tour_date.end_date).toLocaleDateString("en-GB")}`}
-          </p>
-          <p className="text-sm text-slate-500">
-            <span className="font-medium">Location:</span> {artist.tour_date.location}
-          </p>
-          {artist.tour_date.description && (
-            <p className="text-sm text-slate-400 mt-2 line-clamp-2">
-              {artist.tour_date.description}
-            </p>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3 mt-4">
-          <Link
-            href={`/talents/${artist.artist_id}`}
-            className="flex items-center gap-2 px-4 py-2.5 border-2 border-slate-900 rounded-full text-sm font-semibold hover:bg-slate-50 transition-colors"
-          >
-            VISIT PROFILE
-            <ExternalLink size={14} />
-          </Link>
-          <Link
-            href={`/booking/${artist.artist_id}`}
-            className="px-4 py-2.5 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors"
-          >
-            MAKE IT A TOUR
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
-      <MapPin size={48} className="text-slate-300 mx-auto mb-4" />
-      <h3 className="text-lg font-bold text-slate-900 mb-2">No Talents Touring Nearby</h3>
-      <p className="text-slate-500 max-w-md mx-auto">
-        When talents announce tour dates within 200km of your location, they&apos;ll appear here.
-        Check back soon or browse all talents to send booking requests.
-      </p>
-      <Link
-        href="/search"
-        className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors"
-      >
-        <Search size={16} />
-        BROWSE TALENTS
-      </Link>
-    </div>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium rounded-full ${styles[status] || "bg-slate-100 text-slate-600"}`}>
+      <Icon size={12} />
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </span>
   );
 }
 
 const DISCOVER_PAGE_SIZE = 6;
 
-export default function CommunityDashboardPage() {
+export default function HostDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
-  const [nearbyArtists, setNearbyArtists] = useState<NearbyTouringArtist[]>([]);
-  const [userName, setUserName] = useState("Friend");
-  const [communityName, setCommunityName] = useState("");
   const [communityId, setCommunityId] = useState<number | null>(null);
-  const [counts, setCounts] = useState<DashboardCounts>({ messages: 0, pendingQuotes: 0, upcomingEvents: 0 });
-  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [communityName, setCommunityName] = useState("");
+  const [activeTab, setActiveTab] = useState<"quotes" | "events" | "messages" | "discover">("quotes");
+
+  // Bookings data (for quotes + events + stats)
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  // Conversations data
+  const [conversations, setConversations] = useState<ConversationListItem[]>([]);
 
   // Discover state
   const [communityEventTypes, setCommunityEventTypes] = useState<string[]>([]);
@@ -173,6 +98,8 @@ export default function CommunityDashboardPage() {
   const [discoverTouringCount, setDiscoverTouringCount] = useState(0);
   const [isDiscoverLoading, setIsDiscoverLoading] = useState(false);
 
+  const getToken = () => localStorage.getItem("access_token");
+
   const fetchDiscoverArtists = useCallback(async (
     commId: number,
     params: DiscoverParams,
@@ -180,7 +107,7 @@ export default function CommunityDashboardPage() {
   ) => {
     setIsDiscoverLoading(true);
     try {
-      const token = localStorage.getItem("access_token");
+      const token = getToken();
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -199,7 +126,6 @@ export default function CommunityDashboardPage() {
         const data: DiscoverResponse = await res.json();
         setDiscoverResults((prev) => append ? [...prev, ...data.artists] : data.artists);
         setDiscoverTotal(data.total);
-        // Count artists with nearby tour dates
         const touringNearby = data.artists.filter((a) => a.nearest_tour_date).length;
         if (!append) {
           setDiscoverTouringCount(touringNearby);
@@ -220,7 +146,7 @@ export default function CommunityDashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = getToken();
       if (!token) {
         window.location.href = "/login";
         return;
@@ -228,7 +154,7 @@ export default function CommunityDashboardPage() {
 
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Get community profile
+      // Get user profile
       const profileRes = await fetch(`${API_URL}/auth/me`, { headers });
       if (profileRes.status === 401) {
         window.location.href = "/login";
@@ -237,14 +163,12 @@ export default function CommunityDashboardPage() {
 
       if (profileRes.ok) {
         const userData = await profileRes.json();
-        setUserName(userData.name || "Friend");
-
-        // Get community details using community_id from auth/me response
         const commId = userData.community_id;
+
         if (commId) {
           setCommunityId(commId);
 
-          // Fetch community profile to get name and event_types
+          // Fetch community profile
           const communityRes = await fetch(`${API_URL}/hosts/${commId}`, { headers });
           if (communityRes.ok) {
             const communityData = await communityRes.json();
@@ -254,15 +178,20 @@ export default function CommunityDashboardPage() {
             setSelectedEventTypes(eventTypes);
           }
 
-          // Fetch nearby touring artists
-          const nearbyRes = await fetch(
-            `${API_URL}/hosts/${commId}/nearby-touring-artists?radius_km=200`,
-            { headers }
-          );
+          // Fetch bookings, conversations, and discover artists in parallel
+          const [bookingsRes, conversationsRes] = await Promise.all([
+            fetch(`${API_URL}/bookings/my-bookings`, { headers }),
+            fetch(`${API_URL}/conversations`, { headers }),
+          ]);
 
-          if (nearbyRes.ok) {
-            const artists: NearbyTouringArtist[] = await nearbyRes.json();
-            setNearbyArtists(artists);
+          if (bookingsRes.ok) {
+            const bookingsData: Booking[] = await bookingsRes.json();
+            setBookings(bookingsData);
+          }
+
+          if (conversationsRes.ok) {
+            const conversationsData: ConversationListItem[] = await conversationsRes.json();
+            setConversations(conversationsData);
           }
 
           // Fetch discover artists (initial load)
@@ -272,46 +201,6 @@ export default function CommunityDashboardPage() {
             limit: DISCOVER_PAGE_SIZE,
             offset: 0,
           });
-
-          // Fetch bookings to compute counts
-          try {
-            const bookingsRes = await fetch(`${API_URL}/bookings?community_id=${commId}`, { headers });
-            if (bookingsRes.ok) {
-              const bookings = await bookingsRes.json();
-              const pending = bookings.filter((b: { status: string }) => b.status === "pending");
-              const approved = bookings.filter((b: { status: string }) => b.status === "approved");
-
-              setCounts((prev) => ({
-                ...prev,
-                pendingQuotes: pending.length,
-                upcomingEvents: approved.length,
-              }));
-
-              // Build upcoming events list (next 3 approved bookings)
-              const upcoming = approved
-                .filter((b: { requested_date?: string }) => b.requested_date)
-                .sort((a: { requested_date: string }, b: { requested_date: string }) =>
-                  new Date(a.requested_date).getTime() - new Date(b.requested_date).getTime()
-                )
-                .slice(0, 3)
-                .map((b: { id: number; location?: string; requested_date?: string }) => ({
-                  id: b.id,
-                  artist_name: "",
-                  location: b.location || "TBD",
-                  date: b.requested_date || "",
-                }));
-              setUpcomingEvents(upcoming);
-            }
-          } catch { /* ignore booking fetch errors */ }
-
-          // Fetch messages count
-          try {
-            const messagesRes = await fetch(`${API_URL}/conversations`, { headers });
-            if (messagesRes.ok) {
-              const conversations = await messagesRes.json();
-              setCounts((prev) => ({ ...prev, messages: conversations.length }));
-            }
-          } catch { /* ignore */ }
         }
       }
     } catch (error) {
@@ -321,7 +210,29 @@ export default function CommunityDashboardPage() {
     }
   };
 
-  // Re-fetch discover results when filters change
+  const handleCancelBooking = async (bookingId: number) => {
+    if (!confirm("Are you sure you want to cancel this booking request?")) return;
+
+    setCancellingId(bookingId);
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === bookingId ? { ...b, status: "cancelled" } : b))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to cancel booking:", error);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  // Discover filters handlers
   const handleDiscoverParamsChange = (newParams: DiscoverParams) => {
     const updated = { ...newParams, offset: 0, limit: DISCOVER_PAGE_SIZE };
     setDiscoverParams(updated);
@@ -353,11 +264,18 @@ export default function CommunityDashboardPage() {
     }
   };
 
+  // Computed stats
+  const pendingQuotes = bookings.filter((b) => b.status === "pending");
+  const confirmedEvents = bookings.filter((b) => b.status === "approved" || b.status === "confirmed");
+  const totalSpent = bookings
+    .filter((b) => b.status === "approved" || b.status === "confirmed" || b.status === "completed")
+    .reduce((sum, b) => sum + (b.budget || 0), 0);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 size={40} className="animate-spin text-pink-500 mx-auto mb-4" />
+          <Loader2 size={40} className="animate-spin text-primary-500 mx-auto mb-4" />
           <p className="text-slate-600">Loading your dashboard...</p>
         </div>
       </div>
@@ -365,224 +283,410 @@ export default function CommunityDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white">
+    <div className="min-h-screen bg-slate-50 pt-20">
       {/* Header */}
-      <header className="pt-8 pb-4">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-center">
-            <div className="bg-white rounded-full px-8 py-4 shadow-lg flex items-center gap-12">
-              <Link
-                href="/search"
-                className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium"
-              >
+      <div className="bg-white border-b border-slate-100">
+        <div className="container-default py-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <Link href="/" className="text-xl font-bold text-slate-900 hover:text-primary-600 transition-colors">
+                KOLAMBA
+              </Link>
+              <div className="h-8 w-px bg-slate-200" />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Host Dashboard</h1>
+                <p className="text-slate-500">{communityName || "Manage your bookings and events"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/search" className="btn-primary">
                 <Search size={18} />
-                <span className="uppercase tracking-wide text-sm">Search</span>
+                <span>Browse Talents</span>
               </Link>
-
-              <Link href="/" className="flex items-center">
-                <span className="text-2xl font-bold tracking-wider text-slate-900">
-                  KOLAMBA
-                </span>
+              <Link href="/dashboard/host/messages" className="btn-secondary">
+                <MessageSquare size={18} />
+                <span>Messages</span>
               </Link>
-
-              <Link
-                href="/dashboard/host"
-                className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium"
-              >
-                <User size={18} />
-                <span className="uppercase tracking-wide text-sm">{userName}</span>
+              <Link href="/dashboard/host/settings" className="btn-secondary">
+                <Settings size={18} />
+                <span>Settings</span>
               </Link>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left: Main content */}
-          <div className="lg:col-span-2">
-            {/* Greeting */}
-            <div className="flex items-start gap-6 mb-12">
-              <div className="w-16 h-16 rounded-full border-2 border-pink-300 flex items-center justify-center">
-                <User size={28} className="text-pink-400" />
+      {/* Stats */}
+      <div className="container-default py-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Clock size={20} className="text-amber-600" />
               </div>
               <div>
-                <h1 className="text-5xl md:text-6xl font-serif font-bold text-slate-900 mb-2">
-                  HEY {userName.toUpperCase()}
-                </h1>
-                <p className="text-xl text-slate-600">
-                  IT&apos;S GOOD TO SEE YOU AGAIN MEYDELE!
-                </p>
-                {communityName && (
-                  <p className="text-sm text-slate-500 mt-2">{communityName}</p>
-                )}
+                <p className="text-2xl font-bold text-slate-900">{pendingQuotes.length}</p>
+                <p className="text-sm text-slate-500">Pending Quotes</p>
               </div>
-            </div>
-
-            {/* Discover Artists Section */}
-            <div className="mb-16">
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 italic mb-4">
-                DISCOVER TALENTS
-              </h2>
-              <p className="text-sm text-slate-500 mb-6">
-                {discoverTotal} talent{discoverTotal !== 1 ? "s" : ""} match your interests
-                {discoverTouringCount > 0 && (
-                  <> &middot; {discoverTouringCount} touring nearby</>
-                )}
-              </p>
-
-              <DiscoverFilters
-                eventTypes={communityEventTypes}
-                selectedEventTypes={selectedEventTypes}
-                onEventTypesChange={handleEventTypesChange}
-                params={discoverParams}
-                onParamsChange={handleDiscoverParamsChange}
-              />
-
-              {isDiscoverLoading && discoverResults.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 size={32} className="animate-spin text-pink-500" />
-                </div>
-              ) : discoverResults.length === 0 ? (
-                <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
-                  <Search size={40} className="text-slate-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">No talents found</h3>
-                  <p className="text-slate-500 text-sm">
-                    Try adjusting your filters or browse all talents.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {discoverResults.map((artist) => (
-                      <DiscoverArtistCard key={artist.id} artist={artist} />
-                    ))}
-                  </div>
-
-                  {/* Show More button */}
-                  {discoverResults.length < discoverTotal && (
-                    <div className="text-center mt-6">
-                      <button
-                        onClick={handleShowMore}
-                        disabled={isDiscoverLoading}
-                        className="inline-flex items-center gap-2 px-6 py-3 border-2 border-slate-900 rounded-full text-sm font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
-                      >
-                        {isDiscoverLoading ? (
-                          <Loader2 size={16} className="animate-spin" />
-                        ) : null}
-                        Show More
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Events in Your Area */}
-            <div>
-              <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 italic mb-8">
-                EVENTS IN YOUR AREA
-              </h2>
-
-              {nearbyArtists.length === 0 ? (
-                <EmptyState />
-              ) : (
-                <div className="space-y-6">
-                  {nearbyArtists.map((artist) => (
-                    <EventCard key={`${artist.artist_id}-${artist.tour_date.id}`} artist={artist} />
-                  ))}
-                </div>
-              )}
             </div>
           </div>
-
-          {/* Right: Sidebar */}
-          <div className="space-y-8">
-            {/* Navigation Menu */}
-            <nav className="space-y-2">
-              {menuConfig.map((item) => {
-                const Icon = item.icon;
-                const count = item.countKey ? counts[item.countKey] : undefined;
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="flex items-center justify-between px-4 py-4 text-slate-800 hover:bg-white/50 rounded-xl transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon size={20} className="text-slate-500" />
-                      <span className="text-lg font-medium">{item.label}</span>
-                    </div>
-                    {count !== undefined && count > 0 && (
-                      <span className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm font-semibold shadow-sm">
-                        {count}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Quick Actions */}
-            <div className="bg-white/60 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                <Link
-                  href="/search"
-                  className="flex items-center justify-between px-4 py-3 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
-                >
-                  <span>Browse Talents</span>
-                  <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/dashboard/host/quotes"
-                  className="flex items-center justify-between px-4 py-3 border-2 border-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
-                >
-                  <span>View Quotes {counts.pendingQuotes > 0 && `(${counts.pendingQuotes} pending)`}</span>
-                  <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/dashboard/host/messages"
-                  className="flex items-center justify-between px-4 py-3 border-2 border-slate-900 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
-                >
-                  <span>Messages {counts.messages > 0 && `(${counts.messages})`}</span>
-                  <ArrowRight size={16} />
-                </Link>
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                <MessageSquare size={20} className="text-primary-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{conversations.length}</p>
+                <p className="text-sm text-slate-500">Active Conversations</p>
               </div>
             </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Calendar size={20} className="text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{confirmedEvents.length}</p>
+                <p className="text-sm text-slate-500">Upcoming Events</p>
+              </div>
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                <Users size={20} className="text-violet-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{bookings.length}</p>
+                <p className="text-sm text-slate-500">Total Bookings</p>
+              </div>
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center">
+                <DollarSign size={20} className="text-accent-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">
+                  ${totalSpent.toLocaleString()}
+                </p>
+                <p className="text-sm text-slate-500">Total Spent</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {/* Upcoming Events Summary */}
-            {upcomingEvents.length > 0 && (
-              <div className="bg-white/60 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">Upcoming Events</h3>
-                <div className="space-y-3">
-                  {upcomingEvents.map((event) => (
-                    <div key={event.id} className="flex items-center gap-3 text-sm">
-                      <Calendar size={16} className="text-pink-500 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-slate-800">{event.location}</p>
-                        <p className="text-slate-500">
-                          {new Date(event.date).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          <button
+            onClick={() => setActiveTab("quotes")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeTab === "quotes"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Quotes ({pendingQuotes.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("events")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeTab === "events"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Events ({confirmedEvents.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("messages")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeTab === "messages"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Messages ({conversations.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("discover")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeTab === "discover"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            Discover Talents ({discoverTotal})
+          </button>
+        </div>
+
+        {/* Tab Content */}
+
+        {/* Quotes Tab */}
+        {activeTab === "quotes" && (
+          <div className="space-y-4">
+            {pendingQuotes.length === 0 ? (
+              <div className="card p-8 text-center">
+                <Clock size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">No Pending Quotes</h3>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  When you send booking requests to talents, they&apos;ll appear here.
+                </p>
+                <Link href="/search" className="btn-primary mx-auto">
+                  <Search size={18} />
+                  Browse Talents
+                </Link>
+              </div>
+            ) : (
+              pendingQuotes.map((booking) => (
+                <div key={booking.id} className="card p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="font-bold text-lg text-slate-900">
+                        {booking.artist_name || `Artist #${booking.artist_id}`}
+                      </h3>
+                      <p className="text-sm text-slate-500">
+                        Requested on {new Date(booking.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <StatusBadge status={booking.status} />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    {booking.requested_date && (
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <Calendar size={16} className="text-slate-400" />
+                        <span>{new Date(booking.requested_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                    {booking.location && (
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <MapPin size={16} className="text-slate-400" />
+                        <span>{booking.location}</span>
+                      </div>
+                    )}
+                    {booking.budget != null && (
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <DollarSign size={16} className="text-slate-400" />
+                        <span>${booking.budget}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {booking.notes && (
+                    <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-slate-600">{booking.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex gap-3">
+                    <Link
+                      href={`/talents/${booking.artist_id}`}
+                      className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors"
+                    >
+                      View Artist
+                    </Link>
+                    <button
+                      onClick={() => handleCancelBooking(booking.id)}
+                      disabled={cancellingId === booking.id}
+                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {cancellingId === booking.id ? "Cancelling..." : "Cancel Request"}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Events Tab */}
+        {activeTab === "events" && (
+          <div className="space-y-4">
+            {confirmedEvents.length === 0 ? (
+              <div className="card p-8 text-center">
+                <Calendar size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">No Upcoming Events</h3>
+                <p className="text-slate-500 max-w-md mx-auto">
+                  When your booking requests are confirmed by talents, they&apos;ll appear here.
+                </p>
+              </div>
+            ) : (
+              confirmedEvents
+                .sort((a, b) => {
+                  if (!a.requested_date) return 1;
+                  if (!b.requested_date) return -1;
+                  return new Date(a.requested_date).getTime() - new Date(b.requested_date).getTime();
+                })
+                .map((booking) => {
+                  const isPast = booking.requested_date
+                    ? new Date(booking.requested_date) < new Date()
+                    : false;
+
+                  return (
+                    <div key={booking.id} className={`card p-6 ${isPast ? "opacity-60" : ""}`}>
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-bold text-lg text-slate-900">
+                            {booking.artist_name || `Artist #${booking.artist_id}`}
+                          </h3>
+                          {booking.requested_date && (
+                            <p className="text-sm text-slate-500">
+                              {new Date(booking.requested_date).toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </p>
+                          )}
+                        </div>
+                        <StatusBadge status={isPast ? "completed" : booking.status} />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                        {booking.requested_date && (
+                          <div className="flex items-center gap-2 text-slate-600">
+                            <Calendar size={16} className="text-slate-400" />
+                            <span>{new Date(booking.requested_date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {booking.location && (
+                          <div className="flex items-center gap-2 text-slate-600">
+                            <MapPin size={16} className="text-slate-400" />
+                            <span>{booking.location}</span>
+                          </div>
+                        )}
+                        {booking.budget != null && (
+                          <div className="flex items-center gap-2 text-slate-600">
+                            <DollarSign size={16} className="text-slate-400" />
+                            <span>${booking.budget.toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t border-slate-100">
+                        <Link
+                          href={`/talents/${booking.artist_id}`}
+                          className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors"
+                        >
+                          View Artist
+                        </Link>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <Link
-                  href="/dashboard/host/events"
-                  className="inline-flex items-center gap-1 mt-4 text-sm font-medium text-pink-600 hover:text-pink-700"
-                >
-                  View all events <ArrowRight size={14} />
-                </Link>
+                  );
+                })
+            )}
+          </div>
+        )}
+
+        {/* Messages Tab */}
+        {activeTab === "messages" && (
+          <div className="space-y-4">
+            {conversations.length === 0 ? (
+              <div className="card p-8 text-center">
+                <MessageSquare size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">No Conversations</h3>
+                <p className="text-slate-500 max-w-md mx-auto">
+                  When you send booking requests, conversations with talents will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {conversations.map((conv) => (
+                  <Link
+                    key={conv.id}
+                    href="/dashboard/host/messages"
+                    className="card p-4 hover:shadow-md transition-shadow block"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-semibold text-slate-900">
+                        {conv.artist_name || "Unknown Artist"}
+                      </span>
+                      {conv.booking_status && (
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                          conv.booking_status === "pending"
+                            ? "bg-amber-100 text-amber-700"
+                            : conv.booking_status === "confirmed" || conv.booking_status === "approved"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}>
+                          {conv.booking_status}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-500 line-clamp-2 mb-2">
+                      {conv.last_message || "No messages yet"}
+                    </p>
+                    <div className="flex justify-between items-center text-xs text-slate-400">
+                      <span>{conv.message_count} {conv.message_count === 1 ? "message" : "messages"}</span>
+                      <span>{new Date(conv.updated_at).toLocaleDateString()}</span>
+                    </div>
+                  </Link>
+                ))}
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Discover Talents Tab */}
+        {activeTab === "discover" && (
+          <div>
+            <p className="text-sm text-slate-500 mb-4">
+              {discoverTotal} talent{discoverTotal !== 1 ? "s" : ""} match your interests
+              {discoverTouringCount > 0 && (
+                <> &middot; {discoverTouringCount} touring nearby</>
+              )}
+            </p>
+
+            <DiscoverFilters
+              eventTypes={communityEventTypes}
+              selectedEventTypes={selectedEventTypes}
+              onEventTypesChange={handleEventTypesChange}
+              params={discoverParams}
+              onParamsChange={handleDiscoverParamsChange}
+            />
+
+            {isDiscoverLoading && discoverResults.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 size={32} className="animate-spin text-primary-500" />
+              </div>
+            ) : discoverResults.length === 0 ? (
+              <div className="card p-8 text-center">
+                <Search size={40} className="text-slate-300 mx-auto mb-3" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">No talents found</h3>
+                <p className="text-slate-500 text-sm">
+                  Try adjusting your filters or browse all talents.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {discoverResults.map((artist) => (
+                    <DiscoverArtistCard key={artist.id} artist={artist} />
+                  ))}
+                </div>
+
+                {discoverResults.length < discoverTotal && (
+                  <div className="text-center mt-6">
+                    <button
+                      onClick={handleShowMore}
+                      disabled={isDiscoverLoading}
+                      className="inline-flex items-center gap-2 px-6 py-3 border-2 border-slate-900 rounded-full text-sm font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      {isDiscoverLoading ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : null}
+                      Show More
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

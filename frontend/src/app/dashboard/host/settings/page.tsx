@@ -195,14 +195,14 @@ export default function CommunitySettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 pt-24 flex items-center justify-center">
         <Loader2 size={40} className="animate-spin text-primary-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white pt-24 pb-16">
+    <div className="min-h-screen bg-slate-50 pt-24 pb-16">
       <div className="container mx-auto px-4 max-w-2xl">
         {/* Back Button */}
         <Link
@@ -214,8 +214,8 @@ export default function CommunitySettingsPage() {
         </Link>
 
         {/* Page Title */}
-        <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 italic mb-8">
-          SETTINGS
+        <h1 className="text-2xl font-bold text-slate-900 mb-8">
+          Settings
         </h1>
 
         {/* Profile Form */}

@@ -241,7 +241,7 @@ export default function EventsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 pt-24 flex items-center justify-center">
         <Loader2 size={40} className="animate-spin text-primary-500" />
       </div>
     );
@@ -257,7 +257,7 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-100 via-pink-50 to-white pt-24 pb-16">
+    <div className="min-h-screen bg-slate-50 pt-24 pb-16">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Back Button */}
         <Link
@@ -269,8 +269,8 @@ export default function EventsPage() {
         </Link>
 
         {/* Page Title */}
-        <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 italic mb-8">
-          YOUR EVENTS
+        <h1 className="text-2xl font-bold text-slate-900 mb-8">
+          Your Events
         </h1>
 
         {error && (
