@@ -29,6 +29,10 @@ interface Booking {
   notes?: string;
   status: string;
   created_at: string;
+  quote_amount?: number;
+  quote_notes?: string;
+  quoted_at?: string;
+  decline_reason?: string;
 }
 
 interface ConversationListItem {
@@ -45,18 +49,26 @@ interface ConversationListItem {
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
+    quote_sent: "bg-blue-100 text-blue-700",
     approved: "bg-emerald-100 text-emerald-700",
     confirmed: "bg-emerald-100 text-emerald-700",
+    declined: "bg-red-100 text-red-700",
     cancelled: "bg-red-100 text-red-700",
-    completed: "bg-blue-100 text-blue-700",
+    completed: "bg-violet-100 text-violet-700",
   };
 
   const icons: Record<string, React.ElementType> = {
     pending: Clock,
+    quote_sent: DollarSign,
     approved: CheckCircle,
     confirmed: CheckCircle,
+    declined: XCircle,
     cancelled: XCircle,
     completed: CheckCircle,
+  };
+
+  const labels: Record<string, string> = {
+    quote_sent: "Quote Received",
   };
 
   const Icon = icons[status] || Clock;
@@ -64,7 +76,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium rounded-full ${styles[status] || "bg-slate-100 text-slate-600"}`}>
       <Icon size={12} />
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {labels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }
@@ -80,6 +92,9 @@ export default function HostDashboardPage() {
   // Bookings data (for quotes + events + stats)
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [respondingId, setRespondingId] = useState<number | null>(null);
+  const [decliningId, setDecliningId] = useState<number | null>(null);
+  const [declineReason, setDeclineReason] = useState("");
 
   // Conversations data
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
@@ -232,6 +247,38 @@ export default function HostDashboardPage() {
     }
   };
 
+  const handleRespondToQuote = async (bookingId: number, action: "approve" | "decline") => {
+    if (action === "approve" && !confirm("Are you sure you want to approve this booking?")) return;
+
+    setRespondingId(bookingId);
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_URL}/bookings/${bookingId}/respond`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action,
+          decline_reason: action === "decline" ? declineReason || null : null,
+        }),
+      });
+      if (res.ok) {
+        const updatedBooking = await res.json();
+        setBookings((prev) =>
+          prev.map((b) => (b.id === bookingId ? { ...b, status: updatedBooking.status, quote_amount: updatedBooking.quote_amount } : b))
+        );
+        setDecliningId(null);
+        setDeclineReason("");
+      }
+    } catch (error) {
+      console.error("Failed to respond to quote:", error);
+    } finally {
+      setRespondingId(null);
+    }
+  };
+
   // Discover filters handlers
   const handleDiscoverParamsChange = (newParams: DiscoverParams) => {
     const updated = { ...newParams, offset: 0, limit: DISCOVER_PAGE_SIZE };
@@ -265,7 +312,7 @@ export default function HostDashboardPage() {
   };
 
   // Computed stats
-  const pendingQuotes = bookings.filter((b) => b.status === "pending");
+  const pendingQuotes = bookings.filter((b) => b.status === "pending" || b.status === "quote_sent");
   const confirmedEvents = bookings.filter((b) => b.status === "approved" || b.status === "confirmed");
   const totalSpent = bookings
     .filter((b) => b.status === "approved" || b.status === "confirmed" || b.status === "completed")
@@ -441,7 +488,7 @@ export default function HostDashboardPage() {
               </div>
             ) : (
               pendingQuotes.map((booking) => (
-                <div key={booking.id} className="card p-6">
+                <div key={booking.id} className={`card p-6 ${booking.status === "quote_sent" ? "border-2 border-blue-200" : ""}`}>
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="font-bold text-lg text-slate-900">
@@ -453,6 +500,19 @@ export default function HostDashboardPage() {
                     </div>
                     <StatusBadge status={booking.status} />
                   </div>
+
+                  {/* Quote amount display for quote_sent bookings */}
+                  {booking.status === "quote_sent" && booking.quote_amount != null && (
+                    <div className="mb-4 p-4 bg-blue-50 rounded-xl">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-slate-600">Quoted Price</span>
+                        <span className="text-xl font-bold text-slate-900">${booking.quote_amount.toLocaleString()}</span>
+                      </div>
+                      {booking.quote_notes && (
+                        <p className="text-sm text-slate-600 mt-2">{booking.quote_notes}</p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                     {booking.requested_date && (
@@ -481,20 +541,67 @@ export default function HostDashboardPage() {
                     </div>
                   )}
 
-                  <div className="mt-4 pt-4 border-t border-slate-100 flex gap-3">
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-3">
+                    {/* Inline approve/decline for quote_sent */}
+                    {booking.status === "quote_sent" && (
+                      <>
+                        {decliningId === booking.id ? (
+                          <div className="flex-1 flex gap-2">
+                            <input
+                              type="text"
+                              value={declineReason}
+                              onChange={(e) => setDeclineReason(e.target.value)}
+                              placeholder="Reason for declining (optional)..."
+                              className="flex-1 px-3 py-2 text-sm border border-red-200 rounded-full focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            />
+                            <button
+                              onClick={() => handleRespondToQuote(booking.id, "decline")}
+                              disabled={respondingId === booking.id}
+                              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-full hover:bg-red-700 transition-colors disabled:opacity-50"
+                            >
+                              {respondingId === booking.id ? "..." : "Confirm"}
+                            </button>
+                            <button
+                              onClick={() => { setDecliningId(null); setDeclineReason(""); }}
+                              className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleRespondToQuote(booking.id, "approve")}
+                              disabled={respondingId === booking.id}
+                              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-full hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                            >
+                              {respondingId === booking.id ? "Approving..." : "Approve"}
+                            </button>
+                            <button
+                              onClick={() => setDecliningId(booking.id)}
+                              className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors"
+                            >
+                              Decline
+                            </button>
+                          </>
+                        )}
+                      </>
+                    )}
                     <Link
                       href={`/talents/${booking.artist_id}`}
                       className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors"
                     >
                       View Artist
                     </Link>
-                    <button
-                      onClick={() => handleCancelBooking(booking.id)}
-                      disabled={cancellingId === booking.id}
-                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {cancellingId === booking.id ? "Cancelling..." : "Cancel Request"}
-                    </button>
+                    {booking.status === "pending" && (
+                      <button
+                        onClick={() => handleCancelBooking(booking.id)}
+                        disabled={cancellingId === booking.id}
+                        className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {cancellingId === booking.id ? "Cancelling..." : "Cancel Request"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
@@ -606,15 +713,7 @@ export default function HostDashboardPage() {
                         {conv.artist_name || "Unknown Artist"}
                       </span>
                       {conv.booking_status && (
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                          conv.booking_status === "pending"
-                            ? "bg-amber-100 text-amber-700"
-                            : conv.booking_status === "confirmed" || conv.booking_status === "approved"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-100 text-slate-600"
-                        }`}>
-                          {conv.booking_status}
-                        </span>
+                        <StatusBadge status={conv.booking_status} />
                       )}
                     </div>
                     <p className="text-sm text-slate-500 line-clamp-2 mb-2">

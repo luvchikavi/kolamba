@@ -253,6 +253,25 @@ export interface Booking {
   status: string;
   created_at: string;
   updated_at: string;
+  // Event details
+  event_type?: string;
+  audience_size?: number;
+  audience_description?: string;
+  is_online?: boolean;
+  // Quote flow
+  quote_amount?: number;
+  quote_notes?: string;
+  quoted_at?: string;
+  decline_reason?: string;
+  // POST-MVP placeholders
+  deposit_amount?: number;
+  deposit_paid_at?: string;
+  visa_required?: boolean;
+  visa_status?: string;
+  review_host_rating?: number;
+  review_host_text?: string;
+  review_talent_rating?: number;
+  review_talent_text?: string;
 }
 
 export interface BookingCreateRequest {
@@ -261,6 +280,20 @@ export interface BookingCreateRequest {
   location?: string;
   budget?: number;
   notes?: string;
+  event_type?: string;
+  audience_size?: number;
+  audience_description?: string;
+  is_online?: boolean;
+}
+
+export interface QuoteSubmitRequest {
+  quote_amount: number;
+  quote_notes?: string;
+}
+
+export interface QuoteResponseRequest {
+  action: "approve" | "decline" | "request_changes";
+  decline_reason?: string;
 }
 
 export interface CommunityRegisterRequest {
@@ -443,6 +476,10 @@ export const api = {
   updateBooking: (id: number, data: Partial<Booking>) =>
     api.put<Booking>(`/bookings/${id}`, data),
   cancelBooking: (id: number) => api.delete<{ message: string }>(`/bookings/${id}`),
+  submitQuote: (bookingId: number, data: QuoteSubmitRequest) =>
+    api.post<Booking>(`/bookings/${bookingId}/quote`, data),
+  respondToQuote: (bookingId: number, data: QuoteResponseRequest) =>
+    api.post<Booking>(`/bookings/${bookingId}/respond`, data),
 
   // Tours
   getTourSuggestions: (artistId: number, maxDistanceKm = 500, minBookings = 2) =>

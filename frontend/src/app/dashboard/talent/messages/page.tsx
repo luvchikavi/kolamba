@@ -10,6 +10,8 @@ import {
   Building2,
   X,
   Check,
+  DollarSign,
+  Clock,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -42,18 +44,35 @@ interface ConversationDetail {
   updated_at: string;
 }
 
+interface BookingDetail {
+  id: number;
+  status: string;
+  quote_amount?: number;
+  quote_notes?: string;
+  quoted_at?: string;
+  decline_reason?: string;
+}
+
 function StatusBadge({ status }: { status: string | null }) {
   if (!status) return null;
   const styles: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
+    quote_sent: "bg-blue-100 text-blue-700",
+    approved: "bg-emerald-100 text-emerald-700",
     confirmed: "bg-emerald-100 text-emerald-700",
+    declined: "bg-red-100 text-red-700",
     rejected: "bg-red-100 text-red-700",
     cancelled: "bg-slate-100 text-slate-700",
+    completed: "bg-violet-100 text-violet-700",
+  };
+
+  const labels: Record<string, string> = {
+    quote_sent: "Quote Sent",
   };
 
   return (
     <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status] || "bg-slate-100 text-slate-600"}`}>
-      {status}
+      {labels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }
@@ -119,11 +138,17 @@ export default function ArtistMessagesPage() {
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
   const [selectedConv, setSelectedConv] = useState<ConversationDetail | null>(null);
   const [selectedConvId, setSelectedConvId] = useState<number | null>(null);
+  const [bookingDetail, setBookingDetail] = useState<BookingDetail | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showVenueInfo, setShowVenueInfo] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Quote form state
+  const [quoteAmount, setQuoteAmount] = useState("");
+  const [quoteNotes, setQuoteNotes] = useState("");
+  const [isSubmittingQuote, setIsSubmittingQuote] = useState(false);
 
   useEffect(() => {
     fetchConversations();
@@ -183,6 +208,9 @@ export default function ArtistMessagesPage() {
   const selectConversation = async (convId: number) => {
     setSelectedConvId(convId);
     setShowVenueInfo(false);
+    setBookingDetail(null);
+    setQuoteAmount("");
+    setQuoteNotes("");
     try {
       const token = getToken();
       const res = await fetch(`${API_URL}/conversations/${convId}`, {
@@ -192,6 +220,17 @@ export default function ArtistMessagesPage() {
       if (res.ok) {
         const data: ConversationDetail = await res.json();
         setSelectedConv(data);
+
+        // Fetch booking details for quote status
+        try {
+          const bookingRes = await fetch(`${API_URL}/bookings/${data.booking_id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (bookingRes.ok) {
+            const bookingData = await bookingRes.json();
+            setBookingDetail(bookingData);
+          }
+        } catch { /* ignore */ }
       }
     } catch (err) {
       console.error("Failed to fetch conversation:", err);
@@ -231,6 +270,47 @@ export default function ArtistMessagesPage() {
       console.error("Failed to send message:", err);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const submitQuote = async () => {
+    if (!quoteAmount || !bookingDetail) return;
+
+    setIsSubmittingQuote(true);
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_URL}/bookings/${bookingDetail.id}/quote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          quote_amount: parseFloat(quoteAmount),
+          quote_notes: quoteNotes || null,
+        }),
+      });
+
+      if (res.ok) {
+        const updatedBooking = await res.json();
+        setBookingDetail(updatedBooking);
+        // Update conversation status in list
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.booking_id === bookingDetail.id
+              ? { ...c, booking_status: "quote_sent" }
+              : c
+          )
+        );
+        // Refresh conversation to get the auto-message
+        if (selectedConvId) {
+          selectConversation(selectedConvId);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to submit quote:", err);
+    } finally {
+      setIsSubmittingQuote(false);
     }
   };
 
@@ -322,10 +402,11 @@ export default function ArtistMessagesPage() {
               <div className="card flex flex-col" style={{ height: "calc(100vh - 200px)" }}>
                 {/* Header */}
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                  <div>
+                  <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-slate-900">
                       Booking #{selectedConv.booking_id}
                     </h3>
+                    {bookingDetail && <StatusBadge status={bookingDetail.status} />}
                   </div>
                   {selectedConv.venue_info && Object.keys(selectedConv.venue_info).length > 0 && (
                     <button
@@ -352,6 +433,115 @@ export default function ArtistMessagesPage() {
                       </button>
                     </div>
                     <VenueInfoPanel venueInfo={selectedConv.venue_info} />
+                  </div>
+                )}
+
+                {/* Quote Submission / Summary Card */}
+                {bookingDetail && bookingDetail.status === "pending" && (
+                  <div className="p-4 border-b border-slate-100 bg-blue-50">
+                    <h4 className="font-semibold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                      <DollarSign size={16} className="text-blue-600" />
+                      Submit Quote
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">
+                          Amount (USD) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={quoteAmount}
+                          onChange={(e) => setQuoteAmount(e.target.value)}
+                          placeholder="e.g., 2500"
+                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">
+                          What&apos;s included (optional)
+                        </label>
+                        <textarea
+                          value={quoteNotes}
+                          onChange={(e) => setQuoteNotes(e.target.value)}
+                          placeholder="Duration, equipment, travel, etc."
+                          rows={2}
+                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        />
+                      </div>
+                      <button
+                        onClick={submitQuote}
+                        disabled={!quoteAmount || isSubmittingQuote}
+                        className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {isSubmittingQuote ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <Send size={14} />
+                            Submit Quote
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {bookingDetail && bookingDetail.status === "quote_sent" && (
+                  <div className="p-4 border-b border-slate-100 bg-blue-50">
+                    <h4 className="font-semibold text-slate-900 text-sm mb-2 flex items-center gap-2">
+                      <DollarSign size={16} className="text-blue-600" />
+                      Quote Submitted
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-slate-600">Amount</span>
+                        <span className="text-lg font-bold text-slate-900">
+                          ${bookingDetail.quote_amount?.toLocaleString()}
+                        </span>
+                      </div>
+                      {bookingDetail.quote_notes && (
+                        <div>
+                          <span className="text-xs text-slate-500">What&apos;s included</span>
+                          <p className="text-sm text-slate-700">{bookingDetail.quote_notes}</p>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 pt-1">
+                        <Clock size={12} className="text-blue-500" />
+                        <span className="text-xs text-blue-600 font-medium">Waiting for host response</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {bookingDetail && bookingDetail.status === "approved" && (
+                  <div className="p-4 border-b border-slate-100 bg-emerald-50">
+                    <h4 className="font-semibold text-emerald-800 text-sm mb-2 flex items-center gap-2">
+                      <Check size={16} className="text-emerald-600" />
+                      Booking Approved
+                    </h4>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">Agreed Amount</span>
+                      <span className="text-lg font-bold text-emerald-800">
+                        ${bookingDetail.quote_amount?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {bookingDetail && bookingDetail.status === "declined" && (
+                  <div className="p-4 border-b border-slate-100 bg-red-50">
+                    <h4 className="font-semibold text-red-800 text-sm mb-2 flex items-center gap-2">
+                      <X size={16} className="text-red-600" />
+                      Quote Declined
+                    </h4>
+                    {bookingDetail.decline_reason && (
+                      <p className="text-sm text-red-700">{bookingDetail.decline_reason}</p>
+                    )}
                   </div>
                 )}
 

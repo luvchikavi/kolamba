@@ -2,7 +2,7 @@
 
 from datetime import datetime, date, timezone
 from typing import TYPE_CHECKING, Optional
-from sqlalchemy import String, Integer, Date, DateTime, Text, ForeignKey
+from sqlalchemy import String, Integer, Float, Boolean, Date, DateTime, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -39,8 +39,30 @@ class Booking(Base):
     budget: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    # Status: pending, approved, rejected, completed, cancelled
-    status: Mapped[str] = mapped_column(String(20), default="pending")
+    # Event details (MVP)
+    event_type: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    audience_size: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    audience_description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    is_online: Mapped[Optional[bool]] = mapped_column(Boolean, default=False)
+
+    # Quote flow (MVP)
+    quote_amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    quote_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    quoted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    decline_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # POST-MVP placeholder columns
+    deposit_amount: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    deposit_paid_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    visa_required: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    visa_status: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    review_host_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    review_host_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    review_talent_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    review_talent_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Status: pending, quote_sent, approved, declined, rejected, completed, cancelled
+    status: Mapped[str] = mapped_column(String(30), default="pending")
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

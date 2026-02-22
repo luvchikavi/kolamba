@@ -9,12 +9,15 @@ import {
   Building2,
   X,
   Calendar,
-  MapPin,
-  DollarSign,
   Clock,
   Send,
   Edit3,
   CheckCircle,
+  DollarSign,
+  Check,
+  CreditCard,
+  Globe,
+  Star,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -56,6 +59,10 @@ interface BookingDetail {
   budget?: number;
   notes?: string;
   status: string;
+  quote_amount?: number;
+  quote_notes?: string;
+  quoted_at?: string;
+  decline_reason?: string;
 }
 
 interface VenueInfo {
@@ -103,15 +110,22 @@ function StatusBadge({ status }: { status: string | null }) {
   if (!status) return null;
   const styles: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
+    quote_sent: "bg-blue-100 text-blue-700",
     approved: "bg-emerald-100 text-emerald-700",
     confirmed: "bg-emerald-100 text-emerald-700",
+    declined: "bg-red-100 text-red-700",
     rejected: "bg-red-100 text-red-700",
     cancelled: "bg-slate-100 text-slate-700",
+    completed: "bg-violet-100 text-violet-700",
+  };
+
+  const labels: Record<string, string> = {
+    quote_sent: "Quote Received",
   };
 
   return (
     <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles[status] || "bg-slate-100 text-slate-600"}`}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {labels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
 }
@@ -207,6 +221,11 @@ export default function HostMessagesPage() {
   const [venueInfo, setVenueInfo] = useState<VenueInfo>({ ...EMPTY_VENUE });
   const [isSavingVenue, setIsSavingVenue] = useState(false);
 
+  // Quote response state
+  const [isRespondingQuote, setIsRespondingQuote] = useState(false);
+  const [showDeclineForm, setShowDeclineForm] = useState(false);
+  const [declineReason, setDeclineReason] = useState("");
+
   useEffect(() => {
     fetchConversations();
   }, []);
@@ -245,6 +264,8 @@ export default function HostMessagesPage() {
     setSelectedConvId(convId);
     setBookingDetail(null);
     setShowVenueForm(false);
+    setShowDeclineForm(false);
+    setDeclineReason("");
     try {
       const token = getToken();
       const res = await fetch(`${API_URL}/conversations/${convId}`, {
@@ -327,6 +348,49 @@ export default function HostMessagesPage() {
       console.error("Failed to send note:", err);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const respondToQuote = async (action: "approve" | "decline" | "request_changes") => {
+    if (!bookingDetail) return;
+
+    setIsRespondingQuote(true);
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_URL}/bookings/${bookingDetail.id}/respond`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action,
+          decline_reason: (action === "decline" || action === "request_changes") ? declineReason || null : null,
+        }),
+      });
+
+      if (res.ok) {
+        const updatedBooking = await res.json();
+        setBookingDetail(updatedBooking);
+        setShowDeclineForm(false);
+        setDeclineReason("");
+        // Update status in conversations list
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.booking_id === bookingDetail.id
+              ? { ...c, booking_status: updatedBooking.status }
+              : c
+          )
+        );
+        // Refresh conversation to get auto-messages
+        if (selectedConvId) {
+          selectConversation(selectedConvId);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to respond to quote:", err);
+    } finally {
+      setIsRespondingQuote(false);
     }
   };
 
@@ -463,6 +527,120 @@ export default function HostMessagesPage() {
               </div>
             ) : (
               <div className="space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
+                {/* Quote Review Card — shown when talent has submitted a quote */}
+                {bookingDetail && bookingDetail.status === "quote_sent" && (
+                  <div className="card p-5 border-2 border-blue-200 bg-blue-50">
+                    <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <DollarSign size={16} className="text-blue-600" />
+                      Quote Received
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-slate-600">Quoted Amount</span>
+                        <span className="text-2xl font-bold text-slate-900">
+                          ${bookingDetail.quote_amount?.toLocaleString()}
+                        </span>
+                      </div>
+                      {bookingDetail.quote_notes && (
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">What&apos;s included</p>
+                          <p className="text-sm text-slate-700 bg-white p-3 rounded-lg">{bookingDetail.quote_notes}</p>
+                        </div>
+                      )}
+                      {bookingDetail.quoted_at && (
+                        <p className="text-xs text-slate-400">
+                          Submitted on {new Date(bookingDetail.quoted_at).toLocaleDateString()}
+                        </p>
+                      )}
+
+                      {!showDeclineForm ? (
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => respondToQuote("approve")}
+                            disabled={isRespondingQuote}
+                            className="flex-1 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                          >
+                            {isRespondingQuote ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                            Approve Booking
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeclineReason("");
+                              respondToQuote("request_changes");
+                            }}
+                            disabled={isRespondingQuote}
+                            className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                          >
+                            Request Changes
+                          </button>
+                          <button
+                            onClick={() => setShowDeclineForm(true)}
+                            disabled={isRespondingQuote}
+                            className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="pt-2 space-y-3">
+                          <textarea
+                            value={declineReason}
+                            onChange={(e) => setDeclineReason(e.target.value)}
+                            placeholder="Reason for declining (optional)..."
+                            rows={2}
+                            className="w-full px-3 py-2 text-sm border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => respondToQuote("decline")}
+                              disabled={isRespondingQuote}
+                              className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                              {isRespondingQuote ? <Loader2 size={14} className="animate-spin" /> : null}
+                              Confirm Decline
+                            </button>
+                            <button
+                              onClick={() => setShowDeclineForm(false)}
+                              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Approved status banner */}
+                {bookingDetail && bookingDetail.status === "approved" && (
+                  <div className="card p-5 border-2 border-emerald-200 bg-emerald-50">
+                    <h3 className="font-semibold text-emerald-800 mb-2 flex items-center gap-2">
+                      <CheckCircle size={16} className="text-emerald-600" />
+                      Booking Approved
+                    </h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-slate-600">Agreed Amount</span>
+                      <span className="text-xl font-bold text-emerald-800">
+                        ${bookingDetail.quote_amount?.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Declined status banner */}
+                {bookingDetail && bookingDetail.status === "declined" && (
+                  <div className="card p-5 border-2 border-red-200 bg-red-50">
+                    <h3 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                      <X size={16} className="text-red-600" />
+                      Quote Declined
+                    </h3>
+                    {bookingDetail.decline_reason && (
+                      <p className="text-sm text-red-700">Reason: {bookingDetail.decline_reason}</p>
+                    )}
+                  </div>
+                )}
+
                 {/* Booking Details Card */}
                 <div className="card p-5">
                   <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
@@ -765,6 +943,25 @@ export default function HostMessagesPage() {
                         </>
                       )}
                     </button>
+                  </div>
+                </div>
+
+                {/* POST-MVP Placeholder Cards */}
+                <div className="space-y-3">
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center">
+                    <CreditCard size={24} className="text-slate-300 mx-auto mb-2" />
+                    <h4 className="font-semibold text-slate-400 text-sm">Deposit & Payment</h4>
+                    <p className="text-xs text-slate-400 mt-1">Secure payment processing coming soon</p>
+                  </div>
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center">
+                    <Globe size={24} className="text-slate-300 mx-auto mb-2" />
+                    <h4 className="font-semibold text-slate-400 text-sm">Logistics & Visa</h4>
+                    <p className="text-xs text-slate-400 mt-1">International booking coordination coming soon</p>
+                  </div>
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center">
+                    <Star size={24} className="text-slate-300 mx-auto mb-2" />
+                    <h4 className="font-semibold text-slate-400 text-sm">Reviews & Ratings</h4>
+                    <p className="text-xs text-slate-400 mt-1">Post-event reviews coming soon</p>
                   </div>
                 </div>
               </div>

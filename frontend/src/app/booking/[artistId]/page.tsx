@@ -369,6 +369,28 @@ export default function BookingPage() {
         }
       }
 
+      // Map form event type to API event_type enum
+      const eventTypeMap: Record<string, string> = {
+        "Concert": "LIVE_PERFORMANCE",
+        "Performance": "LIVE_PERFORMANCE",
+        "Holiday Celebration": "LIVE_PERFORMANCE",
+        "Shabbat Service": "LIVE_PERFORMANCE",
+        "Workshop": "WORKSHOP",
+        "Lecture": "LECTURE",
+        "Educational Program": "LECTURE",
+        "Family Event": "LIVE_PERFORMANCE",
+        "Youth Program": "WORKSHOP",
+      };
+
+      // Parse audience size from capacity string
+      let audienceSize: number | undefined;
+      if (bookingData.venueCapacity) {
+        const capacityMatch = bookingData.venueCapacity.match(/\d+/);
+        if (capacityMatch) {
+          audienceSize = parseInt(capacityMatch[0], 10);
+        }
+      }
+
       const response = await fetch(`${API_URL}/bookings`, {
         method: "POST",
         headers: {
@@ -380,6 +402,10 @@ export default function BookingPage() {
           requested_date: bookingData.date || null,
           location: bookingData.venueCity ? `${bookingData.venueCity}, ${bookingData.venueCountry}` : null,
           budget: budgetValue || null,
+          event_type: eventTypeMap[bookingData.eventType] || null,
+          audience_size: audienceSize || null,
+          audience_description: bookingData.eventDescription || null,
+          is_online: false,
           notes: [
             `Event Type: ${bookingData.eventType}`,
             bookingData.eventDescription ? `Description: ${bookingData.eventDescription}` : "",
