@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import Script from "next/script";
-import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
@@ -21,8 +21,10 @@ declare global {
   }
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -52,26 +54,31 @@ export default function LoginPage() {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
 
-      // Get user role for redirect
-      const meRes = await fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${data.access_token}` },
-      });
+      // Honor redirect param if present
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else {
+        // Get user role for redirect
+        const meRes = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${data.access_token}` },
+        });
 
-      if (meRes.ok) {
-        const user = await meRes.json();
-        if (user.is_superuser) {
-          router.push("/dashboard/admin");
-        } else if (user.role === "artist") {
-          router.push("/dashboard/talent");
-        } else if (user.role === "agent") {
-          router.push("/dashboard/agent");
-        } else if (user.role === "community") {
-          router.push("/dashboard/host");
+        if (meRes.ok) {
+          const user = await meRes.json();
+          if (user.is_superuser) {
+            router.push("/dashboard/host");
+          } else if (user.role === "artist") {
+            router.push("/dashboard/talent");
+          } else if (user.role === "agent") {
+            router.push("/dashboard/agent");
+          } else if (user.role === "community") {
+            router.push("/dashboard/host");
+          } else {
+            router.push("/");
+          }
         } else {
           router.push("/");
         }
-      } else {
-        router.push("/");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Google login failed";
@@ -80,7 +87,7 @@ export default function LoginPage() {
     } finally {
       setIsGoogleLoading(false);
     }
-  }, [router]);
+  }, [router, redirectTo]);
 
   const initGoogleSignIn = useCallback(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -132,30 +139,35 @@ export default function LoginPage() {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
 
-      const meResponse = await fetch(
-        `${API_URL}/auth/me`,
-        {
-          headers: {
-            Authorization: `Bearer ${data.access_token}`,
-          },
-        }
-      );
+      // Honor redirect param if present
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else {
+        const meResponse = await fetch(
+          `${API_URL}/auth/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${data.access_token}`,
+            },
+          }
+        );
 
-      if (meResponse.ok) {
-        const user = await meResponse.json();
-        if (user.is_superuser) {
-          router.push("/dashboard/admin");
-        } else if (user.role === "artist") {
-          router.push("/dashboard/talent");
-        } else if (user.role === "agent") {
-          router.push("/dashboard/agent");
-        } else if (user.role === "community") {
-          router.push("/dashboard/host");
+        if (meResponse.ok) {
+          const user = await meResponse.json();
+          if (user.is_superuser) {
+            router.push("/dashboard/host");
+          } else if (user.role === "artist") {
+            router.push("/dashboard/talent");
+          } else if (user.role === "agent") {
+            router.push("/dashboard/agent");
+          } else if (user.role === "community") {
+            router.push("/dashboard/host");
+          } else {
+            router.push("/");
+          }
         } else {
           router.push("/");
         }
-      } else {
-        router.push("/");
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Login failed";
@@ -303,5 +315,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+          <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

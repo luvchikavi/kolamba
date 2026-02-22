@@ -50,7 +50,34 @@ export default function UserSwitcher() {
           }
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Auth failed — try falling back to admin token if it exists
+        if (adminToken && adminToken !== token) {
+          fetch(`${API_URL}/auth/me`, {
+            headers: { Authorization: `Bearer ${adminToken}` },
+          })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              if (data) {
+                // Admin token still valid — restore it and reload
+                localStorage.setItem("access_token", adminToken);
+                const adminRefresh = localStorage.getItem(ADMIN_REFRESH_KEY);
+                if (adminRefresh) localStorage.setItem("refresh_token", adminRefresh);
+                localStorage.removeItem(ADMIN_TOKEN_KEY);
+                localStorage.removeItem(ADMIN_REFRESH_KEY);
+                window.location.reload();
+              } else {
+                // Both tokens failed — clean up
+                localStorage.removeItem(ADMIN_TOKEN_KEY);
+                localStorage.removeItem(ADMIN_REFRESH_KEY);
+              }
+            })
+            .catch(() => {
+              localStorage.removeItem(ADMIN_TOKEN_KEY);
+              localStorage.removeItem(ADMIN_REFRESH_KEY);
+            });
+        }
+      });
   }, []);
 
   useEffect(() => {

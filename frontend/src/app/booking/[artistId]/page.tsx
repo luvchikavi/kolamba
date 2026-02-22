@@ -354,12 +354,18 @@ export default function BookingPage() {
     // Validate step 4 before submitting
     if (!validateStep4()) return;
 
+    // Check if user is authenticated before submitting
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      const redirectPath = `/booking/${artistId}`;
+      router.push(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
 
     try {
-      const token = localStorage.getItem("access_token");
-
       // Parse budget to get a numeric value
       let budgetValue: number | undefined;
       if (bookingData.budget) {
@@ -395,7 +401,7 @@ export default function BookingPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           artist_id: parseInt(artistId, 10),
@@ -419,6 +425,14 @@ export default function BookingPage() {
           ].filter(Boolean).join("\n"),
         }),
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        const redirectPath = `/booking/${artistId}`;
+        router.push(`/login?redirect=${encodeURIComponent(redirectPath)}`);
+        return;
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
