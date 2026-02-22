@@ -14,7 +14,7 @@ from app.models.artist import Artist
 from app.models.community import Community
 from app.models.user import User
 from app.models.conversation import Conversation, Message
-from app.schemas.booking import BookingCreate, BookingUpdate, BookingResponse, QuoteSubmit, QuoteResponse
+from app.schemas.booking import BookingUpdate, BookingResponse, QuoteSubmit, QuoteResponse
 from app.routers.auth import get_current_user
 
 from app.rate_limit import limiter
@@ -110,7 +110,7 @@ async def create_booking(
         type="booking_new",
         title="New Booking Request",
         message=f"{community_name} has sent you a booking request for {body.location or 'an event'}.",
-        link=f"/dashboard/talent?tab=bookings",
+        link="/dashboard/talent?tab=bookings",
     )
 
     await db.commit()
