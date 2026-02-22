@@ -227,12 +227,45 @@ async def get_map_locations(
     return locations
 
 
+@router.get("/filters")
+async def get_host_filters(
+    db: AsyncSession = Depends(get_db),
+):
+    """Get distinct countries and cities from active community locations."""
+    result = await db.execute(
+        select(Community.location).where(Community.status == "active")
+    )
+    locations = [row[0] for row in result.all() if row[0]]
+
+    # Parse location strings to extract country and city
+    # Location format is typically "City, Country" or "City, State, Country"
+    countries_set: set[str] = set()
+    cities_by_country: dict[str, set[str]] = {}
+
+    for loc in locations:
+        parts = [p.strip() for p in loc.split(",")]
+        if len(parts) >= 2:
+            country = parts[-1]
+            city = parts[0]
+            countries_set.add(country)
+            cities_by_country.setdefault(country, set()).add(city)
+        elif len(parts) == 1:
+            countries_set.add(parts[0])
+
+    return {
+        "countries": sorted(countries_set),
+        "cities": {k: sorted(v) for k, v in sorted(cities_by_country.items())},
+    }
+
+
 @router.get("", response_model=list[CommunityResponse])
 async def list_communities(
     language: Optional[str] = Query(None, description="Filter by language"),
     audience_size: Optional[str] = Query(None, description="Filter by audience size (deprecated)"),
     community_type: Optional[str] = Query(None, description="Filter by community type"),
     event_type: Optional[str] = Query(None, description="Filter by event type"),
+    country: Optional[str] = Query(None, description="Filter by country"),
+    city: Optional[str] = Query(None, description="Filter by city"),
     min_members: Optional[int] = Query(None, ge=0, description="Minimum member count"),
     max_members: Optional[int] = Query(None, ge=0, description="Maximum member count"),
     limit: int = Query(20, le=100),
@@ -253,6 +286,12 @@ async def list_communities(
 
     if event_type:
         query = query.where(Community.event_types.contains([event_type]))
+
+    if country:
+        query = query.where(Community.location.ilike(f"%{country}%"))
+
+    if city:
+        query = query.where(Community.location.ilike(f"%{city}%"))
 
     if min_members is not None:
         query = query.where(Community.member_count_min >= min_members)

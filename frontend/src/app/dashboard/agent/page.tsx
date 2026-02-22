@@ -12,6 +12,9 @@ import {
   Loader2,
   MapPin,
   ExternalLink,
+  X,
+  Check,
+  Pencil,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -46,6 +49,26 @@ interface AgentBooking {
   created_at: string;
 }
 
+interface ArtistProfileData {
+  id: number;
+  name_he: string;
+  name_en: string | null;
+  bio_he: string | null;
+  bio_en: string | null;
+  price_single: number | null;
+  price_tour: number | null;
+  city: string | null;
+  country: string;
+  phone: string | null;
+  website: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  facebook: string | null;
+  categories: { id: number; name_en: string }[];
+  subcategories: string[];
+  status: string;
+}
+
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     active: "bg-emerald-100 text-emerald-700",
@@ -60,7 +83,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function ArtistCard({ artist }: { artist: AgentArtist }) {
+function ArtistCard({ artist, onEdit }: { artist: AgentArtist; onEdit: (id: number) => void }) {
   return (
     <div className="card p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-start gap-4">
@@ -109,13 +132,13 @@ function ArtistCard({ artist }: { artist: AgentArtist }) {
           View Profile
           <ExternalLink size={14} />
         </Link>
-        <Link
-          href={`/dashboard/talent?artist_id=${artist.id}`}
+        <button
+          onClick={() => onEdit(artist.id)}
           className="flex-1 px-3 py-2 text-sm text-center text-primary-600 hover:bg-primary-50 rounded-lg transition-colors inline-flex items-center justify-center gap-1"
         >
-          Manage
-          <ChevronRight size={14} />
-        </Link>
+          <Pencil size={14} />
+          Edit Profile
+        </button>
       </div>
     </div>
   );
@@ -151,16 +174,257 @@ function BookingCard({ booking }: { booking: AgentBooking }) {
   );
 }
 
+function EditArtistModal({
+  artistId,
+  onClose,
+  onSaved,
+}: {
+  artistId: number;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState<ArtistProfileData | null>(null);
+  const [form, setForm] = useState<Record<string, unknown>>({});
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const res = await fetch(`${API_URL}/agents/me/artists/${artistId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+          setForm(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch artist profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [artistId]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/agents/me/artists/${artistId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name_en: form.name_en,
+          name_he: form.name_he,
+          bio_en: form.bio_en,
+          bio_he: form.bio_he,
+          price_single: form.price_single,
+          price_tour: form.price_tour,
+          city: form.city,
+          country: form.country,
+          phone: form.phone,
+          website: form.website,
+          instagram: form.instagram,
+          youtube: form.youtube,
+          facebook: form.facebook,
+        }),
+      });
+      if (res.ok) {
+        onSaved();
+        onClose();
+      }
+    } catch (err) {
+      console.error("Failed to save artist profile:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-slate-100 sticky top-0 bg-white rounded-t-2xl z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">
+              Edit Talent Profile
+            </h2>
+            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg">
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 size={32} className="animate-spin text-primary-500" />
+          </div>
+        ) : profile ? (
+          <>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Name (EN)</label>
+                  <input
+                    type="text"
+                    value={(form.name_en as string) || ""}
+                    onChange={(e) => setForm({ ...form, name_en: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Name (HE)</label>
+                  <input
+                    type="text"
+                    value={(form.name_he as string) || ""}
+                    onChange={(e) => setForm({ ...form, name_he: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Bio (EN)</label>
+                <textarea
+                  value={(form.bio_en as string) || ""}
+                  onChange={(e) => setForm({ ...form, bio_en: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Bio (HE)</label>
+                <textarea
+                  value={(form.bio_he as string) || ""}
+                  onChange={(e) => setForm({ ...form, bio_he: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={(form.city as string) || ""}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Country</label>
+                  <input
+                    type="text"
+                    value={(form.country as string) || ""}
+                    onChange={(e) => setForm({ ...form, country: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Price (Single Show)</label>
+                  <input
+                    type="number"
+                    value={(form.price_single as number) ?? ""}
+                    onChange={(e) => setForm({ ...form, price_single: e.target.value ? Number(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Price (Tour)</label>
+                  <input
+                    type="number"
+                    value={(form.price_tour as number) ?? ""}
+                    onChange={(e) => setForm({ ...form, price_tour: e.target.value ? Number(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={(form.phone as string) || ""}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Website</label>
+                <input
+                  type="text"
+                  value={(form.website as string) || ""}
+                  onChange={(e) => setForm({ ...form, website: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Instagram</label>
+                <input
+                  type="text"
+                  value={(form.instagram as string) || ""}
+                  onChange={(e) => setForm({ ...form, instagram: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">YouTube</label>
+                <input
+                  type="text"
+                  value={(form.youtube as string) || ""}
+                  onChange={(e) => setForm({ ...form, youtube: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Facebook</label>
+                <input
+                  type="text"
+                  value={(form.facebook as string) || ""}
+                  onChange={(e) => setForm({ ...form, facebook: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 sticky bottom-0 bg-white rounded-b-2xl">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                {saving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
+                Save Changes
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="p-6 text-center text-slate-500">
+            Failed to load profile data.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AgentDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [artists, setArtists] = useState<AgentArtist[]>([]);
   const [stats, setStats] = useState<AgentStats | null>(null);
   const [bookings, setBookings] = useState<AgentBooking[]>([]);
   const [activeTab, setActiveTab] = useState<"artists" | "bookings">("artists");
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const [editingArtistId, setEditingArtistId] = useState<number | null>(null);
 
   const fetchDashboardData = async () => {
     try {
@@ -210,6 +474,10 @@ export default function AgentDashboardPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   if (isLoading) {
     return (
@@ -348,7 +616,11 @@ export default function AgentDashboardPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artists.map((artist) => (
-                  <ArtistCard key={artist.id} artist={artist} />
+                  <ArtistCard
+                    key={artist.id}
+                    artist={artist}
+                    onEdit={(id) => setEditingArtistId(id)}
+                  />
                 ))}
               </div>
             )}
@@ -377,6 +649,15 @@ export default function AgentDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Artist Modal */}
+      {editingArtistId && (
+        <EditArtistModal
+          artistId={editingArtistId}
+          onClose={() => setEditingArtistId(null)}
+          onSaved={() => fetchDashboardData()}
+        />
+      )}
     </div>
   );
 }

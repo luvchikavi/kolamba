@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
@@ -10,9 +11,11 @@ from datetime import datetime, timezone
 from app.database import get_db
 from app.models.user import User
 from app.models.artist import Artist
+from app.models.category import Category
 from app.models.booking import Booking
 from app.models.artist_tour_date import ArtistTourDate
 from app.routers.auth import get_current_active_user
+from app.schemas.artist import ArtistUpdate
 
 router = APIRouter()
 
@@ -199,3 +202,97 @@ async def get_my_artists_bookings(
         }
         for b in bookings
     ]
+
+
+@router.get("/me/artists/{artist_id}")
+async def get_my_artist(
+    artist_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get full artist profile for an artist managed by the current agent."""
+    if current_user.role != "agent":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only agents can access this endpoint",
+        )
+
+    result = await db.execute(
+        select(Artist)
+        .options(selectinload(Artist.categories))
+        .where(Artist.id == artist_id, Artist.agent_user_id == current_user.id)
+    )
+    artist = result.scalar_one_or_none()
+
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found or not managed by you")
+
+    return {
+        "id": artist.id,
+        "name_he": artist.name_he,
+        "name_en": artist.name_en,
+        "bio_he": artist.bio_he,
+        "bio_en": artist.bio_en,
+        "profile_image": artist.profile_image,
+        "price_single": artist.price_single,
+        "price_tour": artist.price_tour,
+        "city": artist.city,
+        "country": artist.country,
+        "phone": artist.phone,
+        "website": artist.website,
+        "instagram": artist.instagram,
+        "youtube": artist.youtube,
+        "facebook": artist.facebook,
+        "categories": [{"id": c.id, "name_en": c.name_en} for c in artist.categories],
+        "subcategories": artist.subcategories or [],
+        "status": artist.status,
+    }
+
+
+@router.put("/me/artists/{artist_id}")
+async def update_my_artist(
+    artist_id: int,
+    update_data: ArtistUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update a specific artist's profile (agent must own the artist)."""
+    if current_user.role != "agent":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only agents can access this endpoint",
+        )
+
+    result = await db.execute(
+        select(Artist)
+        .options(selectinload(Artist.categories))
+        .where(Artist.id == artist_id, Artist.agent_user_id == current_user.id)
+    )
+    artist = result.scalar_one_or_none()
+
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found or not managed by you")
+
+    update_dict = update_data.model_dump(exclude_unset=True)
+
+    # Handle category updates separately
+    if "category_ids" in update_dict:
+        category_ids = update_dict.pop("category_ids")
+        if category_ids is not None:
+            categories_result = await db.execute(
+                select(Category).where(Category.id.in_(category_ids))
+            )
+            artist.categories = list(categories_result.scalars().all())
+
+    for field, value in update_dict.items():
+        if hasattr(artist, field):
+            setattr(artist, field, value)
+
+    await db.commit()
+    await db.refresh(artist)
+
+    return {
+        "id": artist.id,
+        "name_en": artist.name_en,
+        "message": "Artist profile updated",
+    }

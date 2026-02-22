@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { MapPin, Users, Globe, Loader2 } from "lucide-react";
 import { API_URL } from "@/lib/api";
@@ -16,29 +16,60 @@ interface Community {
   event_types: string[] | null;
 }
 
+interface HostFilters {
+  countries: string[];
+  cities: Record<string, string[]>;
+}
+
 export default function CommunitiesPage() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState<HostFilters | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCity, setSelectedCity] = useState("");
+
+  const fetchCommunities = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (selectedCountry) params.set("country", selectedCountry);
+      if (selectedCity) params.set("city", selectedCity);
+      const qs = params.toString();
+      const res = await fetch(`${API_URL}/hosts${qs ? `?${qs}` : ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCommunities(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch communities:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCountry, selectedCity]);
 
   useEffect(() => {
-    const fetchCommunities = async () => {
+    // Fetch filter options on mount
+    const fetchFilters = async () => {
       try {
-        const res = await fetch(`${API_URL}/hosts`);
+        const res = await fetch(`${API_URL}/hosts/filters`);
         if (res.ok) {
           const data = await res.json();
-          setCommunities(data);
+          setFilters(data);
         }
       } catch (error) {
-        console.error("Failed to fetch communities:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch filters:", error);
       }
     };
-    fetchCommunities();
+    fetchFilters();
   }, []);
 
+  useEffect(() => {
+    fetchCommunities();
+  }, [fetchCommunities]);
+
   const filteredCommunities = communities.filter((community) => {
+    if (!searchQuery) return true;
     return community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
            community.location.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -53,6 +84,10 @@ export default function CommunitiesPage() {
     }
     return null;
   };
+
+  const availableCities = selectedCountry && filters?.cities[selectedCountry]
+    ? filters.cities[selectedCountry]
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
@@ -89,6 +124,46 @@ export default function CommunitiesPage() {
               />
             </div>
           </div>
+
+          {/* Geography Filters */}
+          {filters && (filters.countries.length > 0) && (
+            <div className="flex flex-wrap gap-3 mt-6">
+              <select
+                value={selectedCountry}
+                onChange={(e) => {
+                  setSelectedCountry(e.target.value);
+                  setSelectedCity("");
+                }}
+                className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+              >
+                <option value="">All Countries</option>
+                {filters.countries.map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                disabled={!selectedCountry}
+                className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">All Cities</option>
+                {availableCities.map((city) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+
+              {(selectedCountry || selectedCity) && (
+                <button
+                  onClick={() => { setSelectedCountry(""); setSelectedCity(""); }}
+                  className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -108,7 +183,7 @@ export default function CommunitiesPage() {
               <div className="text-center py-16">
                 <Users size={48} className="text-slate-300 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-slate-900 mb-2">No hosts found</h3>
-                <p className="text-slate-600">Try a different search term</p>
+                <p className="text-slate-600">Try a different search term or filter</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

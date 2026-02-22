@@ -1,7 +1,7 @@
 """Admin router - endpoints for super user administration."""
 
 import logging
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
@@ -15,7 +15,10 @@ from app.models.artist import Artist
 from app.models.community import Community
 from app.models.booking import Booking
 from app.models.artist_tour_date import ArtistTourDate
+from app.models.category import Category, ArtistCategory
 from app.routers.auth import get_current_active_user
+from app.schemas.artist import ArtistUpdate, ArtistResponse
+from app.schemas.community import CommunityUpdate, CommunityResponse
 from app.utils.security import get_password_hash
 from app.config import get_settings
 from app.services.email import send_artist_status_change
@@ -270,7 +273,7 @@ async def list_users(
     superuser: User = Depends(get_superuser),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all users with optional filters."""
+    """List all users with optional filters (including deleted users)."""
     query = select(User).order_by(User.created_at.desc())
 
     if search:
@@ -289,17 +292,51 @@ async def list_users(
     result = await db.execute(query)
     users = result.scalars().all()
 
-    # Get artist IDs for users with role "artist"
+    # Get artist info for users with role "artist" (id, categories, city, country)
     artist_user_ids = [u.id for u in users if u.role == "artist"]
-    artist_map = {}
+    artist_map: dict = {}
     if artist_user_ids:
         artist_result = await db.execute(
-            select(Artist.user_id, Artist.id).where(Artist.user_id.in_(artist_user_ids))
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.user_id.in_(artist_user_ids))
         )
-        artist_map = {row[0]: row[1] for row in artist_result.all()}
+        for a in artist_result.scalars().unique().all():
+            artist_map[a.user_id] = {
+                "artist_id": a.id,
+                "categories": [c.name_en for c in a.categories],
+                "city": a.city,
+                "country": a.country,
+            }
 
-    return [
-        {
+    # Get community info for users with role "community"
+    community_user_ids = [u.id for u in users if u.role == "community"]
+    community_map: dict = {}
+    if community_user_ids:
+        community_result = await db.execute(
+            select(Community).where(Community.user_id.in_(community_user_ids))
+        )
+        for c in community_result.scalars().all():
+            community_map[c.user_id] = {
+                "community_name": c.name,
+                "community_type": c.community_type,
+                "location": c.location,
+            }
+
+    # Get managed artists count for agents
+    agent_user_ids = [u.id for u in users if u.role == "agent"]
+    agent_map: dict = {}
+    if agent_user_ids:
+        agent_result = await db.execute(
+            select(Artist.agent_user_id, func.count(Artist.id))
+            .where(Artist.agent_user_id.in_(agent_user_ids))
+            .group_by(Artist.agent_user_id)
+        )
+        agent_map = {row[0]: row[1] for row in agent_result.all()}
+
+    response = []
+    for u in users:
+        user_data = {
             "id": u.id,
             "email": u.email,
             "name": u.name,
@@ -308,10 +345,28 @@ async def list_users(
             "is_active": u.is_active,
             "is_superuser": u.is_superuser,
             "created_at": u.created_at.isoformat(),
-            "artist_id": artist_map.get(u.id) if u.role == "artist" else None,
+            "artist_id": None,
+            "categories": None,
+            "community_type": None,
+            "location": None,
+            "community_name": None,
+            "managed_count": None,
         }
-        for u in users
-    ]
+        if u.role == "artist" and u.id in artist_map:
+            info = artist_map[u.id]
+            user_data["artist_id"] = info["artist_id"]
+            user_data["categories"] = info["categories"]
+            user_data["location"] = f"{info['city'] or ''}{', ' + info['country'] if info['country'] else ''}".strip(", ")
+        elif u.role == "community" and u.id in community_map:
+            info = community_map[u.id]
+            user_data["community_name"] = info["community_name"]
+            user_data["community_type"] = info["community_type"]
+            user_data["location"] = info["location"]
+        elif u.role == "agent":
+            user_data["managed_count"] = agent_map.get(u.id, 0)
+        response.append(user_data)
+
+    return response
 
 
 @router.get("/users/{user_id}")
@@ -381,7 +436,7 @@ async def delete_user(
     superuser: User = Depends(get_superuser),
     db: AsyncSession = Depends(get_db),
 ):
-    """Soft delete a user (set is_active=False and status=inactive)."""
+    """Soft delete a user (set status=deleted and hide from public listings)."""
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
@@ -391,13 +446,31 @@ async def delete_user(
     if user.id == superuser.id:
         raise HTTPException(status_code=400, detail="Cannot delete yourself")
 
-    # Soft delete
+    # Soft delete user
     user.is_active = False
-    user.status = "inactive"
-    logger.info("Admin %s deactivated user id=%d email=%s", superuser.email, user.id, user.email)
+    user.status = "deleted"
+
+    # Also set associated artist/community status to "deleted"
+    if user.role == "artist":
+        artist_result = await db.execute(
+            select(Artist).where(Artist.user_id == user_id)
+        )
+        artist = artist_result.scalar_one_or_none()
+        if artist:
+            artist.status = "deleted"
+
+    elif user.role == "community":
+        community_result = await db.execute(
+            select(Community).where(Community.user_id == user_id)
+        )
+        community = community_result.scalar_one_or_none()
+        if community:
+            community.status = "deleted"
+
+    logger.info("Admin %s deleted user id=%d email=%s", superuser.email, user.id, user.email)
     await db.commit()
 
-    return {"message": f"User {user.email} has been deactivated"}
+    return {"message": f"User {user.email} has been deleted"}
 
 
 @router.get("/artists")
@@ -526,6 +599,154 @@ async def toggle_artist_featured(
         "name_en": artist.name_en,
         "is_featured": artist.is_featured,
     }
+
+
+@router.get("/users/{user_id}/profile")
+async def get_user_profile(
+    user_id: int,
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get the full artist or community profile for a user."""
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.role == "artist":
+        artist_result = await db.execute(
+            select(Artist)
+            .options(selectinload(Artist.categories))
+            .where(Artist.user_id == user_id)
+        )
+        artist = artist_result.scalar_one_or_none()
+        if not artist:
+            return {"role": user.role, "profile": None}
+        return {
+            "role": user.role,
+            "profile": {
+                "id": artist.id,
+                "name_he": artist.name_he,
+                "name_en": artist.name_en,
+                "bio_he": artist.bio_he,
+                "bio_en": artist.bio_en,
+                "profile_image": artist.profile_image,
+                "price_single": artist.price_single,
+                "price_tour": artist.price_tour,
+                "city": artist.city,
+                "country": artist.country,
+                "phone": artist.phone,
+                "website": artist.website,
+                "instagram": artist.instagram,
+                "youtube": artist.youtube,
+                "facebook": artist.facebook,
+                "categories": [{"id": c.id, "name_en": c.name_en} for c in artist.categories],
+                "subcategories": artist.subcategories or [],
+                "status": artist.status,
+            },
+        }
+
+    elif user.role == "community":
+        community_result = await db.execute(
+            select(Community).where(Community.user_id == user_id)
+        )
+        community = community_result.scalar_one_or_none()
+        if not community:
+            return {"role": user.role, "profile": None}
+        return {
+            "role": user.role,
+            "profile": {
+                "id": community.id,
+                "name": community.name,
+                "community_type": community.community_type,
+                "location": community.location,
+                "member_count_min": community.member_count_min,
+                "member_count_max": community.member_count_max,
+                "event_types": community.event_types,
+                "language": community.language,
+                "phone": community.phone,
+                "status": community.status,
+            },
+        }
+
+    elif user.role == "agent":
+        artists_result = await db.execute(
+            select(Artist.id, Artist.name_en, Artist.name_he, Artist.status)
+            .where(Artist.agent_user_id == user_id)
+        )
+        managed_artists = [
+            {"id": row[0], "name_en": row[1], "name_he": row[2], "status": row[3]}
+            for row in artists_result.all()
+        ]
+        return {"role": user.role, "profile": {"managed_artists": managed_artists}}
+
+    return {"role": user.role, "profile": None}
+
+
+@router.put("/artists/{artist_id}/profile")
+async def admin_update_artist(
+    artist_id: int,
+    update_data: ArtistUpdate,
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """Superuser can update any artist's profile fields."""
+    result = await db.execute(
+        select(Artist)
+        .options(selectinload(Artist.categories))
+        .where(Artist.id == artist_id)
+    )
+    artist = result.scalar_one_or_none()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Talent not found")
+
+    update_dict = update_data.model_dump(exclude_unset=True)
+
+    # Handle category updates separately
+    if "category_ids" in update_dict:
+        category_ids = update_dict.pop("category_ids")
+        if category_ids is not None:
+            categories_result = await db.execute(
+                select(Category).where(Category.id.in_(category_ids))
+            )
+            artist.categories = list(categories_result.scalars().all())
+
+    for field, value in update_dict.items():
+        if hasattr(artist, field):
+            setattr(artist, field, value)
+
+    logger.info("Admin %s updated artist id=%d", superuser.email, artist_id)
+    await db.commit()
+    await db.refresh(artist)
+
+    return {"id": artist.id, "name_en": artist.name_en, "message": "Artist updated"}
+
+
+@router.put("/communities/{community_id}/profile")
+async def admin_update_community(
+    community_id: int,
+    update_data: CommunityUpdate,
+    superuser: User = Depends(get_superuser),
+    db: AsyncSession = Depends(get_db),
+):
+    """Superuser can update any community's profile fields."""
+    result = await db.execute(
+        select(Community).where(Community.id == community_id)
+    )
+    community = result.scalar_one_or_none()
+    if not community:
+        raise HTTPException(status_code=404, detail="Host not found")
+
+    update_dict = update_data.model_dump(exclude_unset=True)
+    for field, value in update_dict.items():
+        if hasattr(community, field):
+            setattr(community, field, value)
+
+    logger.info("Admin %s updated community id=%d", superuser.email, community_id)
+    await db.commit()
+    await db.refresh(community)
+
+    return {"id": community.id, "name": community.name, "message": "Community updated"}
 
 
 @router.post("/seed-superusers")
