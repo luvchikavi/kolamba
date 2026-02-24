@@ -335,7 +335,7 @@ export default function HostDashboardPage() {
     setIsFavoritesLoading(true);
     try {
       const lists = getFavoriteLists();
-      const allIds = [...new Set(lists.flatMap((l) => l.artistIds))];
+      const allIds = Array.from(new Set(lists.flatMap((l) => l.artistIds)));
       if (allIds.length === 0) {
         setFavoriteArtists([]);
         return;
