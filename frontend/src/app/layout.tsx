@@ -4,7 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Providers from "@/lib/providers";
-import WelcomeModal from "@/components/modals/WelcomeModal";
+
 import { Toaster } from "@/components/ui/Toaster";
 import dynamic from "next/dynamic";
 
@@ -95,7 +95,7 @@ export default function RootLayout({
             <main id="main-content" className="flex-1">{children}</main>
             <Footer />
           </div>
-          <WelcomeModal />
+
           <Toaster />
           <UserSwitcher />
         </Providers>
