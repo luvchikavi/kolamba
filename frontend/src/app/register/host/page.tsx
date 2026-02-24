@@ -391,7 +391,7 @@ export default function CommunityRegistrationPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, communityName: e.target.value })
                   }
-                  placeholder="City, State/Country"
+                  placeholder="Community / Organization / Institute"
                   className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
                     duplicateWarning
                       ? "border-slate-300"
