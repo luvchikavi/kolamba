@@ -13,6 +13,8 @@ import {
   XCircle,
   Loader2,
   MessageSquare,
+  Music,
+  Users,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
@@ -27,6 +29,9 @@ interface Booking {
   notes?: string;
   status: string;
   created_at: string;
+  event_type?: string;
+  audience_size?: number;
+  audience_description?: string;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -182,7 +187,13 @@ export default function CommunityQuotesPage() {
                   <StatusBadge status={booking.status} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                  {booking.event_type && (
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Music size={16} className="text-slate-400" />
+                      <span>{booking.event_type}</span>
+                    </div>
+                  )}
                   {booking.requested_date && (
                     <div className="flex items-center gap-2 text-slate-600">
                       <Calendar size={16} className="text-slate-400" />
@@ -201,11 +212,28 @@ export default function CommunityQuotesPage() {
                       <span>${booking.budget}</span>
                     </div>
                   )}
+                  {booking.audience_size != null && (
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Users size={16} className="text-slate-400" />
+                      <span>{booking.audience_size} attendees</span>
+                    </div>
+                  )}
                 </div>
 
-                {booking.notes && (
-                  <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-                    <p className="text-sm text-slate-600">{booking.notes}</p>
+                {(booking.audience_description || booking.notes) && (
+                  <div className="mt-4 p-4 bg-slate-50 rounded-lg space-y-3">
+                    {booking.audience_description && (
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Event Description</p>
+                        <p className="text-sm text-slate-700">{booking.audience_description}</p>
+                      </div>
+                    )}
+                    {booking.notes && (
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Additional Details</p>
+                        <p className="text-sm text-slate-700 whitespace-pre-line">{booking.notes}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 

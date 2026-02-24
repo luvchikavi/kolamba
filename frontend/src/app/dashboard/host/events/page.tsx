@@ -13,6 +13,8 @@ import {
   Loader2,
   ExternalLink,
   Clock,
+  Music,
+  Users,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -27,6 +29,9 @@ interface Booking {
   notes?: string;
   status: string;
   created_at: string;
+  event_type?: string;
+  audience_size?: number;
+  audience_description?: string;
 }
 
 function formatDate(dateStr: string) {
@@ -118,7 +123,13 @@ function EventCard({ booking }: { booking: Booking }) {
         </div>
 
         {/* Event Info Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-sm">
+          {booking.event_type && (
+            <div className="flex items-center gap-2 text-slate-600">
+              <Music size={16} className="text-slate-400" />
+              <span>{booking.event_type}</span>
+            </div>
+          )}
           {booking.requested_date && (
             <div className="flex items-center gap-2 text-slate-600">
               <Calendar size={16} className="text-slate-400" />
@@ -137,12 +148,29 @@ function EventCard({ booking }: { booking: Booking }) {
               <span>${booking.budget.toLocaleString()}</span>
             </div>
           )}
+          {booking.audience_size != null && (
+            <div className="flex items-center gap-2 text-slate-600">
+              <Users size={16} className="text-slate-400" />
+              <span>{booking.audience_size} attendees</span>
+            </div>
+          )}
         </div>
 
-        {/* Notes preview */}
-        {booking.notes && (
-          <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-            <p className="text-sm text-slate-600 line-clamp-2">{booking.notes}</p>
+        {/* Details */}
+        {(booking.audience_description || booking.notes) && (
+          <div className="mt-4 p-4 bg-slate-50 rounded-lg space-y-3">
+            {booking.audience_description && (
+              <div>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Event Description</p>
+                <p className="text-sm text-slate-700">{booking.audience_description}</p>
+              </div>
+            )}
+            {booking.notes && (
+              <div>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Additional Details</p>
+                <p className="text-sm text-slate-700 whitespace-pre-line line-clamp-3">{booking.notes}</p>
+              </div>
+            )}
           </div>
         )}
 
