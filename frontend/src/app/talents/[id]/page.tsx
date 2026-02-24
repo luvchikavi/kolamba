@@ -304,14 +304,16 @@ export default function ArtistDetailPage({
                 )}
               </div>
 
-              {/* CTA (Desktop) */}
-              <Link
-                href={`/booking/${artist.id}`}
-                className="hidden lg:inline-flex btn-primary gap-2"
-              >
-                <MessageSquare size={20} />
-                Send Booking Request
-              </Link>
+              {/* CTA (Desktop) - only show for hosts or guests (not artists/agents) */}
+              {(!currentUser || currentUser.role === "community") && (
+                <Link
+                  href={`/booking/${artist.id}`}
+                  className="hidden lg:inline-flex btn-primary gap-2"
+                >
+                  <MessageSquare size={20} />
+                  Send Booking Request
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -553,28 +555,32 @@ export default function ArtistDetailPage({
               </div>
             )}
 
-            {/* CTA */}
-            <Link
-              href={`/booking/${artist.id}`}
-              className="btn-primary w-full justify-center gap-2 py-4"
-            >
-              <MessageSquare size={20} />
-              Send Booking Request
-            </Link>
+            {/* CTA - only show for hosts or guests */}
+            {(!currentUser || currentUser.role === "community") && (
+              <Link
+                href={`/booking/${artist.id}`}
+                className="btn-primary w-full justify-center gap-2 py-4"
+              >
+                <MessageSquare size={20} />
+                Send Booking Request
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobile CTA */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-soft-lg">
-        <Link
-          href={`/booking/${artist.id}`}
-          className="btn-primary w-full justify-center gap-2 py-4"
-        >
-          <MessageSquare size={20} />
-          Send Booking Request
-        </Link>
-      </div>
+      {/* Mobile CTA - only show for hosts or guests */}
+      {(!currentUser || currentUser.role === "community") && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-soft-lg">
+          <Link
+            href={`/booking/${artist.id}`}
+            className="btn-primary w-full justify-center gap-2 py-4"
+          >
+            <MessageSquare size={20} />
+            Send Booking Request
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
