@@ -55,10 +55,13 @@ interface Tour {
 
 interface Booking {
   id: number;
+  community_id: number;
   location: string;
   requested_date: string;
   budget: number;
   status: string;
+  notes: string | null;
+  event_type: string | null;
 }
 
 interface ArtistProfile {
@@ -235,7 +238,10 @@ function TourCard({ tour }: { tour: Tour }) {
 
 function BookingCard({ booking }: { booking: Booking }) {
   return (
-    <div className="card p-4">
+    <Link
+      href="/dashboard/talent/messages"
+      className="card p-4 block hover:shadow-md transition-shadow cursor-pointer"
+    >
       <div className="flex justify-between items-start">
         <div>
           <p className="font-medium text-slate-900">{booking.location || "Location TBD"}</p>
@@ -247,8 +253,18 @@ function BookingCard({ booking }: { booking: Booking }) {
         </div>
         <StatusBadge status={booking.status} />
       </div>
+      {booking.event_type && (
+        <p className="text-sm text-slate-500 mt-1">{booking.event_type}</p>
+      )}
       <p className="text-sm text-slate-600 mt-2">Budget: ${booking.budget || 0}</p>
-    </div>
+      {booking.notes && (
+        <p className="text-sm text-slate-500 mt-2 line-clamp-2">{booking.notes}</p>
+      )}
+      <p className="text-xs text-primary-600 mt-3 font-medium flex items-center gap-1">
+        <MessageSquare size={14} />
+        View Details & Respond
+      </p>
+    </Link>
   );
 }
 
