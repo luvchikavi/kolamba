@@ -132,7 +132,7 @@ interface BookingData {
   eventDescription: string;
   date: string;
   flexibleDates: boolean;
-  alternateDate: string;
+  dateRangeEnd: string;
   budget: string;
   venueType: string;
   venueCapacity: string;
@@ -281,7 +281,7 @@ export default function BookingPage() {
     eventDescription: "",
     date: "",
     flexibleDates: false,
-    alternateDate: "",
+    dateRangeEnd: "",
     budget: "",
     venueType: "",
     venueCapacity: "",
@@ -417,7 +417,7 @@ export default function BookingPage() {
             bookingData.eventDescription ? `Description: ${bookingData.eventDescription}` : "",
             `Venue: ${bookingData.venueType}`,
             bookingData.venueCapacity ? `Capacity: ${bookingData.venueCapacity}` : "",
-            bookingData.flexibleDates && bookingData.alternateDate ? `Alternate Date: ${bookingData.alternateDate}` : "",
+            bookingData.flexibleDates && bookingData.dateRangeEnd ? `Date Range: ${bookingData.date} to ${bookingData.dateRangeEnd}` : "",
             bookingData.specialRequirements ? `Special Requirements: ${bookingData.specialRequirements}` : "",
             `Contact: ${bookingData.contactName} (${bookingData.contactEmail})`,
             bookingData.contactPhone ? `Phone: ${bookingData.contactPhoneCountryCode} ${bookingData.contactPhone}` : "",
@@ -565,19 +565,6 @@ export default function BookingPage() {
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">When would you like to host the event?</h2>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    <Calendar size={16} className="inline mr-2" />
-                    Preferred Date
-                  </label>
-                  <input
-                    type="date"
-                    value={bookingData.date}
-                    onChange={(e) => updateBookingData("date", e.target.value)}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -587,21 +574,50 @@ export default function BookingPage() {
                     className="w-5 h-5 rounded border-slate-300 text-teal-500 focus:ring-teal-500"
                   />
                   <label htmlFor="flexibleDates" className="text-slate-700">
-                    I&apos;m flexible with dates
+                    I&apos;m flexible with dates (select a range)
                   </label>
                 </div>
 
-                {bookingData.flexibleDates && (
+                {!bookingData.flexibleDates ? (
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Alternative Date
+                      <Calendar size={16} className="inline mr-2" />
+                      Preferred Date
                     </label>
                     <input
                       type="date"
-                      value={bookingData.alternateDate}
-                      onChange={(e) => updateBookingData("alternateDate", e.target.value)}
+                      value={bookingData.date}
+                      onChange={(e) => updateBookingData("date", e.target.value)}
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <Calendar size={16} className="inline mr-2" />
+                        From
+                      </label>
+                      <input
+                        type="date"
+                        value={bookingData.date}
+                        onChange={(e) => updateBookingData("date", e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <Calendar size={16} className="inline mr-2" />
+                        To
+                      </label>
+                      <input
+                        type="date"
+                        value={bookingData.dateRangeEnd}
+                        onChange={(e) => updateBookingData("dateRangeEnd", e.target.value)}
+                        min={bookingData.date || undefined}
+                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -733,7 +749,11 @@ export default function BookingPage() {
                     </div>
                     <div>
                       <p className="text-slate-500">Date</p>
-                      <p className="font-medium">{bookingData.date || "Not specified"}</p>
+                      <p className="font-medium">
+                        {bookingData.flexibleDates && bookingData.dateRangeEnd
+                          ? `${bookingData.date || "TBD"} — ${bookingData.dateRangeEnd}`
+                          : bookingData.date || "Not specified"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-slate-500">Budget</p>
