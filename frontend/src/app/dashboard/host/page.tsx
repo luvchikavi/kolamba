@@ -18,6 +18,8 @@ import {
 import { API_URL, DiscoverArtist, DiscoverResponse, DiscoverParams } from "@/lib/api";
 import DiscoverFilters from "@/components/dashboard/DiscoverFilters";
 import DiscoverArtistCard from "@/components/dashboard/DiscoverArtistCard";
+import { getFavoriteLists } from "@/lib/favorites";
+import { Heart } from "lucide-react";
 
 interface Booking {
   id: number;
@@ -87,7 +89,7 @@ export default function HostDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [communityId, setCommunityId] = useState<number | null>(null);
   const [communityName, setCommunityName] = useState("");
-  const [activeTab, setActiveTab] = useState<"quotes" | "events" | "messages" | "discover">("quotes");
+  const [activeTab, setActiveTab] = useState<"quotes" | "events" | "messages" | "discover" | "favorites">("quotes");
 
   // Bookings data (for quotes + events + stats)
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -112,6 +114,19 @@ export default function HostDashboardPage() {
   const [discoverTotal, setDiscoverTotal] = useState(0);
   const [discoverTouringCount, setDiscoverTouringCount] = useState(0);
   const [isDiscoverLoading, setIsDiscoverLoading] = useState(false);
+
+  // Favorites state
+  interface FavoriteArtist {
+    id: number;
+    name_en: string | null;
+    name_he: string | null;
+    profile_image: string | null;
+    city: string | null;
+    price_tier: string | null;
+    categories: { name_en: string; slug: string }[];
+  }
+  const [favoriteArtists, setFavoriteArtists] = useState<FavoriteArtist[]>([]);
+  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false);
 
   const getToken = () => localStorage.getItem("access_token");
 
@@ -311,6 +326,37 @@ export default function HostDashboardPage() {
     }
   };
 
+  const loadFavorites = useCallback(async () => {
+    setIsFavoritesLoading(true);
+    try {
+      const lists = getFavoriteLists();
+      const allIds = [...new Set(lists.flatMap((l) => l.artistIds))];
+      if (allIds.length === 0) {
+        setFavoriteArtists([]);
+        return;
+      }
+      const results: FavoriteArtist[] = [];
+      for (const id of allIds) {
+        try {
+          const res = await fetch(`${API_URL}/talents/${id}`);
+          if (res.ok) {
+            const data = await res.json();
+            results.push(data);
+          }
+        } catch { /* skip */ }
+      }
+      setFavoriteArtists(results);
+    } finally {
+      setIsFavoritesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "favorites") {
+      loadFavorites();
+    }
+  }, [activeTab, loadFavorites]);
+
   // Computed stats
   const pendingQuotes = bookings.filter((b) => b.status === "pending" || b.status === "quote_sent");
   const confirmedEvents = bookings.filter((b) => b.status === "approved" || b.status === "confirmed");
@@ -466,6 +512,17 @@ export default function HostDashboardPage() {
             }`}
           >
             Discover Talents ({discoverTotal})
+          </button>
+          <button
+            onClick={() => setActiveTab("favorites")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-1.5 ${
+              activeTab === "favorites"
+                ? "bg-pink-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            <Heart size={16} />
+            Favorites
           </button>
         </div>
 
@@ -725,6 +782,82 @@ export default function HostDashboardPage() {
                     </div>
                   </Link>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Favorites Tab */}
+        {activeTab === "favorites" && (
+          <div className="space-y-4">
+            {isFavoritesLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 size={32} className="animate-spin text-primary-500" />
+              </div>
+            ) : favoriteArtists.length === 0 ? (
+              <div className="card p-8 text-center">
+                <Heart size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">No Favorites Yet</h3>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  When you tap the heart icon on a talent&apos;s profile, they&apos;ll appear here.
+                </p>
+                <Link href="/search" className="btn-primary mx-auto">
+                  <Search size={18} />
+                  Browse Talents
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {favoriteArtists.map((artist) => {
+                  const name = artist.name_en || artist.name_he || "Talent";
+                  return (
+                    <Link
+                      key={artist.id}
+                      href={`/talents/${artist.id}`}
+                      className="card card-hover overflow-hidden block"
+                    >
+                      <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
+                        {artist.profile_image ? (
+                          <img
+                            src={artist.profile_image}
+                            alt={name}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-6xl font-bold text-white/40">
+                            {name.charAt(0)}
+                          </span>
+                        )}
+                        <div className="absolute top-3 right-3">
+                          <Heart size={20} className="text-pink-500 fill-pink-500" />
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-slate-900">{name}</h3>
+                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                          {artist.city && (
+                            <span className="flex items-center gap-1">
+                              <MapPin size={14} />
+                              {artist.city}
+                            </span>
+                          )}
+                          {artist.price_tier && (
+                            <span className="font-medium text-slate-700">{artist.price_tier}</span>
+                          )}
+                        </div>
+                        {artist.categories && artist.categories.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {artist.categories.slice(0, 2).map((cat) => (
+                              <span key={cat.slug} className="badge-primary text-xs">
+                                {cat.name_en}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
