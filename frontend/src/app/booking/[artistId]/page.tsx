@@ -212,7 +212,8 @@ export default function BookingPage() {
               if (community.location) {
                 const parts = community.location.split(",").map((p: string) => p.trim());
                 if (parts.length >= 2) {
-                  prefill.venueCity = parts[0];
+                  // Join all parts except the last (country) as the city
+                  prefill.venueCity = parts.slice(0, -1).join(", ");
                   const rawCountry = parts[parts.length - 1];
                   const matched = countries.find(
                     (c) => c.toLowerCase() === rawCountry.toLowerCase() || c.toLowerCase().includes(rawCountry.toLowerCase())
