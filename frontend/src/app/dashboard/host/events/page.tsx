@@ -181,7 +181,7 @@ function EmptyState() {
           href="/search"
           className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors"
         >
-          Browse Artists
+          Browse Talents
         </Link>
       </div>
     </div>

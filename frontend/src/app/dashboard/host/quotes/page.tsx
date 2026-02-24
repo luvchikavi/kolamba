@@ -163,7 +163,7 @@ export default function CommunityQuotesPage() {
               href="/search"
               className="inline-block px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors"
             >
-              Browse Artists
+              Browse Talents
             </Link>
           </div>
         ) : (
