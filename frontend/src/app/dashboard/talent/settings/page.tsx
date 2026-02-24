@@ -18,7 +18,7 @@ const categories = [
   { id: 10, name: "Inspiration", slug: "inspiration" },
 ];
 
-const languages = ["English", "Hebrew", "French", "Spanish", "Russian", "German"];
+const languages = ["English", "Hebrew", "French", "Spanish", "Russian", "German", "Italian", "Amharic", "Dutch", "Swedish", "Yiddish"];
 
 const performanceTypes = [
   "Solo Performance",
