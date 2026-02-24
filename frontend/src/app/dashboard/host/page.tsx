@@ -21,7 +21,7 @@ import { API_URL, DiscoverArtist, DiscoverResponse, DiscoverParams } from "@/lib
 import DiscoverFilters from "@/components/dashboard/DiscoverFilters";
 import DiscoverArtistCard from "@/components/dashboard/DiscoverArtistCard";
 import { getFavoriteLists } from "@/lib/favorites";
-import { Heart } from "lucide-react";
+import { Heart, Globe } from "lucide-react";
 
 interface Booking {
   id: number;
@@ -94,7 +94,7 @@ export default function HostDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [communityId, setCommunityId] = useState<number | null>(null);
   const [communityName, setCommunityName] = useState("");
-  const [activeTab, setActiveTab] = useState<"quotes" | "events" | "messages" | "discover" | "favorites">("quotes");
+  const [activeTab, setActiveTab] = useState<"quotes" | "events" | "messages" | "discover" | "favorites" | "tours">("quotes");
 
   // Bookings data (for quotes + events + stats)
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -132,6 +132,24 @@ export default function HostDashboardPage() {
   }
   const [favoriteArtists, setFavoriteArtists] = useState<FavoriteArtist[]>([]);
   const [isFavoritesLoading, setIsFavoritesLoading] = useState(false);
+
+  interface TourDate {
+    id: number;
+    location: string;
+    start_date: string;
+    end_date: string | null;
+    description: string | null;
+    artist: {
+      id: number;
+      name_en: string | null;
+      name_he: string | null;
+      profile_image: string | null;
+      city: string | null;
+      country: string | null;
+    };
+  }
+  const [tourDates, setTourDates] = useState<TourDate[]>([]);
+  const [isToursLoading, setIsToursLoading] = useState(false);
 
   const getToken = () => localStorage.getItem("access_token");
 
@@ -362,6 +380,27 @@ export default function HostDashboardPage() {
     }
   }, [activeTab, loadFavorites]);
 
+  const loadTours = useCallback(async () => {
+    setIsToursLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/talents/tour-dates/recent?limit=12`);
+      if (res.ok) {
+        const data = await res.json();
+        setTourDates(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch tours:", err);
+    } finally {
+      setIsToursLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "tours" && tourDates.length === 0) {
+      loadTours();
+    }
+  }, [activeTab, tourDates.length, loadTours]);
+
   // Computed stats
   const pendingQuotes = bookings.filter((b) => b.status === "pending" || b.status === "quote_sent");
   const confirmedEvents = bookings.filter((b) => b.status === "approved" || b.status === "confirmed");
@@ -528,6 +567,17 @@ export default function HostDashboardPage() {
           >
             <Heart size={16} />
             Favorites
+          </button>
+          <button
+            onClick={() => setActiveTab("tours")}
+            className={`px-4 py-2 rounded-xl font-medium transition-colors flex items-center gap-1.5 ${
+              activeTab === "tours"
+                ? "bg-teal-500 text-white"
+                : "bg-white text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            <Globe size={16} />
+            Tours
           </button>
         </div>
 
@@ -893,6 +943,83 @@ export default function HostDashboardPage() {
                   );
                 })}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Tours Tab */}
+        {activeTab === "tours" && (
+          <div className="space-y-4">
+            {isToursLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 size={32} className="animate-spin text-primary-500" />
+              </div>
+            ) : tourDates.length === 0 ? (
+              <div className="card p-8 text-center">
+                <Globe size={48} className="text-slate-300 mx-auto mb-4" />
+                <h3 className="font-bold text-lg text-slate-900 mb-2">No Upcoming Tours</h3>
+                <p className="text-slate-500 max-w-md mx-auto mb-6">
+                  Check back soon — artists are planning their upcoming tours near your community.
+                </p>
+                <Link href="/tours" className="btn-primary mx-auto">
+                  <Globe size={18} />
+                  Browse Tours
+                </Link>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {tourDates.map((tour) => {
+                    const artistName = tour.artist.name_en || tour.artist.name_he || "Artist";
+                    return (
+                      <Link
+                        key={`${tour.artist.id}-${tour.id}`}
+                        href={`/talents/${tour.artist.id}`}
+                        className="card card-hover overflow-hidden block group"
+                      >
+                        <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
+                          {tour.artist.profile_image ? (
+                            <img
+                              src={tour.artist.profile_image}
+                              alt={artistName}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <span className="text-5xl font-bold text-white/40">
+                              {artistName.charAt(0)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <p className="text-sm text-primary-600 font-medium mb-1">{artistName}</p>
+                          <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-2">
+                            {tour.description || "On Tour"}
+                          </h3>
+                          <div className="flex items-center gap-1 text-slate-500 text-sm mb-1">
+                            <MapPin size={14} />
+                            <span>{tour.location}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-slate-500 text-sm">
+                            <Calendar size={14} />
+                            <span>
+                              {new Date(tour.start_date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+                <div className="text-center pt-4">
+                  <Link href="/tours" className="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                    View All Tours →
+                  </Link>
+                </div>
+              </>
             )}
           </div>
         )}
