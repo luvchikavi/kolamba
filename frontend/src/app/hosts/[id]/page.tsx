@@ -104,14 +104,7 @@ export default function CommunityProfilePage() {
             Back to Hosts
           </Link>
 
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            {/* Avatar */}
-            <div className="w-32 h-32 rounded-2xl bg-white shadow-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-5xl font-bold text-primary-500">
-                {community.name.charAt(0)}
-              </span>
-            </div>
-
+          <div className="flex flex-col gap-4">
             {/* Info */}
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3 mb-2">
