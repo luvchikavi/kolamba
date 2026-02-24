@@ -22,6 +22,7 @@ from app.services.tour_grouping import find_nearby_tours, haversine_distance
 from app.services.interest_matching import get_matched_categories, calculate_interest_score, EVENT_TYPE_TO_CATEGORIES
 from app.services.geocoding import geocode_location
 from app.routers.auth import get_current_active_user
+from app.utils.security import get_password_hash
 
 router = APIRouter()
 
@@ -30,6 +31,7 @@ class CommunityRegisterRequest(BaseModel):
     """Request body for community registration (MVP - includes user info)."""
     # User info
     email: str = Field(..., min_length=5, max_length=255)
+    password: str = Field(..., min_length=6, max_length=128, description="Account password")
     name: str = Field(..., min_length=2, max_length=255, description="Contact name")
 
     # Community info
@@ -624,9 +626,11 @@ async def create_community(
     # Create user account
     user = User(
         email=request.email,
+        password_hash=get_password_hash(request.password),
         name=request.name,
         role="community",
         status="active",
+        is_active=True,
     )
     db.add(user)
     await db.flush()  # Get user ID

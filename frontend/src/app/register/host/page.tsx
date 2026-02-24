@@ -27,6 +27,8 @@ interface FormData {
   name: string;
   contactRole: string;
   email: string;
+  password: string;
+  confirmPassword: string;
   phone: string;
   phoneCountryCode: string;
   receiveArtistOffers: boolean;
@@ -149,6 +151,8 @@ export default function CommunityRegistrationPage() {
     name: "",
     contactRole: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     phone: "",
     phoneCountryCode: "+1",
     receiveArtistOffers: false,
@@ -267,6 +271,12 @@ export default function CommunityRegistrationPage() {
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Valid email is required";
     }
+    if (!formData.password || formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
     if (!formData.phone || formData.phone.length < 6) {
       newErrors.phone = "Please enter a valid phone number (at least 6 digits)";
     } else if (formData.phone.length > 15) {
@@ -292,6 +302,7 @@ export default function CommunityRegistrationPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: formData.email,
+            password: formData.password,
             name: formData.name,
             community_name: formData.communityName,
             location: [formData.city, formData.state, formData.country].filter(Boolean).join(", "),
@@ -686,6 +697,48 @@ export default function CommunityRegistrationPage() {
                 />
                 {errors.email && (
                   <p className="mt-2 text-sm text-red-500">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="At least 6 characters"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.password
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-slate-400"
+                  }`}
+                />
+                {errors.password && (
+                  <p className="mt-2 text-sm text-red-500">{errors.password}</p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  placeholder="Repeat your password"
+                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                    errors.confirmPassword
+                      ? "border-red-300 focus:border-red-400"
+                      : "border-slate-300 focus:border-slate-400"
+                  }`}
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-2 text-sm text-red-500">{errors.confirmPassword}</p>
                 )}
               </div>
 
