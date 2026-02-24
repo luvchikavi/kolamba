@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Menu, X, Search, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, Search, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
@@ -88,14 +88,23 @@ export default function Header() {
             <span className="text-sm uppercase tracking-wide font-bold">KOLAMBA</span>
           </Link>
 
-          {/* Center: Search */}
-          <Link
-            href="/search"
-            className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
-          >
-            <Search size={18} />
-            <span className="text-sm uppercase tracking-wide">Search</span>
-          </Link>
+          {/* Center: Navigation Links */}
+          <div className="flex items-center gap-4">
+            <Link
+              href="/search"
+              className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+            >
+              <Search size={18} />
+              <span className="text-sm uppercase tracking-wide">Search</span>
+            </Link>
+            <Link
+              href="/tours"
+              className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
+            >
+              <Globe size={18} />
+              <span className="text-sm uppercase tracking-wide">Tours</span>
+            </Link>
+          </div>
 
           {/* Right: Notifications + User Menu or Sign In */}
           {user ? (
@@ -183,6 +192,14 @@ export default function Header() {
             >
               <Search size={18} />
               Search
+            </Link>
+            <Link
+              href="/tours"
+              className="flex items-center gap-2 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Globe size={18} />
+              Tours
             </Link>
             <hr className="my-2 border-slate-100" />
             <Link

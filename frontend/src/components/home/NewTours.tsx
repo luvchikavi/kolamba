@@ -165,13 +165,13 @@ export default function NewTours() {
               </div>
             </div>
 
-            {/* View All Artists Link */}
+            {/* View All Tours Link */}
             <div className="text-center mt-8">
               <Link
-                href="/search"
+                href="/tours"
                 className="inline-flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
               >
-                Browse All Artists
+                View All Tours
                 <ChevronRight size={18} />
               </Link>
             </div>
