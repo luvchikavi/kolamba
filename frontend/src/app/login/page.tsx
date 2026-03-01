@@ -103,6 +103,8 @@ function LoginForm() {
 
     const btnContainer = document.getElementById("google-signin-btn");
     if (btnContainer) {
+      // Clear any previous render
+      btnContainer.innerHTML = "";
       window.google.accounts.id.renderButton(btnContainer, {
         theme: "outline",
         size: "large",
@@ -111,6 +113,13 @@ function LoginForm() {
       });
     }
   }, [handleGoogleResponse]);
+
+  // Re-init if Google SDK is already loaded (e.g. cached / client-side nav)
+  useEffect(() => {
+    if (window.google) {
+      initGoogleSignIn();
+    }
+  }, [initGoogleSignIn]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,31 +286,33 @@ function LoginForm() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-500">or continue with</span>
-            </div>
-          </div>
-
           {/* Google Sign-In */}
           {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-            <div className="mb-8">
-              <div id="google-signin-btn" className="flex justify-center" />
-              {isGoogleLoading && (
-                <p className="text-sm text-center text-slate-500 mt-2">
-                  Signing in with Google...
-                </p>
-              )}
-              <Script
-                src="https://accounts.google.com/gsi/client"
-                strategy="afterInteractive"
-                onLoad={initGoogleSignIn}
-              />
-            </div>
+            <>
+              {/* Divider */}
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-slate-500">or continue with</span>
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div id="google-signin-btn" className="flex justify-center" />
+                {isGoogleLoading && (
+                  <p className="text-sm text-center text-slate-500 mt-2">
+                    Signing in with Google...
+                  </p>
+                )}
+                <Script
+                  src="https://accounts.google.com/gsi/client"
+                  strategy="afterInteractive"
+                  onLoad={initGoogleSignIn}
+                />
+              </div>
+            </>
           )}
 
           {/* Register links */}
@@ -310,10 +321,10 @@ function LoginForm() {
               Don&apos;t have an account?
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/register/talent" className="btn-secondary text-sm justify-center">
+              <Link href={`/register/talent${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`} className="btn-secondary text-sm justify-center">
                 Join as Talent
               </Link>
-              <Link href="/register/host" className="btn-primary text-sm justify-center">
+              <Link href={`/register/host${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`} className="btn-primary text-sm justify-center">
                 Register as Host
               </Link>
             </div>

@@ -33,20 +33,54 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close user dropdown when clicking outside
   useEffect(() => {
-    // Check for logged-in user
+    if (!showUserMenu) return;
+    const handleClick = () => setShowUserMenu(false);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [showUserMenu]);
+
+  useEffect(() => {
+    // Re-check auth on every navigation (token may have been set after login)
     const token = localStorage.getItem("access_token");
     if (token) {
       fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then((res) => (res.ok ? res.json() : null))
+        .then(async (res) => {
+          if (res.ok) return res.json();
+          // Try refreshing the token on 401
+          if (res.status === 401) {
+            const refreshToken = localStorage.getItem("refresh_token");
+            if (refreshToken) {
+              const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ refresh_token: refreshToken }),
+              });
+              if (refreshRes.ok) {
+                const tokens = await refreshRes.json();
+                localStorage.setItem("access_token", tokens.access_token);
+                if (tokens.refresh_token) localStorage.setItem("refresh_token", tokens.refresh_token);
+                const retryRes = await fetch(`${API_URL}/auth/me`, {
+                  headers: { Authorization: `Bearer ${tokens.access_token}` },
+                });
+                if (retryRes.ok) return retryRes.json();
+              }
+            }
+          }
+          return null;
+        })
         .then((data) => {
           if (data) setUser(data);
+          else setUser(null);
         })
         .catch(() => setUser(null));
+    } else {
+      setUser(null);
     }
-  }, []);
+  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -202,29 +236,51 @@ export default function Header() {
               Tours
             </Link>
             <hr className="my-2 border-slate-100" />
-            <Link
-              href="/login"
-              className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sign In
-            </Link>
-            <div className="flex flex-col gap-2 mt-2">
-              <Link
-                href="/register/host"
-                className="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-medium text-center transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Host Sign Up
-              </Link>
-              <Link
-                href="/register/talent"
-                className="px-4 py-3 border-2 border-slate-900 text-slate-900 hover:bg-slate-50 rounded-full font-medium text-center transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Talent Sign Up
-              </Link>
-            </div>
+            {user ? (
+              <>
+                <Link
+                  href={getDashboardLink()}
+                  className="flex items-center gap-2 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard size={18} />
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => { handleLogout(); setIsMenuOpen(false); }}
+                  className="flex items-center gap-2 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 font-medium transition-colors w-full"
+                >
+                  <LogOut size={18} />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <div className="flex flex-col gap-2 mt-2">
+                  <Link
+                    href="/register/host"
+                    className="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-full font-medium text-center transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Host Sign Up
+                  </Link>
+                  <Link
+                    href="/register/talent"
+                    className="px-4 py-3 border-2 border-slate-900 text-slate-900 hover:bg-slate-50 rounded-full font-medium text-center transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Talent Sign Up
+                  </Link>
+                </div>
+              </>
+            )}
           </nav>
         </div>
       )}

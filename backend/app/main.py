@@ -107,7 +107,13 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["Not
 @app.get("/api/health", tags=["Health"])
 async def health_check():
     """Health check endpoint for monitoring."""
-    return {"status": "healthy", "service": "kolamba-api"}
+    from app.services.email import is_configured as email_configured
+    return {
+        "status": "healthy",
+        "service": "kolamba-api",
+        "email_configured": email_configured(),
+        "frontend_url": settings.frontend_url,
+    }
 
 
 

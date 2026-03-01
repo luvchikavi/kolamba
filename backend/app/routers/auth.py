@@ -450,8 +450,14 @@ async def forgot_password(
             expires_delta=timedelta(hours=1),
         )
         reset_link = f"{settings.frontend_url}/reset-password?token={reset_token}"
-        send_password_reset(user.email, reset_link)
-        logger.info("Password reset email sent: user_id=%d", user.id)
+        email_id = send_password_reset(user.email, reset_link)
+        if email_id:
+            logger.info("Password reset email sent: user_id=%d email_id=%s", user.id, email_id)
+        else:
+            logger.warning(
+                "Password reset email FAILED for user_id=%d — check RESEND_API_KEY is set and domain is verified",
+                user.id,
+            )
     else:
         logger.info("Password reset requested for unknown/inactive email: %s", body.email)
 

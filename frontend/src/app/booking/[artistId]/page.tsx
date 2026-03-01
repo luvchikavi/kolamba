@@ -277,23 +277,44 @@ export default function BookingPage() {
     prefillFromCommunity();
   }, [artistId]);
 
-  const [bookingData, setBookingData] = useState<BookingData>({
-    eventType: "",
-    eventDescription: "",
-    date: "",
-    flexibleDates: false,
-    dateRangeEnd: "",
-    budget: "",
-    venueType: "",
-    venueCapacity: "",
-    venueCity: "",
-    venueCountry: "United States",
-    specialRequirements: "",
-    contactName: "",
-    contactEmail: "",
-    contactPhone: "",
-    contactPhoneCountryCode: "+1",
-    communityName: "",
+  const STORAGE_KEY = `kolamba_booking_${artistId}`;
+
+  const [bookingData, setBookingData] = useState<BookingData>(() => {
+    // Restore saved booking data from sessionStorage (e.g. after login redirect)
+    if (typeof window !== "undefined") {
+      try {
+        const saved = sessionStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Restore step too
+          if (parsed._step) {
+            setTimeout(() => setCurrentStep(parsed._step), 0);
+            delete parsed._step;
+          }
+          // Clean up after restoring
+          sessionStorage.removeItem(STORAGE_KEY);
+          return parsed;
+        }
+      } catch {}
+    }
+    return {
+      eventType: "",
+      eventDescription: "",
+      date: "",
+      flexibleDates: false,
+      dateRangeEnd: "",
+      budget: "",
+      venueType: "",
+      venueCapacity: "",
+      venueCity: "",
+      venueCountry: "United States",
+      specialRequirements: "",
+      contactName: "",
+      contactEmail: "",
+      contactPhone: "",
+      contactPhoneCountryCode: "+1",
+      communityName: "",
+    };
   });
 
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
@@ -358,6 +379,8 @@ export default function BookingPage() {
     // Check if user is authenticated before submitting
     const token = localStorage.getItem("access_token");
     if (!token) {
+      // Save booking data so it survives the login/register redirect
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...bookingData, _step: currentStep }));
       const redirectPath = `/booking/${artistId}`;
       router.push(`/login?redirect=${encodeURIComponent(redirectPath)}`);
       return;
@@ -430,6 +453,8 @@ export default function BookingPage() {
       if (response.status === 401) {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
+        // Save booking data so it survives the login redirect
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...bookingData, _step: currentStep }));
         const redirectPath = `/booking/${artistId}`;
         router.push(`/login?redirect=${encodeURIComponent(redirectPath)}`);
         return;

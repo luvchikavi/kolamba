@@ -1,10 +1,25 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { CheckCircle, ChevronDown, X, Search, Upload, Image, Video, Music, FileText, Loader2, Plus, Trash2 } from "lucide-react";
 import { API_URL, api, Category } from "@/lib/api";
-import { showError } from "@/lib/toast";
+import { showError, showSuccess } from "@/lib/toast";
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: Record<string, unknown>) => void;
+          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+        };
+      };
+    };
+  }
+}
 
 const subcategories: Record<string, string[]> = {
   Music: [
@@ -200,8 +215,10 @@ const countries = [
 ];
 
 export default function ArtistRegistrationPage() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [isAgent, setIsAgent] = useState(false);
@@ -209,6 +226,60 @@ export default function ArtistRegistrationPage() {
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const [apiCategories, setApiCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
+    setIsGoogleLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Google sign-up failed");
+      }
+
+      const data = await res.json();
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+      showSuccess("Signed in with Google! Complete your profile.");
+      router.push("/onboarding");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Google sign-up failed";
+      showError(msg);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }, [router]);
+
+  const initGoogleSignIn = useCallback(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || !window.google) return;
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleResponse,
+    });
+
+    const btnContainer = document.getElementById("google-signup-btn-talent");
+    if (btnContainer) {
+      btnContainer.innerHTML = "";
+      window.google.accounts.id.renderButton(btnContainer, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        text: "signup_with",
+      });
+    }
+  }, [handleGoogleResponse]);
+
+  useEffect(() => {
+    if (window.google) {
+      initGoogleSignIn();
+    }
+  }, [initGoogleSignIn]);
 
   // Fetch categories from API
   useEffect(() => {
@@ -718,6 +789,33 @@ export default function ArtistRegistrationPage() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-wide">KOLAMBA</h1>
           <span className="text-xl text-slate-600">TALENT SIGN UP</span>
         </div>
+
+        {/* Google Sign-Up Option */}
+        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+          <div className="max-w-md mx-auto mb-10">
+            <div className="mb-6">
+              <div id="google-signup-btn-talent" className="flex justify-center" />
+              {isGoogleLoading && (
+                <p className="text-sm text-center text-slate-500 mt-2">
+                  Signing up with Google...
+                </p>
+              )}
+              <Script
+                src="https://accounts.google.com/gsi/client"
+                strategy="afterInteractive"
+                onLoad={initGoogleSignIn}
+              />
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-slate-500">or register with email</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* Agent Mode Toggle */}

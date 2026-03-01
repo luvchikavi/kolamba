@@ -2,9 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { CheckCircle, ChevronDown, X } from "lucide-react";
 import { API_URL } from "@/lib/api";
-import { showError } from "@/lib/toast";
+import { showError, showSuccess } from "@/lib/toast";
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: Record<string, unknown>) => void;
+          renderButton: (element: HTMLElement, config: Record<string, unknown>) => void;
+        };
+      };
+    };
+  }
+}
 
 interface CommunityOptions {
   community_types: string[];
@@ -130,12 +145,70 @@ const countryCodes = [
 ];
 
 export default function CommunityRegistrationPage() {
+  const router = useRouter();
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const redirectTo = searchParams?.get("redirect");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [options, setOptions] = useState<CommunityOptions | null>(null);
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [eventTypeSearch, setEventTypeSearch] = useState("");
   const [showEventDropdown, setShowEventDropdown] = useState(false);
+
+  const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
+    setIsGoogleLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Google sign-up failed");
+      }
+
+      const data = await res.json();
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token);
+      showSuccess("Signed in with Google! Complete your profile.");
+      router.push("/onboarding");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Google sign-up failed";
+      showError(msg);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }, [router]);
+
+  const initGoogleSignIn = useCallback(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || !window.google) return;
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleResponse,
+    });
+
+    const btnContainer = document.getElementById("google-signup-btn-host");
+    if (btnContainer) {
+      btnContainer.innerHTML = "";
+      window.google.accounts.id.renderButton(btnContainer, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        text: "signup_with",
+      });
+    }
+  }, [handleGoogleResponse]);
+
+  useEffect(() => {
+    if (window.google) {
+      initGoogleSignIn();
+    }
+  }, [initGoogleSignIn]);
 
   const [formData, setFormData] = useState<FormData>({
     communityName: "",
@@ -349,7 +422,7 @@ export default function CommunityRegistrationPage() {
           </p>
           <div className="flex flex-col gap-3">
             <Link
-              href="/login"
+              href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
               className="px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors"
             >
               Sign In
@@ -371,6 +444,33 @@ export default function CommunityRegistrationPage() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-wide">KOLAMBA</h1>
           <span className="text-xl text-slate-600">HOST SIGN UP</span>
         </div>
+
+        {/* Google Sign-Up Option */}
+        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+          <div className="max-w-md mx-auto mb-10">
+            <div className="mb-6">
+              <div id="google-signup-btn-host" className="flex justify-center" />
+              {isGoogleLoading && (
+                <p className="text-sm text-center text-slate-500 mt-2">
+                  Signing up with Google...
+                </p>
+              )}
+              <Script
+                src="https://accounts.google.com/gsi/client"
+                strategy="afterInteractive"
+                onLoad={initGoogleSignIn}
+              />
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-slate-500">or register with email</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-20 gap-y-8">

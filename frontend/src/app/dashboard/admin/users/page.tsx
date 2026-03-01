@@ -13,6 +13,7 @@ import {
   Check,
   ExternalLink,
   Trash2,
+  KeyRound,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
@@ -177,6 +178,8 @@ export default function UsersPage() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [editProfile, setEditProfile] = useState<Record<string, unknown>>({});
   const [error, setError] = useState<string | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetPasswordStatus, setResetPasswordStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -246,6 +249,8 @@ export default function UsersPage() {
     setEditingUser(user);
     setProfileData(null);
     setEditProfile({});
+    setResetPassword("");
+    setResetPasswordStatus("idle");
     fetchProfile(user.id);
   };
 
@@ -320,6 +325,31 @@ export default function UsersPage() {
       }
     } catch (err) {
       console.error("Failed to delete user:", err);
+    }
+  };
+
+  const handleResetPassword = async (email: string) => {
+    if (!resetPassword || resetPassword.length < 6) return;
+    setResetPasswordStatus("saving");
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/auth/admin/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email, new_password: resetPassword }),
+      });
+      if (res.ok) {
+        setResetPasswordStatus("success");
+        setResetPassword("");
+        setTimeout(() => setResetPasswordStatus("idle"), 3000);
+      } else {
+        setResetPasswordStatus("error");
+      }
+    } catch {
+      setResetPasswordStatus("error");
     }
   };
 
@@ -584,6 +614,39 @@ export default function UsersPage() {
                 <label htmlFor="is_active" className="text-sm text-slate-700">
                   Account is active
                 </label>
+              </div>
+
+              {/* Reset Password */}
+              <div className="border-t border-slate-100 pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <KeyRound size={16} />
+                  Reset Password
+                </h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={resetPassword}
+                    onChange={(e) => {
+                      setResetPassword(e.target.value);
+                      setResetPasswordStatus("idle");
+                    }}
+                    placeholder="New password (min 6 chars)"
+                    className="flex-1 px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                  <button
+                    onClick={() => handleResetPassword(editingUser.email)}
+                    disabled={resetPassword.length < 6 || resetPasswordStatus === "saving"}
+                    className="px-3 py-1.5 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {resetPasswordStatus === "saving" ? "Saving..." : "Reset"}
+                  </button>
+                </div>
+                {resetPasswordStatus === "success" && (
+                  <p className="text-xs text-emerald-600 mt-1">Password updated successfully</p>
+                )}
+                {resetPasswordStatus === "error" && (
+                  <p className="text-xs text-red-600 mt-1">Failed to reset password</p>
+                )}
               </div>
 
               {/* Profile Section */}
