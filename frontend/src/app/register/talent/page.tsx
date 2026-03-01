@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { CheckCircle, ChevronDown, X, Search, Upload, Image, Video, Music, FileText, Loader2, Plus, Trash2 } from "lucide-react";
+import { CheckCircle, ChevronDown, Eye, EyeOff, X, Search, Upload, Image, Video, Music, FileText, Loader2, Plus, Trash2 } from "lucide-react";
 import { API_URL, api, Category } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
@@ -353,10 +353,14 @@ export default function ArtistRegistrationPage() {
     portfolioImages: [] as string[],
     spotifyLinks: [] as string[],
     mediaLinks: [] as string[],
+    password: "",
+    confirmPassword: "",
     acceptTerms: false,
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Store agent contact info to preserve when adding more artists
   const [agentContactInfo, setAgentContactInfo] = useState({
@@ -624,6 +628,14 @@ export default function ArtistRegistrationPage() {
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Valid email is required";
     }
+    if (!isAgent) {
+      if (!formData.password || formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
     // Phone validation
     const phoneError = validatePhoneNumber(formData.phone, formData.phoneCountryCode);
     if (phoneError) {
@@ -708,6 +720,7 @@ export default function ArtistRegistrationPage() {
             portfolio_images: formData.portfolioImages.filter(url => url.trim() !== ""),
             spotify_links: formData.spotifyLinks.filter(url => url.trim() !== ""),
             media_links: formData.mediaLinks.filter(url => url.trim() !== ""),
+            password: formData.password || null,
             is_agent_submission: isAgent,
           }),
         }
@@ -1133,6 +1146,69 @@ export default function ArtistRegistrationPage() {
                   <p className="mt-2 text-sm text-red-500">{errors.email}</p>
                 )}
               </div>
+
+              {/* Password (not shown for agent submissions) */}
+              {!isAgent && (
+                <>
+                  <div>
+                    <label className="block text-base font-medium text-slate-800 mb-2">
+                      Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="At least 6 characters"
+                        className={`w-full px-4 py-3.5 pr-12 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                          errors.password
+                            ? "border-red-300 focus:border-red-400"
+                            : "border-slate-300 focus:border-teal-400"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="mt-2 text-sm text-red-500">{errors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-base font-medium text-slate-800 mb-2">
+                      Confirm Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        placeholder="Repeat your password"
+                        className={`w-full px-4 py-3.5 pr-12 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                          errors.confirmPassword
+                            ? "border-red-300 focus:border-red-400"
+                            : "border-slate-300 focus:border-teal-400"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="mt-2 text-sm text-red-500">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Phone */}
               <div>
