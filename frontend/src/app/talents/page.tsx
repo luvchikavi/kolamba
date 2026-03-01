@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MapPin, Star, Search, Filter, Loader2 } from "lucide-react";
+import { MapPin, Star, Search, Filter, Loader2, Heart } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { toggleFavorite } from "@/lib/favorites";
 
 interface Category {
   id: number;
@@ -29,6 +30,37 @@ export default function ArtistsPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    const ids = new Set<number>();
+    try {
+      const raw = localStorage.getItem("kolamba_favorites");
+      if (raw) {
+        const data = JSON.parse(raw);
+        for (const list of data.lists || []) {
+          for (const id of list.artistIds || []) {
+            ids.add(id);
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    setFavoriteIds(ids);
+  }, []);
+
+  const handleFavoriteToggle = (artistId: number, artistName: string) => {
+    toggleFavorite(artistId, artistName);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(artistId)) {
+        next.delete(artistId);
+      } else {
+        next.add(artistId);
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -125,63 +157,79 @@ export default function ArtistsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {filteredArtists.map((artist) => {
                   const artistName = artist.name_en || artist.name_he || "Talent";
+                  const fav = favoriteIds.has(artist.id);
                   return (
-                    <Link
+                    <div
                       key={artist.id}
-                      href={`/talents/${artist.id}`}
-                      className="group card card-hover overflow-hidden"
+                      className="group card card-hover overflow-hidden relative"
                     >
-                      {/* Image / Avatar */}
-                      <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
-                        {artist.profile_image ? (
-                          <img
-                            src={artist.profile_image}
-                            alt={artistName}
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        ) : (
-                          <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
-                            {artistName.charAt(0)}
-                          </span>
-                        )}
-                        {artist.is_featured && (
-                          <div className="absolute top-3 left-3">
-                            <span className="badge-accent text-xs">Featured</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
-                            {artistName}
-                          </h3>
-                        </div>
-
-                        {/* Categories */}
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {artist.categories?.slice(0, 2).map((cat) => (
-                            <span key={cat.slug} className="badge-primary text-xs">
-                              {cat.name_en}
+                      <Link href={`/talents/${artist.id}`}>
+                        {/* Image / Avatar */}
+                        <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 flex items-center justify-center overflow-hidden">
+                          {artist.profile_image ? (
+                            <img
+                              src={artist.profile_image}
+                              alt={artistName}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          ) : (
+                            <span className="text-6xl font-bold text-white/40 group-hover:scale-110 transition-transform duration-500">
+                              {artistName.charAt(0)}
                             </span>
-                          ))}
-                        </div>
-
-                        {/* Location & Price */}
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-1 text-slate-500">
-                            <MapPin size={14} />
-                            <span>{artist.city || artist.country || "Israel"}</span>
-                          </div>
-                          {artist.price_tier && (
-                            <div className="font-semibold text-slate-900">
-                              {artist.price_tier}
+                          )}
+                          {artist.is_featured && (
+                            <div className="absolute top-3 left-3">
+                              <span className="badge-accent text-xs">Featured</span>
                             </div>
                           )}
                         </div>
-                      </div>
-                    </Link>
+
+                        {/* Content */}
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
+                              {artistName}
+                            </h3>
+                          </div>
+
+                          {/* Categories */}
+                          <div className="flex flex-wrap gap-1.5 mb-3">
+                            {artist.categories?.slice(0, 2).map((cat) => (
+                              <span key={cat.slug} className="badge-primary text-xs">
+                                {cat.name_en}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Location & Price */}
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-1 text-slate-500">
+                              <MapPin size={14} />
+                              <span>{artist.city || artist.country || "Israel"}</span>
+                            </div>
+                            {artist.price_tier && (
+                              <div className="font-semibold text-slate-900">
+                                {artist.price_tier}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                      {/* Favorite Button */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleFavoriteToggle(artist.id, artistName);
+                        }}
+                        className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors z-10"
+                      >
+                        <Heart
+                          size={18}
+                          className={fav ? "text-pink-500 fill-pink-500" : "text-pink-400"}
+                        />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
