@@ -296,9 +296,11 @@ function BookingCard({ booking }: { booking: Booking }) {
 
 function TourDateCard({
   tourDate,
+  onEdit,
   onDelete,
 }: {
   tourDate: ArtistTourDate;
+  onEdit: (tourDate: ArtistTourDate) => void;
   onDelete: (id: number) => void;
 }) {
   return (
@@ -327,9 +329,16 @@ function TourDateCard({
             </span>
           )}
           <button
+            onClick={() => onEdit(tourDate)}
+            className="p-1 text-slate-400 hover:text-primary-600 transition-colors"
+            title="Edit show"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
             onClick={() => onDelete(tourDate.id)}
             className="p-1 text-slate-400 hover:text-red-500 transition-colors"
-            title="Delete tour date"
+            title="Delete show"
           >
             <Trash2 size={16} />
           </button>
@@ -462,6 +471,132 @@ function AddTourDateModal({
                   <Plus size={16} />
                   Add Show
                 </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditTourDateModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+  tourDate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: { location: string; start_date: string; description?: string }) => void;
+  isSubmitting: boolean;
+  tourDate: ArtistTourDate | null;
+}) {
+  const [location, setLocation] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [description, setDescription] = useState("");
+
+  useEffect(() => {
+    if (isOpen && tourDate) {
+      setLocation(tourDate.location || "");
+      setStartDate(tourDate.start_date ? tourDate.start_date.split("T")[0] : "");
+      setDescription(tourDate.description || "");
+    }
+    if (!isOpen) {
+      setLocation("");
+      setStartDate("");
+      setDescription("");
+    }
+  }, [isOpen, tourDate]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      location,
+      start_date: startDate,
+      description: description || undefined,
+    });
+  };
+
+  if (!isOpen || !tourDate) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-slate-900">Edit Show</h2>
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Show / Event Name *
+            </label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., Shabbat Concert, Workshop, Community Event"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Location *
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g., Boston, MA or New York, USA"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Show Date *
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !location || !startDate || !description}
+              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
               )}
             </button>
           </div>
@@ -1067,6 +1202,8 @@ export default function ArtistDashboardPage() {
   const [isCreateTourModalOpen, setIsCreateTourModalOpen] = useState(false);
   const [isEditTourModalOpen, setIsEditTourModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
+  const [isEditTourDateModalOpen, setIsEditTourDateModalOpen] = useState(false);
+  const [editingTourDate, setEditingTourDate] = useState<ArtistTourDate | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -1219,6 +1356,46 @@ export default function ArtistDashboardPage() {
       }
     } catch (error) {
       console.error("Failed to delete tour date:", error);
+    }
+  };
+
+  const handleEditTourDate = async (data: {
+    location: string;
+    start_date: string;
+    description?: string;
+  }) => {
+    if (!artistId || !editingTourDate) return;
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(
+        `${API_URL}/talents/${artistId}/tour-dates/${editingTourDate.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (response.ok) {
+        const updatedTourDate: ArtistTourDate = await response.json();
+        setTourDates(
+          tourDates
+            .map((td) => (td.id === updatedTourDate.id ? updatedTourDate : td))
+            .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+        );
+        setIsEditTourDateModalOpen(false);
+        setEditingTourDate(null);
+      }
+    } catch (error) {
+      console.error("Failed to update tour date:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1698,6 +1875,10 @@ export default function ArtistDashboardPage() {
                   <TourDateCard
                     key={tourDate.id}
                     tourDate={tourDate}
+                    onEdit={(td) => {
+                      setEditingTourDate(td);
+                      setIsEditTourDateModalOpen(true);
+                    }}
                     onDelete={handleDeleteTourDate}
                   />
                 ))}
@@ -1730,6 +1911,17 @@ export default function ArtistDashboardPage() {
         onSubmit={handleEditTour}
         isSubmitting={isSubmitting}
         tour={editingTour}
+      />
+
+      <EditTourDateModal
+        isOpen={isEditTourDateModalOpen}
+        onClose={() => {
+          setIsEditTourDateModalOpen(false);
+          setEditingTourDate(null);
+        }}
+        onSubmit={handleEditTourDate}
+        isSubmitting={isSubmitting}
+        tourDate={editingTourDate}
       />
     </div>
   );
