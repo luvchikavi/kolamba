@@ -195,7 +195,7 @@ async def get_tour_opportunities(
 async def get_tour_suggestions(
     artist_id: int = Query(..., description="Artist ID to get suggestions for"),
     max_distance_km: float = Query(500, description="Maximum distance between communities"),
-    min_bookings: int = Query(2, description="Minimum bookings to form a tour"),
+    min_bookings: int = Query(1, description="Minimum bookings to form a tour"),
     db: AsyncSession = Depends(get_db),
 ):
     """

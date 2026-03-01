@@ -334,7 +334,7 @@ async def suggest_tours(
     db: AsyncSession,
     artist_id: int,
     max_distance_km: float = 500,
-    min_bookings: int = 2,
+    min_bookings: int = 1,
     date_range_days: int = 30,
 ) -> list[TourSuggestion]:
     """
@@ -363,7 +363,7 @@ async def suggest_tours(
         .options(selectinload(Booking.community))
         .where(
             Booking.artist_id == artist_id,
-            Booking.status == "pending",
+            Booking.status.in_(["pending", "quote_sent"]),
             Booking.tour_id.is_(None),  # Not already in a tour
         )
     )
