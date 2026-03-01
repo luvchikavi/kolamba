@@ -434,7 +434,7 @@ export default function HostDashboardPage() {
   const confirmedEvents = bookings.filter((b) => b.status === "approved" || b.status === "confirmed");
   const totalSpent = bookings
     .filter((b) => b.status === "approved" || b.status === "confirmed" || b.status === "completed")
-    .reduce((sum, b) => sum + (b.budget || 0), 0);
+    .reduce((sum, b) => sum + (b.quote_amount || b.budget || 0), 0);
 
   if (isLoading) {
     return (
