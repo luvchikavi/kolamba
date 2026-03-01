@@ -423,6 +423,24 @@ async def update_user(
         if hasattr(user, field):
             setattr(user, field, value)
 
+    # Cascade status change to associated artist/community profile
+    if "status" in update_dict:
+        new_status = update_dict["status"]
+        if user.role == "artist":
+            artist_result = await db.execute(
+                select(Artist).where(Artist.user_id == user_id)
+            )
+            artist = artist_result.scalar_one_or_none()
+            if artist:
+                artist.status = new_status
+        elif user.role == "community":
+            community_result = await db.execute(
+                select(Community).where(Community.user_id == user_id)
+            )
+            community = community_result.scalar_one_or_none()
+            if community:
+                community.status = new_status
+
     logger.info("Admin %s updated user id=%d fields=%s", superuser.email, user_id, list(update_dict.keys()))
     await db.commit()
     await db.refresh(user)
