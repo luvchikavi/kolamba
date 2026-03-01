@@ -797,10 +797,12 @@ async def google_auth(
             google_requests.Request(),
             settings.google_client_id,
         )
-    except ValueError:
+    except ValueError as e:
+        import logging
+        logging.error(f"Google token verification failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Google token",
+            detail=f"Invalid Google token: {e}",
         )
 
     email = token_data.get("email")
