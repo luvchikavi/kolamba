@@ -12,8 +12,15 @@ import {
   Check,
   DollarSign,
   Clock,
+  Calendar,
+  MapPin,
+  Users,
+  FileText,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { formatBudgetRange } from "@/lib/utils";
 
 interface ConversationListItem {
   id: number;
@@ -47,6 +54,16 @@ interface ConversationDetail {
 interface BookingDetail {
   id: number;
   status: string;
+  // Booking request info
+  requested_date?: string;
+  location?: string;
+  budget?: number;
+  notes?: string;
+  event_type?: string;
+  audience_size?: number;
+  audience_description?: string;
+  is_online?: boolean;
+  // Quote flow
   quote_amount?: number;
   quote_notes?: string;
   quoted_at?: string;
@@ -142,6 +159,7 @@ export default function ArtistMessagesPage() {
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showVenueInfo, setShowVenueInfo] = useState(false);
+  const [showBookingDetails, setShowBookingDetails] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -208,6 +226,7 @@ export default function ArtistMessagesPage() {
   const selectConversation = async (convId: number) => {
     setSelectedConvId(convId);
     setShowVenueInfo(false);
+    setShowBookingDetails(true);
     setBookingDetail(null);
     setQuoteAmount("");
     setQuoteNotes("");
@@ -408,20 +427,113 @@ export default function ArtistMessagesPage() {
                     </h3>
                     {bookingDetail && <StatusBadge status={bookingDetail.status} />}
                   </div>
-                  {selectedConv.venue_info && Object.keys(selectedConv.venue_info).length > 0 && (
-                    <button
-                      onClick={() => setShowVenueInfo(!showVenueInfo)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                        showVenueInfo
-                          ? "bg-primary-100 text-primary-700"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      <Building2 size={16} />
-                      Venue Info
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {bookingDetail && (
+                      <button
+                        onClick={() => setShowBookingDetails(!showBookingDetails)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                          showBookingDetails
+                            ? "bg-primary-100 text-primary-700"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        <FileText size={16} />
+                        Booking Details
+                        {showBookingDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                      </button>
+                    )}
+                    {selectedConv.venue_info && Object.keys(selectedConv.venue_info).length > 0 && (
+                      <button
+                        onClick={() => setShowVenueInfo(!showVenueInfo)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                          showVenueInfo
+                            ? "bg-primary-100 text-primary-700"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        Venue Info
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {/* Booking Details Panel */}
+                {showBookingDetails && bookingDetail && (
+                  <div className="p-4 border-b border-slate-100 bg-amber-50/50">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {bookingDetail.requested_date && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 flex items-center gap-1 mb-1">
+                            <Calendar size={12} />
+                            Date
+                          </p>
+                          <p className="text-sm font-medium text-slate-900">
+                            {new Date(bookingDetail.requested_date).toLocaleDateString(undefined, {
+                              weekday: "short",
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      )}
+                      {bookingDetail.location && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 flex items-center gap-1 mb-1">
+                            <MapPin size={12} />
+                            Location
+                          </p>
+                          <p className="text-sm font-medium text-slate-900">{bookingDetail.location}</p>
+                        </div>
+                      )}
+                      {bookingDetail.event_type && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 mb-1">Event Type</p>
+                          <p className="text-sm font-medium text-slate-900">
+                            {bookingDetail.event_type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          </p>
+                        </div>
+                      )}
+                      {bookingDetail.budget != null && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 flex items-center gap-1 mb-1">
+                            <DollarSign size={12} />
+                            Budget
+                          </p>
+                          <p className="text-sm font-medium text-slate-900">{formatBudgetRange(bookingDetail.budget)}</p>
+                        </div>
+                      )}
+                      {bookingDetail.audience_size != null && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 flex items-center gap-1 mb-1">
+                            <Users size={12} />
+                            Audience Size
+                          </p>
+                          <p className="text-sm font-medium text-slate-900">{bookingDetail.audience_size} attendees</p>
+                        </div>
+                      )}
+                      {bookingDetail.is_online && (
+                        <div>
+                          <p className="text-xs font-medium text-slate-500 mb-1">Format</p>
+                          <p className="text-sm font-medium text-slate-900">Online Event</p>
+                        </div>
+                      )}
+                    </div>
+                    {bookingDetail.audience_description && (
+                      <div className="mt-3">
+                        <p className="text-xs font-medium text-slate-500 mb-1">Audience Description</p>
+                        <p className="text-sm text-slate-700">{bookingDetail.audience_description}</p>
+                      </div>
+                    )}
+                    {bookingDetail.notes && (
+                      <div className="mt-3">
+                        <p className="text-xs font-medium text-slate-500 mb-1">Notes</p>
+                        <p className="text-sm text-slate-700 whitespace-pre-wrap">{bookingDetail.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Venue Info Panel (read-only for artist) */}
                 {showVenueInfo && selectedConv.venue_info && (
