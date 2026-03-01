@@ -18,6 +18,7 @@ import {
   X,
   Trash2,
   MessageSquare,
+  Pencil,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { formatBudgetRange } from "@/lib/utils";
@@ -185,7 +186,15 @@ function TourSuggestionCard({
   );
 }
 
-function TourCard({ tour }: { tour: Tour }) {
+function TourCard({
+  tour,
+  onEdit,
+  onDelete,
+}: {
+  tour: Tour;
+  onEdit: (tour: Tour) => void;
+  onDelete: (tourId: number) => void;
+}) {
   const confirmedCount = tour.confirmed_shows ?? tour.bookings?.length ?? 0;
 
   return (
@@ -195,7 +204,23 @@ function TourCard({ tour }: { tour: Tour }) {
           <h3 className="font-bold text-lg text-slate-900">{tour.name}</h3>
           <p className="text-sm text-slate-500">{tour.region}</p>
         </div>
-        <StatusBadge status={tour.status} />
+        <div className="flex items-center gap-2">
+          <StatusBadge status={tour.status} />
+          <button
+            onClick={() => onEdit(tour)}
+            className="p-1.5 text-slate-400 hover:text-primary-600 transition-colors rounded-lg hover:bg-primary-50"
+            title="Edit tour"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={() => onDelete(tour.id)}
+            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
+            title="Delete tour"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
 
       {tour.description && (
@@ -816,6 +841,217 @@ function CreateTourModal({
   );
 }
 
+function EditTourModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+  tour,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: {
+    name: string;
+    region: string;
+    start_date: string;
+    end_date: string;
+    price_per_show?: number;
+    min_tour_budget?: number;
+    description?: string;
+  }) => void;
+  isSubmitting: boolean;
+  tour: Tour | null;
+}) {
+  const [name, setName] = useState("");
+  const [region, setRegion] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [pricePerShow, setPricePerShow] = useState("");
+  const [minTourBudget, setMinTourBudget] = useState("");
+  const [description, setDescription] = useState("");
+
+  useEffect(() => {
+    if (isOpen && tour) {
+      setName(tour.name || "");
+      setRegion(tour.region || "");
+      setStartDate(tour.start_date ? tour.start_date.split("T")[0] : "");
+      setEndDate(tour.end_date ? tour.end_date.split("T")[0] : "");
+      setPricePerShow(tour.price_per_show ? String(tour.price_per_show) : "");
+      setMinTourBudget(tour.total_budget ? String(tour.total_budget) : "");
+      setDescription(tour.description || "");
+    }
+    if (!isOpen) {
+      setName("");
+      setRegion("");
+      setStartDate("");
+      setEndDate("");
+      setPricePerShow("");
+      setMinTourBudget("");
+      setDescription("");
+    }
+  }, [isOpen, tour]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      name,
+      region,
+      start_date: startDate,
+      end_date: endDate,
+      price_per_show: pricePerShow ? parseInt(pricePerShow) : undefined,
+      min_tour_budget: minTourBudget ? parseInt(minTourBudget) : undefined,
+      description: description || undefined,
+    });
+  };
+
+  if (!isOpen || !tour) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Edit Tour</h2>
+            <p className="text-sm text-slate-500">Update your tour details</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Tour Name *
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Region / Area *
+            </label>
+            <input
+              type="text"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Start Date *
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                End Date *
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={startDate}
+                className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Price per Show (USD)
+              </label>
+              <div className="relative">
+                <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="number"
+                  value={pricePerShow}
+                  onChange={(e) => setPricePerShow(e.target.value)}
+                  min="0"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Min Tour Budget (USD)
+              </label>
+              <div className="relative">
+                <DollarSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="number"
+                  value={minTourBudget}
+                  onChange={(e) => setMinTourBudget(e.target.value)}
+                  min="0"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !name || !region || !startDate || !endDate}
+              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function ArtistDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [artistId, setArtistId] = useState<number | null>(null);
@@ -829,6 +1065,8 @@ export default function ArtistDashboardPage() {
   const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings" | "tourDates">("tours");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isCreateTourModalOpen, setIsCreateTourModalOpen] = useState(false);
+  const [isEditTourModalOpen, setIsEditTourModalOpen] = useState(false);
+  const [editingTour, setEditingTour] = useState<Tour | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -1037,6 +1275,72 @@ export default function ArtistDashboardPage() {
       }
     } catch (error) {
       console.error("Failed to create tour:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTour = async (tourId: number) => {
+    if (!confirm("Are you sure you want to delete this tour? Bookings will be kept but unlinked from the tour.")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(`${API_URL}/tours/${tourId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        setTours(tours.filter((t) => t.id !== tourId));
+      }
+    } catch (error) {
+      console.error("Failed to delete tour:", error);
+    }
+  };
+
+  const handleEditTour = async (data: {
+    name: string;
+    region: string;
+    start_date: string;
+    end_date: string;
+    price_per_show?: number;
+    min_tour_budget?: number;
+    description?: string;
+  }) => {
+    if (!editingTour) return;
+
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(`${API_URL}/tours/${editingTour.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: data.name,
+          region: data.region,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          price_per_show: data.price_per_show,
+          total_budget: data.min_tour_budget,
+          description: data.description,
+        }),
+      });
+
+      if (response.ok) {
+        const updatedTour: Tour = await response.json();
+        setTours(tours.map((t) => (t.id === updatedTour.id ? updatedTour : t)));
+        setIsEditTourModalOpen(false);
+        setEditingTour(null);
+      }
+    } catch (error) {
+      console.error("Failed to update tour:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -1293,7 +1597,17 @@ export default function ArtistDashboardPage() {
                 </button>
               </div>
             ) : (
-              tours.map((tour) => <TourCard key={tour.id} tour={tour} />)
+              tours.map((tour) => (
+                <TourCard
+                  key={tour.id}
+                  tour={tour}
+                  onEdit={(t) => {
+                    setEditingTour(t);
+                    setIsEditTourModalOpen(true);
+                  }}
+                  onDelete={handleDeleteTour}
+                />
+              ))
             )}
           </div>
         )}
@@ -1405,6 +1719,17 @@ export default function ArtistDashboardPage() {
         onClose={() => setIsCreateTourModalOpen(false)}
         onSubmit={handleCreateNewTour}
         isSubmitting={isSubmitting}
+      />
+
+      <EditTourModal
+        isOpen={isEditTourModalOpen}
+        onClose={() => {
+          setIsEditTourModalOpen(false);
+          setEditingTour(null);
+        }}
+        onSubmit={handleEditTour}
+        isSubmitting={isSubmitting}
+        tour={editingTour}
       />
     </div>
   );
