@@ -277,8 +277,16 @@ async def list_users(
     query = select(User).order_by(User.created_at.desc())
 
     if search:
+        # Search by email, name, or community name (for hosts)
+        community_subquery = (
+            select(Community.user_id)
+            .where(Community.name.ilike(f"%{search}%"))
+            .scalar_subquery()
+        )
         query = query.where(
-            (User.email.ilike(f"%{search}%")) | (User.name.ilike(f"%{search}%"))
+            (User.email.ilike(f"%{search}%"))
+            | (User.name.ilike(f"%{search}%"))
+            | (User.id.in_(community_subquery))
         )
 
     if role:

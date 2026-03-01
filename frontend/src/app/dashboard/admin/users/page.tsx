@@ -464,17 +464,23 @@ export default function UsersPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
                           <span className="text-primary-600 font-semibold">
-                            {(user.name || user.email)[0].toUpperCase()}
+                            {((user.role === "community" && user.community_name) || user.name || user.email)[0].toUpperCase()}
                           </span>
                         </div>
                         <div>
                           <p className="font-medium text-slate-900 hover:text-primary-600 transition-colors">
-                            {user.name || "\u2014"}
+                            {user.role === "community" && user.community_name
+                              ? user.community_name
+                              : user.name || "\u2014"}
                             {user.is_superuser && (
                               <Shield size={14} className="inline ml-1 text-violet-500" />
                             )}
                           </p>
-                          <p className="text-sm text-slate-500">{user.email}</p>
+                          <p className="text-sm text-slate-500">
+                            {user.role === "community" && user.community_name && user.name
+                              ? `${user.name} · ${user.email}`
+                              : user.email}
+                          </p>
                         </div>
                       </div>
                     </td>
