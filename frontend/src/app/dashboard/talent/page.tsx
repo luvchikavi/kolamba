@@ -64,6 +64,7 @@ interface Booking {
   status: string;
   notes: string | null;
   event_type: string | null;
+  tour_id: number | null;
 }
 
 interface ArtistProfile {
@@ -262,35 +263,71 @@ function TourCard({
   );
 }
 
-function BookingCard({ booking }: { booking: Booking }) {
+function BookingCard({
+  booking,
+  tours,
+  onLinkTour,
+}: {
+  booking: Booking;
+  tours: Tour[];
+  onLinkTour: (bookingId: number, tourId: number | null) => void;
+}) {
+  const linkedTour = tours.find((t) => t.id === booking.tour_id);
+
   return (
-    <Link
-      href={`/dashboard/talent/messages?booking=${booking.id}`}
-      className="card p-4 block hover:shadow-md transition-shadow cursor-pointer"
-    >
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="font-medium text-slate-900">{booking.location || "Location TBD"}</p>
-          <p className="text-sm text-slate-500">
-            {booking.requested_date
-              ? new Date(booking.requested_date).toLocaleDateString()
-              : "Date TBD"}
-          </p>
+    <div className="card p-4 hover:shadow-md transition-shadow">
+      <Link
+        href={`/dashboard/talent/messages?booking=${booking.id}`}
+        className="block cursor-pointer"
+      >
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-medium text-slate-900">{booking.location || "Location TBD"}</p>
+            <p className="text-sm text-slate-500">
+              {booking.requested_date
+                ? new Date(booking.requested_date).toLocaleDateString()
+                : "Date TBD"}
+            </p>
+          </div>
+          <StatusBadge status={booking.status} />
         </div>
-        <StatusBadge status={booking.status} />
-      </div>
-      {booking.event_type && (
-        <p className="text-sm text-slate-500 mt-1">{booking.event_type}</p>
+        {booking.event_type && (
+          <p className="text-sm text-slate-500 mt-1">{booking.event_type}</p>
+        )}
+        <p className="text-sm text-slate-600 mt-2">Budget: {booking.budget ? formatBudgetRange(booking.budget) : "Not specified"}</p>
+        {booking.notes && (
+          <p className="text-sm text-slate-500 mt-2 line-clamp-2">{booking.notes}</p>
+        )}
+        <p className="text-xs text-primary-600 mt-3 font-medium flex items-center gap-1">
+          <MessageSquare size={14} />
+          View Details & Respond
+        </p>
+      </Link>
+
+      {/* Tour linking */}
+      {tours.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center gap-2">
+            <Route size={14} className="text-slate-400 flex-shrink-0" />
+            <select
+              value={booking.tour_id ?? ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                onLinkTour(booking.id, val ? parseInt(val) : null);
+              }}
+              className="flex-1 text-xs px-2 py-1 border border-slate-200 rounded-lg bg-white text-slate-700 focus:ring-1 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">No tour linked</option>
+              {tours.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       )}
-      <p className="text-sm text-slate-600 mt-2">Budget: {booking.budget ? formatBudgetRange(booking.budget) : "Not specified"}</p>
-      {booking.notes && (
-        <p className="text-sm text-slate-500 mt-2 line-clamp-2">{booking.notes}</p>
-      )}
-      <p className="text-xs text-primary-600 mt-3 font-medium flex items-center gap-1">
-        <MessageSquare size={14} />
-        View Details & Respond
-      </p>
-    </Link>
+    </div>
   );
 }
 
@@ -1399,6 +1436,30 @@ export default function ArtistDashboardPage() {
     }
   };
 
+  const handleLinkBookingToTour = async (bookingId: number, tourId: number | null) => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tour_id: tourId }),
+      });
+
+      if (response.ok) {
+        const updateBooking = (list: Booking[]) =>
+          list.map((b) => (b.id === bookingId ? { ...b, tour_id: tourId } : b));
+        setPendingBookings(updateBooking(pendingBookings));
+        setApprovedBookings(updateBooking(approvedBookings));
+      }
+    } catch (error) {
+      console.error("Failed to link booking to tour:", error);
+    }
+  };
+
   const handleCreateNewTour = async (data: {
     name: string;
     region: string;
@@ -1800,7 +1861,7 @@ export default function ArtistDashboardPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {approvedBookings.map((booking) => (
-                    <BookingCard key={booking.id} booking={booking} />
+                    <BookingCard key={booking.id} booking={booking} tours={tours} onLinkTour={handleLinkBookingToTour} />
                   ))}
                 </div>
               </div>
@@ -1825,7 +1886,7 @@ export default function ArtistDashboardPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pendingBookings.map((booking) => (
-                    <BookingCard key={booking.id} booking={booking} />
+                    <BookingCard key={booking.id} booking={booking} tours={tours} onLinkTour={handleLinkBookingToTour} />
                   ))}
                 </div>
               )}

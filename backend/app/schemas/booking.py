@@ -35,6 +35,7 @@ class BookingUpdate(BaseModel):
     budget: Optional[int] = Field(None, ge=0)
     notes: Optional[str] = None
     status: Optional[str] = Field(None, pattern="^(pending|quote_sent|approved|declined|rejected|completed|cancelled)$")
+    tour_id: Optional[int] = None
 
 
 class BookingResponse(BookingBase):
