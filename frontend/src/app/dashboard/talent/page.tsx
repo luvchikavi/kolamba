@@ -65,6 +65,7 @@ interface Booking {
   notes: string | null;
   event_type: string | null;
   tour_id: number | null;
+  quote_amount: number | null;
 }
 
 interface ArtistProfile {
@@ -1735,7 +1736,7 @@ export default function ArtistDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">
-                  ${tours.reduce((sum, t) => sum + (t.total_budget || 0), 0).toLocaleString()}
+                  ${approvedBookings.reduce((sum, b) => sum + (b.quote_amount || b.budget || 0), 0).toLocaleString()}
                 </p>
                 <p className="text-sm text-slate-500">Expected Revenue</p>
               </div>
