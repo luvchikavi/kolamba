@@ -255,9 +255,20 @@ async def get_host_filters(
         elif len(parts) == 1:
             countries_set.add(parts[0])
 
+    # Get distinct community types
+    type_result = await db.execute(
+        select(Community.community_type).where(
+            Community.status == "active",
+            Community.community_type.isnot(None),
+            Community.community_type != "",
+        ).distinct()
+    )
+    community_types = sorted([row[0] for row in type_result.all()])
+
     return {
         "countries": sorted(countries_set),
         "cities": {k: sorted(v) for k, v in sorted(cities_by_country.items())},
+        "community_types": community_types,
     }
 
 

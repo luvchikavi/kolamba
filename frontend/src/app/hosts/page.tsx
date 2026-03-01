@@ -19,6 +19,7 @@ interface Community {
 interface HostFilters {
   countries: string[];
   cities: Record<string, string[]>;
+  community_types: string[];
 }
 
 export default function CommunitiesPage() {
@@ -28,6 +29,7 @@ export default function CommunitiesPage() {
   const [filters, setFilters] = useState<HostFilters | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [selectedType, setSelectedType] = useState("");
 
   const fetchCommunities = useCallback(async () => {
     setIsLoading(true);
@@ -35,6 +37,7 @@ export default function CommunitiesPage() {
       const params = new URLSearchParams();
       if (selectedCountry) params.set("country", selectedCountry);
       if (selectedCity) params.set("city", selectedCity);
+      if (selectedType) params.set("community_type", selectedType);
       const qs = params.toString();
       const res = await fetch(`${API_URL}/hosts${qs ? `?${qs}` : ""}`);
       if (res.ok) {
@@ -46,7 +49,7 @@ export default function CommunitiesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedCountry, selectedCity]);
+  }, [selectedCountry, selectedCity, selectedType]);
 
   useEffect(() => {
     // Fetch filter options on mount
@@ -154,9 +157,22 @@ export default function CommunitiesPage() {
                 ))}
               </select>
 
-              {(selectedCountry || selectedCity) && (
+              {filters.community_types && filters.community_types.length > 0 && (
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                >
+                  <option value="">All Host Types</option>
+                  {filters.community_types.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              )}
+
+              {(selectedCountry || selectedCity || selectedType) && (
                 <button
-                  onClick={() => { setSelectedCountry(""); setSelectedCity(""); }}
+                  onClick={() => { setSelectedCountry(""); setSelectedCity(""); setSelectedType(""); }}
                   className="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   Clear filters
