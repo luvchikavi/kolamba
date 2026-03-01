@@ -372,6 +372,20 @@ function AddTourDateModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
+              Show / Event Name *
+            </label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., Shabbat Concert, Workshop, Community Event"
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Location *
             </label>
             <input
@@ -400,19 +414,6 @@ function AddTourDateModal({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional: Add details about your availability or event"
-              rows={3}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-            />
-          </div>
-
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -423,7 +424,7 @@ function AddTourDateModal({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !location || !startDate}
+              disabled={isSubmitting || !location || !startDate || !description}
               className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
