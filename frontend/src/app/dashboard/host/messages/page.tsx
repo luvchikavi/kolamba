@@ -86,8 +86,21 @@ interface VenueInfo {
   additional_notes: string;
 }
 
-const VENUE_TYPES = ["Auditorium", "Social Hall", "Sanctuary", "Outdoor", "Other"];
-const AUDIENCE_TYPES = ["Families", "Adults", "Mixed", "Youth", "Seniors"];
+const VENUE_TYPES = ["Auditorium", "Social Hall", "Sanctuary", "Outdoor", "Classroom", "Multi-Purpose Room", "Other"];
+
+const SPEAKER_SYSTEM_OPTIONS = [
+  "Full PA System",
+  "Basic Sound System",
+  "Portable Speakers",
+  "None / Bring Your Own",
+];
+
+const ACCESSIBILITY_OPTIONS = [
+  "Fully Accessible (ADA Compliant)",
+  "Partially Accessible",
+  "Limited Accessibility",
+  "Not Accessible",
+];
 
 const EMPTY_VENUE: VenueInfo = {
   facility_size: "",
@@ -771,27 +784,17 @@ function HostMessagesContent() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Audience Type</label>
+                          <label className="block text-xs font-medium text-slate-600 mb-1">Speaker System</label>
                           <select
-                            value={venueInfo.audience_type}
-                            onChange={(e) => setVenueInfo({ ...venueInfo, audience_type: e.target.value })}
+                            value={venueInfo.speaker_system}
+                            onChange={(e) => setVenueInfo({ ...venueInfo, speaker_system: e.target.value })}
                             className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                           >
                             <option value="">Select...</option>
-                            {AUDIENCE_TYPES.map((t) => (
-                              <option key={t} value={t}>{t}</option>
+                            {SPEAKER_SYSTEM_OPTIONS.map((o) => (
+                              <option key={o} value={o}>{o}</option>
                             ))}
                           </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-600 mb-1">Speaker System</label>
-                          <input
-                            type="text"
-                            value={venueInfo.speaker_system}
-                            onChange={(e) => setVenueInfo({ ...venueInfo, speaker_system: e.target.value })}
-                            placeholder="Describe speaker setup"
-                            className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-slate-600 mb-1">Parking</label>
@@ -805,13 +808,16 @@ function HostMessagesContent() {
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-slate-600 mb-1">Accessibility</label>
-                          <input
-                            type="text"
+                          <select
                             value={venueInfo.accessibility}
                             onChange={(e) => setVenueInfo({ ...venueInfo, accessibility: e.target.value })}
-                            placeholder="e.g., Wheelchair accessible"
                             className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
+                          >
+                            <option value="">Select...</option>
+                            {ACCESSIBILITY_OPTIONS.map((o) => (
+                              <option key={o} value={o}>{o}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="md:col-span-2">
                           <label className="block text-xs font-medium text-slate-600 mb-1">Load-In Access</label>

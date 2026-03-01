@@ -87,6 +87,9 @@ class Community(Base):
     contact_role: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
+    # Venue information (default venue details for bookings)
+    venue_info: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+
     # Community details (keeping audience_size for backward compatibility)
     audience_size: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # deprecated
     language: Mapped[str] = mapped_column(String(50), default="English")

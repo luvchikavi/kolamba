@@ -24,6 +24,9 @@ class CommunityBase(BaseModel):
     contact_role: Optional[str] = Field(None, max_length=100)
     phone: Optional[str] = Field(None, max_length=50)
 
+    # Venue information (default for bookings)
+    venue_info: Optional[dict] = None
+
     # Legacy field for backward compatibility
     audience_size: Optional[str] = None
     language: str = "English"
@@ -56,6 +59,7 @@ class CommunityUpdate(BaseModel):
     event_types: Optional[List[str]] = None
     contact_role: Optional[str] = Field(None, max_length=100)
     phone: Optional[str] = Field(None, max_length=50)
+    venue_info: Optional[dict] = None
     audience_size: Optional[str] = None
     language: Optional[str] = None
     receive_artist_offers: Optional[bool] = None

@@ -108,8 +108,11 @@ async def create_booking(
     db.add(booking)
     await db.flush()
 
-    # Auto-create a conversation for this booking
-    conversation = Conversation(booking_id=booking.id)
+    # Auto-create a conversation for this booking, pre-filling venue info from community
+    conversation = Conversation(
+        booking_id=booking.id,
+        venue_info=community.venue_info if community and community.venue_info else None,
+    )
     db.add(conversation)
 
     # Notify the artist about the new booking
