@@ -240,7 +240,7 @@ function TourCard({ tour }: { tour: Tour }) {
 function BookingCard({ booking }: { booking: Booking }) {
   return (
     <Link
-      href="/dashboard/talent/messages"
+      href={`/dashboard/talent/messages?booking=${booking.id}`}
       className="card p-4 block hover:shadow-md transition-shadow cursor-pointer"
     >
       <div className="flex justify-between items-start">

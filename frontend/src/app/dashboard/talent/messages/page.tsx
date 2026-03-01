@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   MessageSquare,
@@ -150,7 +151,9 @@ function VenueInfoPanel({ venueInfo }: { venueInfo: Record<string, unknown> }) {
   );
 }
 
-export default function ArtistMessagesPage() {
+function ArtistMessagesContent() {
+  const searchParams = useSearchParams();
+  const bookingIdParam = searchParams.get("booking");
   const [isLoading, setIsLoading] = useState(true);
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
   const [selectedConv, setSelectedConv] = useState<ConversationDetail | null>(null);
@@ -213,8 +216,16 @@ export default function ArtistMessagesPage() {
       }
 
       if (res.ok) {
-        const data = await res.json();
+        const data: ConversationListItem[] = await res.json();
         setConversations(data);
+
+        // Auto-select conversation if ?booking=<id> is in URL
+        if (bookingIdParam) {
+          const target = data.find((c) => c.booking_id === parseInt(bookingIdParam, 10));
+          if (target) {
+            selectConversation(target.id);
+          }
+        }
       }
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
@@ -733,5 +744,19 @@ export default function ArtistMessagesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ArtistMessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 pt-24 flex items-center justify-center">
+          <Loader2 size={40} className="animate-spin text-primary-500" />
+        </div>
+      }
+    >
+      <ArtistMessagesContent />
+    </Suspense>
   );
 }
