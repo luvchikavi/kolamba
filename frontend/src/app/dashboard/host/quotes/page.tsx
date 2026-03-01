@@ -59,6 +59,7 @@ export default function CommunityQuotesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [reactivatingId, setReactivatingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -123,6 +124,38 @@ export default function CommunityQuotesPage() {
       showError("Failed to cancel the booking request. Please try again.");
     } finally {
       setCancellingId(null);
+    }
+  };
+
+  const handleReactivateBooking = async (bookingId: number) => {
+    if (!confirm("Reactivate this booking request?")) return;
+
+    setReactivatingId(bookingId);
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "pending" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reactivate booking");
+      }
+
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status: "pending" } : b))
+      );
+
+      showSuccess("Booking request reactivated successfully");
+    } catch (err) {
+      console.error("Failed to reactivate booking:", err);
+      showError("Failed to reactivate the booking. Please try again.");
+    } finally {
+      setReactivatingId(null);
     }
   };
 
@@ -259,6 +292,15 @@ export default function CommunityQuotesPage() {
                       className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {cancellingId === booking.id ? "Cancelling..." : "Cancel Request"}
+                    </button>
+                  )}
+                  {booking.status === "cancelled" && (
+                    <button
+                      onClick={() => handleReactivateBooking(booking.id)}
+                      disabled={reactivatingId === booking.id}
+                      className="px-4 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 border border-emerald-200 rounded-full hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {reactivatingId === booking.id ? "Reactivating..." : "Reactivate"}
                     </button>
                   )}
                 </div>

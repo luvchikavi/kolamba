@@ -100,6 +100,7 @@ export default function HostDashboardPage() {
   // Bookings data (for quotes + events + stats)
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [reactivatingId, setReactivatingId] = useState<number | null>(null);
   const [respondingId, setRespondingId] = useState<number | null>(null);
   const [decliningId, setDecliningId] = useState<number | null>(null);
   const [declineReason, setDeclineReason] = useState("");
@@ -283,6 +284,32 @@ export default function HostDashboardPage() {
       console.error("Failed to cancel booking:", error);
     } finally {
       setCancellingId(null);
+    }
+  };
+
+  const handleReactivateBooking = async (bookingId: number) => {
+    if (!confirm("Reactivate this booking request?")) return;
+
+    setReactivatingId(bookingId);
+    try {
+      const token = getToken();
+      const res = await fetch(`${API_URL}/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "pending" }),
+      });
+      if (res.ok) {
+        setBookings((prev) =>
+          prev.map((b) => (b.id === bookingId ? { ...b, status: "pending" } : b))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to reactivate booking:", error);
+    } finally {
+      setReactivatingId(null);
     }
   };
 
@@ -743,6 +770,15 @@ export default function HostDashboardPage() {
                         className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {cancellingId === booking.id ? "Cancelling..." : "Cancel Request"}
+                      </button>
+                    )}
+                    {booking.status === "cancelled" && (
+                      <button
+                        onClick={() => handleReactivateBooking(booking.id)}
+                        disabled={reactivatingId === booking.id}
+                        className="px-4 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 border border-emerald-200 rounded-full hover:bg-emerald-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {reactivatingId === booking.id ? "Reactivating..." : "Reactivate"}
                       </button>
                     )}
                   </div>
