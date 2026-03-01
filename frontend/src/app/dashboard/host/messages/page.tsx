@@ -20,6 +20,7 @@ import {
   Star,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { formatBudgetRange } from "@/lib/utils";
 
 interface ConversationListItem {
   id: number;
@@ -672,7 +673,7 @@ export default function HostMessagesPage() {
                       <div>
                         <p className="text-xs text-slate-500">Budget</p>
                         <p className="text-sm font-medium text-slate-900">
-                          {bookingDetail.budget ? `$${bookingDetail.budget.toLocaleString()}` : "TBD"}
+                          {bookingDetail.budget ? formatBudgetRange(bookingDetail.budget) : "TBD"}
                         </p>
                       </div>
                       <div>

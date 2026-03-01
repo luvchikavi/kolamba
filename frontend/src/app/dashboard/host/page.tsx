@@ -18,6 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { API_URL, DiscoverArtist, DiscoverResponse, DiscoverParams } from "@/lib/api";
+import { formatBudgetRange } from "@/lib/utils";
 import DiscoverFilters from "@/components/dashboard/DiscoverFilters";
 import DiscoverArtistCard from "@/components/dashboard/DiscoverArtistCard";
 import { getFavoriteLists } from "@/lib/favorites";
@@ -648,7 +649,7 @@ export default function HostDashboardPage() {
                     {booking.budget != null && (
                       <div className="flex items-center gap-2 text-slate-600">
                         <DollarSign size={16} className="text-slate-400" />
-                        <span>${booking.budget}</span>
+                        <span>{formatBudgetRange(booking.budget)}</span>
                       </div>
                     )}
                     {booking.audience_size != null && (
@@ -810,7 +811,7 @@ export default function HostDashboardPage() {
                         {booking.budget != null && (
                           <div className="flex items-center gap-2 text-slate-600">
                             <DollarSign size={16} className="text-slate-400" />
-                            <span>${booking.budget.toLocaleString()}</span>
+                            <span>{formatBudgetRange(booking.budget)}</span>
                           </div>
                         )}
                       </div>

@@ -17,6 +17,7 @@ import {
   Gauge,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { formatBudgetRange } from "@/lib/utils";
 
 interface Booking {
   id: number;
@@ -702,7 +703,7 @@ export default function TourDetailsPage() {
                         {booking.budget != null && (
                           <span className="flex items-center gap-1">
                             <DollarSign size={14} />
-                            ${booking.budget.toLocaleString()}
+                            {formatBudgetRange(booking.budget)}
                           </span>
                         )}
                       </div>

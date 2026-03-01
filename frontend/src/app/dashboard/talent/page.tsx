@@ -20,6 +20,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { formatBudgetRange } from "@/lib/utils";
 
 interface TourSuggestion {
   region: string;
@@ -256,7 +257,7 @@ function BookingCard({ booking }: { booking: Booking }) {
       {booking.event_type && (
         <p className="text-sm text-slate-500 mt-1">{booking.event_type}</p>
       )}
-      <p className="text-sm text-slate-600 mt-2">Budget: ${booking.budget || 0}</p>
+      <p className="text-sm text-slate-600 mt-2">Budget: {booking.budget ? formatBudgetRange(booking.budget) : "Not specified"}</p>
       {booking.notes && (
         <p className="text-sm text-slate-500 mt-2 line-clamp-2">{booking.notes}</p>
       )}

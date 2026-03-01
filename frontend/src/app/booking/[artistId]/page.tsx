@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2, ChevronDown } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+import { formatBudgetLabel } from "@/lib/utils";
 
 interface ArtistInfo {
   id: number;
@@ -783,7 +784,7 @@ export default function BookingPage() {
                     </div>
                     <div>
                       <p className="text-slate-500">Budget</p>
-                      <p className="font-medium">{bookingData.budget || "Not specified"}</p>
+                      <p className="font-medium">{bookingData.budget ? formatBudgetLabel(bookingData.budget) : "Not specified"}</p>
                     </div>
                     <div>
                       <p className="text-slate-500">Venue Type</p>

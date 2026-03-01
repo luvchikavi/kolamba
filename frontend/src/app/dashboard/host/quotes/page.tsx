@@ -17,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { formatBudgetRange } from "@/lib/utils";
 import { showSuccess, showError } from "@/lib/toast";
 
 interface Booking {
@@ -209,7 +210,7 @@ export default function CommunityQuotesPage() {
                   {booking.budget && (
                     <div className="flex items-center gap-2 text-slate-600">
                       <DollarSign size={16} className="text-slate-400" />
-                      <span>${booking.budget}</span>
+                      <span>{formatBudgetRange(booking.budget)}</span>
                     </div>
                   )}
                   {booking.audience_size != null && (
