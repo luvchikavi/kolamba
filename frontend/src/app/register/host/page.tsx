@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { CheckCircle, ChevronDown, X } from "lucide-react";
+import { CheckCircle, ChevronDown, Eye, EyeOff, X } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
@@ -156,6 +156,8 @@ export default function CommunityRegistrationPage() {
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
   const [eventTypeSearch, setEventTypeSearch] = useState("");
   const [showEventDropdown, setShowEventDropdown] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
     setIsGoogleLoading(true);
@@ -848,17 +850,26 @@ export default function CommunityRegistrationPage() {
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="At least 6 characters"
-                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
-                    errors.password
-                      ? "border-red-300 focus:border-red-400"
-                      : "border-slate-300 focus:border-slate-400"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="At least 6 characters"
+                    className={`w-full px-4 py-3.5 pr-12 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                      errors.password
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-slate-400"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="mt-2 text-sm text-red-500">{errors.password}</p>
                 )}
@@ -869,17 +880,26 @@ export default function CommunityRegistrationPage() {
                 <label className="block text-base font-medium text-slate-800 mb-2">
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  placeholder="Repeat your password"
-                  className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors ${
-                    errors.confirmPassword
-                      ? "border-red-300 focus:border-red-400"
-                      : "border-slate-300 focus:border-slate-400"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    placeholder="Repeat your password"
+                    className={`w-full px-4 py-3.5 pr-12 border-2 rounded-lg text-base focus:outline-none transition-colors ${
+                      errors.confirmPassword
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-slate-400"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
                 {errors.confirmPassword && (
                   <p className="mt-2 text-sm text-red-500">{errors.confirmPassword}</p>
                 )}
