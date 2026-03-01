@@ -206,12 +206,18 @@ export default function ToursPage() {
                           )}
                         </div>
 
-                        <div className="px-4 pb-4">
+                        <div className="px-4 pb-4 flex gap-2">
                           <Link
-                            href={`/talents/${tour.artist.id}`}
-                            className="btn-primary w-full text-center justify-center text-sm"
+                            href={`/talents/${tour.artist.id}?tour=${tour.id}`}
+                            className="btn-primary flex-1 text-center justify-center text-sm"
                           >
-                            View Artist & Tour Details
+                            View Tour Details
+                          </Link>
+                          <Link
+                            href={`/booking/${tour.artist.id}?tour=${tour.id}`}
+                            className="flex-1 text-center justify-center text-sm px-4 py-2.5 font-semibold rounded-full border-2 border-primary-500 text-primary-600 hover:bg-primary-50 transition-colors"
+                          >
+                            Book Now
                           </Link>
                         </div>
                       </div>

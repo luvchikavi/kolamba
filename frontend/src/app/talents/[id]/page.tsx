@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   MapPin,
   Globe,
@@ -65,6 +66,17 @@ interface UserInfo {
   is_superuser?: boolean;
 }
 
+interface TourInfo {
+  id: number;
+  name: string;
+  region: string;
+  start_date: string | null;
+  end_date: string | null;
+  description: string | null;
+  status: string;
+  price_per_show: number | null;
+}
+
 function getSocialUrl(platform: string, value: string): string {
   // If value is already a full URL, use as-is
   if (value.startsWith("http://") || value.startsWith("https://")) {
@@ -88,13 +100,12 @@ function getSocialUrl(platform: string, value: string): string {
   }
 }
 
-export default function ArtistDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+function ArtistDetailContent({ params }: { params: { id: string } }) {
+  const searchParams = useSearchParams();
+  const tourId = searchParams.get("tour");
   const [artist, setArtist] = useState<Artist | null>(null);
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
+  const [tourInfo, setTourInfo] = useState<TourInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -136,7 +147,23 @@ export default function ArtistDetailPage({
 
     fetchArtist();
     fetchCurrentUser();
-  }, [params.id]);
+
+    // Fetch tour info if tour query param is present
+    if (tourId) {
+      const fetchTour = async () => {
+        try {
+          const res = await fetch(`${API_URL}/tours/${tourId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setTourInfo(data);
+          }
+        } catch {
+          // Silent fail
+        }
+      };
+      fetchTour();
+    }
+  }, [params.id, tourId]);
 
   const handleFavoriteToggle = () => {
     if (!artist) return;
@@ -212,6 +239,35 @@ export default function ArtistDetailPage({
           </nav>
         </div>
       </div>
+
+      {/* Tour Info Banner */}
+      {tourInfo && (
+        <div className="bg-primary-50 border-b border-primary-200">
+          <div className="container-default py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold text-primary-900">{tourInfo.name}</p>
+              <p className="text-sm text-primary-700">
+                {tourInfo.region}
+                {tourInfo.start_date && (
+                  <> &middot; {new Date(tourInfo.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {tourInfo.end_date && (
+                    <> – {new Date(tourInfo.end_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</>
+                  )}</>
+                )}
+              </p>
+              {tourInfo.description && (
+                <p className="text-sm text-primary-600 mt-1">{tourInfo.description}</p>
+              )}
+            </div>
+            <Link
+              href={`/booking/${artist.id}?tour=${tourInfo.id}`}
+              className="btn-primary whitespace-nowrap"
+            >
+              Book for This Tour
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Artist Header */}
       <div className="bg-white border-b border-slate-100">
@@ -582,5 +638,13 @@ export default function ArtistDetailPage({
         </div>
       )}
     </div>
+  );
+}
+
+export default function ArtistDetailPage({ params }: { params: { id: string } }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center"><Loader2 size={40} className="animate-spin text-primary-500" /></div>}>
+      <ArtistDetailContent params={params} />
+    </Suspense>
   );
 }
