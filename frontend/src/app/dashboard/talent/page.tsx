@@ -823,6 +823,7 @@ export default function ArtistDashboardPage() {
   const [suggestions, setSuggestions] = useState<TourSuggestion[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
+  const [approvedBookings, setApprovedBookings] = useState<Booking[]>([]);
   const [tourDates, setTourDates] = useState<ArtistTourDate[]>([]);
   const [activeTab, setActiveTab] = useState<"suggestions" | "tours" | "bookings" | "tourDates">("tours");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -868,6 +869,7 @@ export default function ArtistDashboardPage() {
       if (bookingsRes.ok) {
         const bookingsData: Booking[] = await bookingsRes.json();
         setPendingBookings(bookingsData.filter((b) => b.status === "pending"));
+        setApprovedBookings(bookingsData.filter((b) => b.status === "approved" || b.status === "quote_sent" || b.status === "confirmed"));
       }
 
       if (toursRes.ok) {
@@ -1125,7 +1127,7 @@ export default function ArtistDashboardPage() {
 
       {/* Stats */}
       <div className="container-default py-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <div className="card p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -1134,6 +1136,17 @@ export default function ArtistDashboardPage() {
               <div>
                 <p className="text-2xl font-bold text-slate-900">{pendingBookings.length}</p>
                 <p className="text-sm text-slate-500">Pending Requests</p>
+              </div>
+            </div>
+          </div>
+          <div className="card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <CheckCircle size={20} className="text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{approvedBookings.length}</p>
+                <p className="text-sm text-slate-500">Approved Bookings</p>
               </div>
             </div>
           </div>
@@ -1217,7 +1230,7 @@ export default function ArtistDashboardPage() {
                 : "bg-white text-slate-600 hover:bg-slate-100"
             }`}
           >
-            Requests ({pendingBookings.length})
+            Bookings ({pendingBookings.length + approvedBookings.length})
           </button>
           <button
             onClick={() => setActiveTab("tourDates")}
@@ -1285,24 +1298,46 @@ export default function ArtistDashboardPage() {
         )}
 
         {activeTab === "bookings" && (
-          <div className="space-y-4">
-            {pendingBookings.length === 0 ? (
-              <div className="card p-8 text-center">
-                <Users size={48} className="text-slate-300 mx-auto mb-4" />
-                <h3 className="font-bold text-lg text-slate-900 mb-2">
-                  No Pending Requests
+          <div className="space-y-6">
+            {/* Approved / In-Progress Bookings */}
+            {approvedBookings.length > 0 && (
+              <div>
+                <h3 className="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                  <CheckCircle size={20} className="text-emerald-500" />
+                  Approved & Active ({approvedBookings.length})
                 </h3>
-                <p className="text-slate-500">
-                  When hosts send you booking requests, they&apos;ll appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pendingBookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} />
-                ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {approvedBookings.map((booking) => (
+                    <BookingCard key={booking.id} booking={booking} />
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* Pending Bookings */}
+            <div>
+              <h3 className="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                <Clock size={20} className="text-amber-500" />
+                Pending Requests ({pendingBookings.length})
+              </h3>
+              {pendingBookings.length === 0 ? (
+                <div className="card p-8 text-center">
+                  <Users size={48} className="text-slate-300 mx-auto mb-4" />
+                  <h3 className="font-bold text-lg text-slate-900 mb-2">
+                    No Pending Requests
+                  </h3>
+                  <p className="text-slate-500">
+                    When hosts send you booking requests, they&apos;ll appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {pendingBookings.map((booking) => (
+                    <BookingCard key={booking.id} booking={booking} />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
