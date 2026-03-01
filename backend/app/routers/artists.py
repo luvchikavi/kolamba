@@ -95,17 +95,20 @@ async def get_my_artist_profile(
             raise HTTPException(status_code=404, detail="Talent not found")
         return artist
 
-    # For superusers without artist_id, return first active artist for testing
+    # For superusers without artist_id, check if they have their own artist profile
     if current_user.is_superuser:
         result = await db.execute(
             select(Artist)
             .options(selectinload(Artist.categories))
-            .where(Artist.status == "active")
-            .limit(1)
+            .where(Artist.user_id == current_user.id)
         )
         artist = result.scalar_one_or_none()
         if artist:
             return artist
+        raise HTTPException(
+            status_code=404,
+            detail="No talent profile linked to this admin account. Use ?artist_id=N to view a specific talent."
+        )
 
     if current_user.role not in ("artist", "agent"):
         raise HTTPException(status_code=403, detail="Not a talent account")
@@ -116,14 +119,16 @@ async def get_my_artist_profile(
             select(Artist)
             .options(selectinload(Artist.categories))
             .where(Artist.agent_user_id == current_user.id)
+            .limit(1)
         )
+        artist = result.scalars().first()
     else:
         result = await db.execute(
             select(Artist)
             .options(selectinload(Artist.categories))
             .where(Artist.user_id == current_user.id)
         )
-    artist = result.scalar_one_or_none()
+        artist = result.scalar_one_or_none()
 
     if not artist:
         raise HTTPException(status_code=404, detail="Talent profile not found")
@@ -147,14 +152,16 @@ async def update_my_artist_profile(
             select(Artist)
             .options(selectinload(Artist.categories))
             .where(Artist.agent_user_id == current_user.id)
+            .limit(1)
         )
+        artist = result.scalars().first()
     else:
         result = await db.execute(
             select(Artist)
             .options(selectinload(Artist.categories))
             .where(Artist.user_id == current_user.id)
         )
-    artist = result.scalar_one_or_none()
+        artist = result.scalar_one_or_none()
 
     if not artist:
         raise HTTPException(status_code=404, detail="Talent profile not found")
