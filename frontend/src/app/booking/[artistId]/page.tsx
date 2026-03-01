@@ -337,28 +337,14 @@ export default function BookingPage() {
     if (!bookingData.venueCapacity.trim()) {
       errors.venueCapacity = "Expected audience size is required";
     }
-    if (!bookingData.venueCity.trim()) {
-      errors.venueCity = "City is required";
-    }
     setStepErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const validateStep4 = () => {
-    const errors: Record<string, string> = {};
-    if (!bookingData.contactName.trim()) {
-      errors.contactName = "Full name is required";
-    }
-    if (!bookingData.contactEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bookingData.contactEmail)) {
-      errors.contactEmail = "Valid email is required";
-    }
-    // Phone validation (optional but if provided, must be valid)
-    const phoneError = validatePhoneNumber(bookingData.contactPhone, bookingData.contactPhoneCountryCode);
-    if (phoneError) {
-      errors.contactPhone = phoneError;
-    }
-    setStepErrors(errors);
-    return Object.keys(errors).length === 0;
+    // Contact info is auto-populated from profile — no user validation needed
+    setStepErrors({});
+    return true;
   };
 
   const nextStep = () => {
@@ -715,45 +701,6 @@ export default function BookingPage() {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    <MapPin size={16} className="inline mr-2" />
-                    Venue Location <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <input
-                        type="text"
-                        value={bookingData.venueCity}
-                        onChange={(e) => updateBookingData("venueCity", e.target.value)}
-                        placeholder="City"
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                          stepErrors.venueCity ? "border-red-300 bg-red-50" : "border-slate-200"
-                        }`}
-                      />
-                      {stepErrors.venueCity && (
-                        <p className="mt-1 text-sm text-red-500">{stepErrors.venueCity}</p>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <select
-                        value={bookingData.venueCountry}
-                        onChange={(e) => updateBookingData("venueCountry", e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white"
-                      >
-                        {countries.map((country) => (
-                          <option key={country} value={country}>
-                            {country}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={16}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                      />
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -793,100 +740,6 @@ export default function BookingPage() {
                     <div>
                       <p className="text-slate-500">Location</p>
                       <p className="font-medium">{bookingData.venueCity ? `${bookingData.venueCity}, ${bookingData.venueCountry}` : "Not specified"}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-900">Your Contact Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Full Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={bookingData.contactName}
-                        onChange={(e) => updateBookingData("contactName", e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                          stepErrors.contactName ? "border-red-300" : "border-slate-200"
-                        }`}
-                      />
-                      {stepErrors.contactName && (
-                        <p className="mt-1 text-sm text-red-500">{stepErrors.contactName}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Host/Organization Name
-                      </label>
-                      <input
-                        type="text"
-                        value={bookingData.communityName}
-                        onChange={(e) => updateBookingData("communityName", e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Email <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={bookingData.contactEmail}
-                        onChange={(e) => updateBookingData("contactEmail", e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                          stepErrors.contactEmail ? "border-red-300" : "border-slate-200"
-                        }`}
-                      />
-                      {stepErrors.contactEmail && (
-                        <p className="mt-1 text-sm text-red-500">{stepErrors.contactEmail}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Phone
-                      </label>
-                      <div className="flex gap-2">
-                        <div className="relative">
-                          <select
-                            value={bookingData.contactPhoneCountryCode}
-                            onChange={(e) => updateBookingData("contactPhoneCountryCode", e.target.value)}
-                            className={`h-full px-3 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none bg-white pr-8 text-sm ${
-                              stepErrors.contactPhone ? "border-red-300" : "border-slate-200"
-                            }`}
-                          >
-                            {countryCodes.map((country) => (
-                              <option key={country.code} value={country.code}>
-                                {country.code}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown
-                            size={14}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                          />
-                        </div>
-                        <input
-                          type="tel"
-                          value={bookingData.contactPhone}
-                          onChange={(e) => {
-                            const digits = e.target.value.replace(/\D/g, "");
-                            updateBookingData("contactPhone", digits);
-                          }}
-                          placeholder="Phone number"
-                          maxLength={15}
-                          className={`flex-1 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                            stepErrors.contactPhone ? "border-red-300" : "border-slate-200"
-                          }`}
-                        />
-                      </div>
-                      {stepErrors.contactPhone && (
-                        <p className="mt-1 text-sm text-red-500">{stepErrors.contactPhone}</p>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -938,7 +791,7 @@ export default function BookingPage() {
               ) : (
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !bookingData.contactName || !bookingData.contactEmail}
+                  disabled={isSubmitting}
                   className="px-8 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Quote Request"}
