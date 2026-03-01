@@ -30,6 +30,7 @@ interface CommunityOptions {
 
 interface FormData {
   communityName: string;
+  communityType: string;
   country: string;
   city: string;
   state: string;
@@ -212,6 +213,7 @@ export default function CommunityRegistrationPage() {
 
   const [formData, setFormData] = useState<FormData>({
     communityName: "",
+    communityType: "",
     country: "United States",
     city: "",
     state: "",
@@ -328,6 +330,9 @@ export default function CommunityRegistrationPage() {
     } else if (containsHebrew(formData.communityName)) {
       newErrors.communityName = "Please use English characters only";
     }
+    if (!formData.communityType) {
+      newErrors.communityType = "Host type is required";
+    }
     if (!formData.country) {
       newErrors.country = "Country is required";
     }
@@ -378,6 +383,7 @@ export default function CommunityRegistrationPage() {
             password: formData.password,
             name: formData.name,
             community_name: formData.communityName,
+            community_type: formData.communityType || null,
             location: [formData.city, formData.state, formData.country].filter(Boolean).join(", "),
             latitude: formData.latitude,
             longitude: formData.longitude,
@@ -505,6 +511,43 @@ export default function CommunityRegistrationPage() {
                 )}
                 {errors.communityName && !duplicateWarning && (
                   <p className="mt-2 text-sm text-red-500">{errors.communityName}</p>
+                )}
+              </div>
+
+              {/* Community Type */}
+              <div>
+                <label className="block text-base font-medium text-slate-800 mb-2">
+                  Host Type <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={formData.communityType}
+                    onChange={(e) =>
+                      setFormData({ ...formData, communityType: e.target.value })
+                    }
+                    className={`w-full px-4 py-3.5 border-2 rounded-lg text-base focus:outline-none transition-colors appearance-none bg-white ${
+                      errors.communityType
+                        ? "border-red-300 focus:border-red-400"
+                        : "border-slate-300 focus:border-slate-400"
+                    }`}
+                  >
+                    <option value="">Select host type...</option>
+                    <option value="JCC">JCC (Jewish Community Center)</option>
+                    <option value="Federation">Federation</option>
+                    <option value="Synagogue">Synagogue / Temple</option>
+                    <option value="Jewish School">School / Educational Institution</option>
+                    <option value="Campus Organization">Campus Organization</option>
+                    <option value="Cultural Center">Cultural Center / Museum</option>
+                    <option value="Independent Community">Independent or Informal Community</option>
+                    <option value="Summer Camp">Day Camp / Overnight Camp</option>
+                  </select>
+                  <ChevronDown
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                </div>
+                {errors.communityType && (
+                  <p className="mt-2 text-sm text-red-500">{errors.communityType}</p>
                 )}
               </div>
 
