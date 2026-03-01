@@ -859,7 +859,20 @@ export default function HostDashboardPage() {
                         )}
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-slate-100">
+                      <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+                        <Link
+                          href={`/dashboard/host/messages?booking=${booking.id}`}
+                          className="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 border border-primary-200 rounded-full hover:bg-primary-50 transition-colors flex items-center gap-1.5"
+                        >
+                          <MessageSquare size={14} />
+                          Message Artist
+                        </Link>
+                        <Link
+                          href={`/dashboard/host/quotes`}
+                          className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors"
+                        >
+                          View Booking
+                        </Link>
                         <Link
                           href={`/talents/${booking.artist_id}`}
                           className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors"
