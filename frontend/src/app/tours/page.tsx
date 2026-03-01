@@ -208,7 +208,7 @@ export default function ToursPage() {
 
                         <div className="px-4 pb-4 flex gap-2">
                           <Link
-                            href={`/talents/${tour.artist.id}?tour=${tour.id}`}
+                            href={`/tours/${tour.id}`}
                             className="btn-primary flex-1 text-center justify-center text-sm"
                           >
                             View Tour Details
