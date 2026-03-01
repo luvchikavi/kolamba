@@ -138,69 +138,15 @@ export default function ToursPage() {
           </div>
         ) : (
           <div className="space-y-16">
-            {/* Upcoming Tour Dates */}
-            {tourDates.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                  <Calendar size={24} className="text-primary-500" />
-                  Tour Dates
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {tourDates.map((tour) => {
-                    const artistName = tour.artist.name_en || tour.artist.name_he || "Artist";
-                    return (
-                      <Link
-                        key={`${tour.artist.id}-${tour.id}`}
-                        href={`/talents/${tour.artist.id}`}
-                        className="group"
-                      >
-                        <div className="card card-hover overflow-hidden">
-                          <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 relative overflow-hidden">
-                            {tour.artist.profile_image ? (
-                              <img
-                                src={tour.artist.profile_image}
-                                alt={artistName}
-                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-5xl font-bold text-white/40">
-                                  {artistName.charAt(0)}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="p-5">
-                            <p className="text-sm text-primary-600 font-medium mb-1">{artistName}</p>
-                            <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-3">
-                              {tour.description || "On Tour"}
-                            </h3>
-                            <div className="flex items-center gap-1 text-slate-500 text-sm mb-2">
-                              <MapPin size={14} />
-                              <span>{tour.location}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-slate-500 text-sm">
-                              <Calendar size={14} />
-                              <span>{formatDate(tour.start_date)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            {/* Tour Opportunities */}
+            {/* Tour Opportunities (shown first) */}
             {opportunities.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                   <Music size={24} className="text-primary-500" />
-                  Tour Opportunities
+                  Upcoming Tours
                 </h2>
                 <p className="text-slate-600 mb-6">
-                  These artists are planning tours and looking for additional venues.
+                  These artists are planning tours and looking for venues.
                   Request to join a tour to bring them to your community.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -269,6 +215,60 @@ export default function ToursPage() {
                           </Link>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Individual Shows */}
+            {tourDates.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <Calendar size={24} className="text-primary-500" />
+                  Individual Shows
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {tourDates.map((tour) => {
+                    const artistName = tour.artist.name_en || tour.artist.name_he || "Artist";
+                    return (
+                      <Link
+                        key={`${tour.artist.id}-${tour.id}`}
+                        href={`/talents/${tour.artist.id}`}
+                        className="group"
+                      >
+                        <div className="card card-hover overflow-hidden">
+                          <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 relative overflow-hidden">
+                            {tour.artist.profile_image ? (
+                              <img
+                                src={tour.artist.profile_image}
+                                alt={artistName}
+                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-5xl font-bold text-white/40">
+                                  {artistName.charAt(0)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-5">
+                            <p className="text-sm text-primary-600 font-medium mb-1">{artistName}</p>
+                            <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-3">
+                              {tour.description || "On Tour"}
+                            </h3>
+                            <div className="flex items-center gap-1 text-slate-500 text-sm mb-2">
+                              <MapPin size={14} />
+                              <span>{tour.location}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-slate-500 text-sm">
+                              <Calendar size={14} />
+                              <span>{formatDate(tour.start_date)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
                     );
                   })}
                 </div>
