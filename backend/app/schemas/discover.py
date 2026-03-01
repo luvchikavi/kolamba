@@ -9,10 +9,11 @@ from app.schemas.artist import calculate_price_tier
 
 
 class NearbyTourDateInfo(BaseModel):
-    """Info about an artist's nearest upcoming tour date."""
+    """Info about an artist's nearest upcoming tour date or active tour."""
     location: str
     start_date: date
     distance_km: float
+    tour_name: Optional[str] = None
 
 
 class DiscoverArtistItem(BaseModel):

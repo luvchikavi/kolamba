@@ -189,6 +189,7 @@ export interface NearbyTourDateInfo {
   location: string;
   start_date: string;
   distance_km: number;
+  tour_name?: string;
 }
 
 export interface DiscoverArtist {

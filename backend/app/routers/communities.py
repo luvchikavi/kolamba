@@ -13,6 +13,7 @@ from app.models.community import Community, COMMUNITY_TYPES, EVENT_TYPES, CONTAC
 from app.models.user import User
 from app.models.artist_tour_date import ArtistTourDate
 from app.models.artist import Artist
+from app.models.tour import Tour
 from app.models.category import Category, ArtistCategory
 from app.schemas.community import CommunityCreate, CommunityUpdate, CommunityResponse
 from app.schemas.tour import NearbyTourResponse
@@ -497,6 +498,17 @@ async def discover_artists(
         for td in td_result.scalars().all():
             tour_dates_by_artist.setdefault(td.artist_id, []).append(td)
 
+    # 4b. Fetch active tours (pending/approved) for each artist
+    active_tours_by_artist: dict[int, list[Tour]] = {}
+    tours_result = await db.execute(
+        select(Tour).where(
+            Tour.status.in_(["pending", "approved"]),
+            (Tour.start_date >= date.today()) | (Tour.start_date.is_(None)),
+        )
+    )
+    for tour in tours_result.scalars().all():
+        active_tours_by_artist.setdefault(tour.artist_id, []).append(tour)
+
     # 5. Build discover items
     items: list[DiscoverArtistItem] = []
     for artist in artists:
@@ -529,6 +541,18 @@ async def discover_artists(
                         start_date=td.start_date,
                         distance_km=round(dist, 1),
                     )
+
+        # Also check for active tours (even if no geocoded tour dates)
+        if nearest_tour is None:
+            artist_tours = active_tours_by_artist.get(artist.id, [])
+            if artist_tours:
+                tour = artist_tours[0]  # Pick the first active tour
+                nearest_tour = NearbyTourDateInfo(
+                    location=tour.region or "On Tour",
+                    start_date=tour.start_date or date.today(),
+                    distance_km=0,
+                    tour_name=tour.name,
+                )
 
         # touring_only filter
         if touring_only:

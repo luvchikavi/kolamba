@@ -84,7 +84,9 @@ export default function DiscoverArtistCard({ artist }: DiscoverArtistCardProps) 
             <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium">
               <MapPin size={12} />
               <span>
-                Touring {Math.round(artist.nearest_tour_date.distance_km)}km away
+                {artist.nearest_tour_date.tour_name
+                  ? `${artist.nearest_tour_date.tour_name} \u00B7 ${artist.nearest_tour_date.location}`
+                  : `Touring ${Math.round(artist.nearest_tour_date.distance_km)}km away`}
                 {tourDateFormatted && ` \u00B7 ${tourDateFormatted}`}
               </span>
             </div>
