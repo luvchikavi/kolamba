@@ -47,7 +47,7 @@ export default function TourDatesCalendar({ artistId, artistName }: TourDatesCal
     fetchTourDates();
   }, [artistId]);
 
-  // Build a set of dates that have tour dates
+  // Build a set of dates that have tour dates + range position info
   const tourDateMap = useMemo(() => {
     const map = new Map<string, TourDate[]>();
     for (const td of tourDates) {
@@ -63,6 +63,31 @@ export default function TourDatesCalendar({ artistId, artistName }: TourDatesCal
     }
     return map;
   }, [tourDates]);
+
+  // For range highlighting: determine if a date is start/middle/end of a multi-day tour
+  const getRangePosition = (dateStr: string): "start" | "middle" | "end" | "single" | null => {
+    const tours = tourDateMap.get(dateStr);
+    if (!tours) return null;
+    for (const td of tours) {
+      const start = td.start_date.split("T")[0];
+      const end = td.end_date ? td.end_date.split("T")[0] : start;
+      if (start === end) return "single";
+      if (dateStr === start) return "start";
+      if (dateStr === end) return "end";
+      return "middle";
+    }
+    return "single";
+  };
+
+  // Get short location label for a date
+  const getLocationLabel = (dateStr: string): string | null => {
+    const tours = tourDateMap.get(dateStr);
+    if (!tours || tours.length === 0) return null;
+    const loc = tours[0].location;
+    // Shorten: take first part before comma, max 10 chars
+    const short = loc.split(",")[0].trim();
+    return short.length > 10 ? short.slice(0, 9) + "…" : short;
+  };
 
   const selectedTourDates = selectedDate ? tourDateMap.get(selectedDate) || [] : [];
 
@@ -158,28 +183,42 @@ export default function TourDatesCalendar({ artistId, artistName }: TourDatesCal
           const hasTour = tourDateMap.has(dateStr);
           const isToday = dateStr === today;
           const isSelected = dateStr === selectedDate;
+          const rangePos = getRangePosition(dateStr);
+          const locationLabel = getLocationLabel(dateStr);
+
+          // Range-aware rounding
+          const roundingClass = rangePos === "start"
+            ? "rounded-l-lg rounded-r-none"
+            : rangePos === "end"
+            ? "rounded-r-lg rounded-l-none"
+            : rangePos === "middle"
+            ? "rounded-none"
+            : "rounded-lg";
 
           return (
             <button
               key={day}
               onClick={() => hasTour ? setSelectedDate(isSelected ? null : dateStr) : undefined}
               className={`
-                aspect-square rounded-lg flex flex-col items-center justify-center text-sm
-                transition-colors relative
+                min-h-[3rem] flex flex-col items-center justify-center text-sm
+                transition-colors relative py-1
+                ${roundingClass}
                 ${hasTour ? "cursor-pointer font-semibold" : "cursor-default"}
                 ${isSelected ? "bg-primary-500 text-white" : ""}
-                ${hasTour && !isSelected ? "bg-primary-50 text-primary-700 hover:bg-primary-100" : ""}
+                ${hasTour && !isSelected ? "bg-primary-100 text-primary-700 hover:bg-primary-200" : ""}
                 ${isToday && !isSelected ? "ring-2 ring-primary-300" : ""}
                 ${!hasTour && !isToday ? "text-slate-600" : ""}
               `}
             >
-              {day}
-              {hasTour && (
+              <span>{day}</span>
+              {hasTour && locationLabel && (
                 <span
-                  className={`w-1.5 h-1.5 rounded-full absolute bottom-1 ${
-                    isSelected ? "bg-white" : "bg-primary-500"
+                  className={`text-[9px] leading-tight truncate max-w-full px-0.5 ${
+                    isSelected ? "text-white/80" : "text-primary-600"
                   }`}
-                />
+                >
+                  {locationLabel}
+                </span>
               )}
             </button>
           );
