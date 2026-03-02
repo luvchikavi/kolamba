@@ -22,7 +22,7 @@ import { formatBudgetRange } from "@/lib/utils";
 import DiscoverFilters from "@/components/dashboard/DiscoverFilters";
 import DiscoverArtistCard from "@/components/dashboard/DiscoverArtistCard";
 import { getFavoriteLists } from "@/lib/favorites";
-import { Heart, Globe } from "lucide-react";
+import { Heart, Globe, Building2 } from "lucide-react";
 
 interface Booking {
   id: number;
@@ -95,6 +95,7 @@ export default function HostDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [communityId, setCommunityId] = useState<number | null>(null);
   const [communityName, setCommunityName] = useState("");
+  const [noProfile, setNoProfile] = useState(false);
   const [activeTab, setActiveTab] = useState<"quotes" | "events" | "messages" | "discover" | "favorites" | "tours">("quotes");
 
   // Bookings data (for quotes + events + stats)
@@ -219,6 +220,11 @@ export default function HostDashboardPage() {
       if (profileRes.ok) {
         const userData = await profileRes.json();
         const commId = userData.community_id;
+
+        if (!commId) {
+          setNoProfile(true);
+          return;
+        }
 
         if (commId) {
           setCommunityId(commId);
@@ -442,6 +448,26 @@ export default function HostDashboardPage() {
         <div className="text-center">
           <Loader2 size={40} className="animate-spin text-primary-500 mx-auto mb-4" />
           <p className="text-slate-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (noProfile) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <Building2 size={48} className="text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">No Host Profile</h2>
+          <p className="text-slate-600 mb-6">
+            Your account doesn&apos;t have a linked host community. Use the admin dashboard to manage hosts.
+          </p>
+          <Link
+            href="/dashboard/admin"
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            Back to Admin Dashboard
+          </Link>
         </div>
       </div>
     );
