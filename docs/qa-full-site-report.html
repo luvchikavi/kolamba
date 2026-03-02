@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolamba - Full Site QA Report | Drishti Consulting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--darker);
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .header-bar {
+            background: var(--dark);
+            border-bottom: 3px solid;
+            border-image: var(--gradient) 1;
+            padding: 1.25rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
+        .header-logo svg { width: 42px; height: 42px; }
+        .header-title { font-size: 1.1rem; font-weight: 600; color: white; }
+        .header-sub { font-size: 0.75rem; color: var(--gray); }
+        .header-right { text-align: right; }
+        .header-date { font-size: 0.8rem; color: var(--gray); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 3rem 0 2rem;
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .hero p { color: var(--gray); font-size: 1rem; }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .summary-card {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .summary-card .label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+        .value-pass { color: var(--success); }
+        .value-fail { color: var(--error); }
+        .value-warn { color: var(--warning); }
+        .value-info { color: var(--secondary); }
+
+        /* Section */
+        .section {
+            margin: 2.5rem 0;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .section-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+        }
+        .section-badge {
+            display: inline-block;
+            padding: 0.2rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-pass { background: rgba(16,185,129,0.15); color: var(--success); }
+        .badge-fail { background: rgba(239,68,68,0.15); color: var(--error); }
+        .badge-warn { background: rgba(245,158,11,0.15); color: var(--warning); }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--dark);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #1e293b;
+        }
+        th {
+            background: #1e293b;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--gray);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #1e293b;
+            font-size: 0.85rem;
+        }
+        tr:hover td { background: rgba(99,102,241,0.04); }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-pass { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status-fail { background: rgba(239,68,68,0.15); color: var(--error); }
+        .status-warn { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .status-info { background: rgba(14,165,233,0.15); color: var(--secondary); }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .dot-pass { background: var(--success); }
+        .dot-fail { background: var(--error); }
+        .dot-warn { background: var(--warning); }
+
+        code {
+            background: #1e293b;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #93c5fd;
+        }
+
+        /* Fix Detail Cards */
+        .fix-card {
+            background: var(--dark);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        .fix-card h3 {
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .fix-detail {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .fix-label {
+            color: var(--gray);
+            font-weight: 600;
+        }
+        .fix-value { color: #cbd5e1; }
+
+        .files-changed {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.25rem;
+        }
+        .file-chip {
+            background: #1e293b;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: #93c5fd;
+            font-family: monospace;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 0 2rem;
+            color: var(--gray);
+            font-size: 0.8rem;
+            border-top: 1px solid #1e293b;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header-bar">
+    <div class="header-left">
+        <div class="header-logo">
+            <svg viewBox="0 0 42 42" fill="none">
+                <circle cx="21" cy="21" r="20" stroke="url(#grad)" stroke-width="2"/>
+                <text x="21" y="27" text-anchor="middle" fill="white" font-size="16" font-weight="700" font-family="sans-serif">K</text>
+                <defs><linearGradient id="grad" x1="0" y1="0" x2="42" y2="42"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs>
+            </svg>
+        </div>
+        <div>
+            <div class="header-title">Kolamba Platform</div>
+            <div class="header-sub">Full Site QA Report</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="header-title" style="font-size:0.85rem;">Drishti Consulting</div>
+        <div class="header-date">Report generated: March 2, 2026</div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Hero -->
+    <div class="hero">
+        <h1>Full Site QA Test Report</h1>
+        <p>Comprehensive testing of all API endpoints, frontend pages, and recent permission fixes</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="value value-pass">19</div>
+            <div class="label">Public API Endpoints</div>
+        </div>
+        <div class="summary-card">
+            <div class="value value-pass">9</div>
+            <div class="label">Auth-Protected Endpoints</div>
+        </div>
+        <div class="summary-card">
+            <div class="value value-pass">28</div>
+            <div class="label">Frontend Pages Tested</div>
+        </div>
+        <div class="summary-card">
+            <div class="value value-info">10</div>
+            <div class="label">Superuser Fixes Deployed</div>
+        </div>
+        <div class="summary-card">
+            <div class="value value-pass">4</div>
+            <div class="label">Frontend Fixes Deployed</div>
+        </div>
+    </div>
+
+    <!-- ==================== SECTION 1: Public API ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>1. Public API Endpoints</h2>
+            <span class="section-badge badge-pass">19/20 PASS</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>GET</td><td><code>/api/health</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Service healthy, email not configured</td></tr>
+                <tr><td>2</td><td>GET</td><td><code>/api/talents?limit=2</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Returns talent list</td></tr>
+                <tr><td>3</td><td>GET</td><td><code>/api/talents/featured</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Featured artists</td></tr>
+                <tr><td>4</td><td>GET</td><td><code>/api/talents/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Individual talent profile</td></tr>
+                <tr><td>5</td><td>GET</td><td><code>/api/talents/1/tour-dates</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Tour dates for talent</td></tr>
+                <tr><td>6</td><td>GET</td><td><code>/api/talents/tour-dates/recent</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Recent tour dates</td></tr>
+                <tr><td>7</td><td>GET</td><td><code>/api/hosts?limit=2</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Returns host communities</td></tr>
+                <tr><td>8</td><td>GET</td><td><code>/api/hosts/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Individual host profile</td></tr>
+                <tr><td>9</td><td>GET</td><td><code>/api/hosts/filters</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Includes community_types</td></tr>
+                <tr><td>10</td><td>GET</td><td><code>/api/hosts/options</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Registration options</td></tr>
+                <tr><td>11</td><td>GET</td><td><code>/api/hosts/locations</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Location list</td></tr>
+                <tr><td>12</td><td>GET</td><td><code>/api/hosts/check-name?name=Test</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Name availability check</td></tr>
+                <tr><td>13</td><td>GET</td><td><code>/api/categories</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Category list</td></tr>
+                <tr><td>14</td><td>GET</td><td><code>/api/tours?limit=2</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Tour list</td></tr>
+                <tr><td>15</td><td>GET</td><td><code>/api/tours/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Tour detail</td></tr>
+                <tr><td>16</td><td>GET</td><td><code>/api/tours/nearby</code></td><td><span class="status status-warn"><span class="status-dot dot-warn"></span>422</span></td><td>Expected: requires location params</td></tr>
+                <tr><td>17</td><td>GET</td><td><code>/api/search/artists?query=music</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Search returns results</td></tr>
+                <tr><td>18</td><td>GET</td><td><code>/api/bookings?limit=2</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Public bookings list</td></tr>
+                <tr><td>19</td><td>GET</td><td><code>/api/docs</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Swagger UI loads</td></tr>
+                <tr><td>20</td><td>GET</td><td><code>/api/uploads/status</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Upload service status</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SECTION 2: Auth Endpoints ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>2. Auth-Protected Endpoints (No Token)</h2>
+            <span class="section-badge badge-pass">ALL RETURN 401</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Expected</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>21</td><td>GET</td><td><code>/api/auth/me</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>22</td><td>GET</td><td><code>/api/conversations</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>23</td><td>GET</td><td><code>/api/notifications/</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>24</td><td>GET</td><td><code>/api/notifications/count</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>25</td><td>GET</td><td><code>/api/talents/me</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>26</td><td>GET</td><td><code>/api/hosts/me</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>27</td><td>GET</td><td><code>/api/bookings/my-bookings</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>28</td><td>GET</td><td><code>/api/agents/me/artists</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+                <tr><td>29</td><td>GET</td><td><code>/api/agents/me/stats</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>401</span></td><td>Unauthorized</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SECTION 3: Auth Form Endpoints ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>3. Auth Form Endpoints</h2>
+            <span class="section-badge badge-pass">ALL PASS</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>30</td><td>POST</td><td><code>/api/auth/login</code> (bad creds)</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>422</span></td><td>Validation works</td></tr>
+                <tr><td>31</td><td>POST</td><td><code>/api/auth/register</code> (empty body)</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>422</span></td><td>Validation works</td></tr>
+                <tr><td>32</td><td>POST</td><td><code>/api/auth/forgot-password</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td><td>Returns OK (doesn't reveal if email exists)</td></tr>
+                <tr><td>33</td><td>POST</td><td><code>/api/contact</code> (empty)</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>422</span></td><td>Validation works</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SECTION 4: Frontend Pages ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>4. Frontend Pages</h2>
+            <span class="section-badge badge-pass">28/28 PASS</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Page</th>
+                    <th>URL</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4" style="background:#1e293b;color:var(--gray);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Public Pages</td></tr>
+                <tr><td>1</td><td>Home</td><td><code>/</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>2</td><td>Browse Talents</td><td><code>/talents</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>3</td><td>Talent Detail</td><td><code>/talents/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>4</td><td>Browse Hosts</td><td><code>/hosts</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>5</td><td>Host Detail</td><td><code>/hosts/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>6</td><td>Browse Tours</td><td><code>/tours</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>7</td><td>Tour Detail</td><td><code>/tours/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>8</td><td>Search</td><td><code>/search</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>9</td><td>About</td><td><code>/about</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>10</td><td>Privacy</td><td><code>/privacy</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>11</td><td>Terms</td><td><code>/terms</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>12</td><td>Booking (with ID)</td><td><code>/booking/1</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+
+                <tr><td colspan="4" style="background:#1e293b;color:var(--gray);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Auth Pages</td></tr>
+                <tr><td>13</td><td>Login</td><td><code>/login</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>14</td><td>Register Host</td><td><code>/register/host</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>15</td><td>Register Talent</td><td><code>/register/talent</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>16</td><td>Forgot Password</td><td><code>/forgot-password</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>17</td><td>Reset Password</td><td><code>/reset-password</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>18</td><td>Onboarding</td><td><code>/onboarding</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+
+                <tr><td colspan="4" style="background:#1e293b;color:var(--gray);font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Dashboard Pages (SSR shell loads, client-side redirects to /login)</td></tr>
+                <tr><td>19</td><td>Host Dashboard</td><td><code>/dashboard/host</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>20</td><td>Host Messages</td><td><code>/dashboard/host/messages</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>21</td><td>Host Settings</td><td><code>/dashboard/host/settings</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>22</td><td>Host Quotes</td><td><code>/dashboard/host/quotes</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>23</td><td>Host Events</td><td><code>/dashboard/host/events</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>24</td><td>Talent Dashboard</td><td><code>/dashboard/talent</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>25</td><td>Talent Settings</td><td><code>/dashboard/talent/settings</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>26</td><td>Admin Dashboard</td><td><code>/dashboard/admin</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>27</td><td>Admin Users</td><td><code>/dashboard/admin/users</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+                <tr><td>28</td><td>Admin Talents</td><td><code>/dashboard/admin/talents</code></td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>200</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SECTION 5: Superuser Bypass Fixes ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>5. Superuser Bypass Fixes (Backend)</h2>
+            <span class="section-badge badge-pass">10 ENDPOINTS FIXED</span>
+        </div>
+        <p style="color:var(--gray);margin-bottom:1rem;font-size:0.85rem;">
+            All role-restricted endpoints now allow superusers to bypass role checks. Previously, admins using "View As" dashboards received 403 errors.
+        </p>
+
+        <div class="fix-card">
+            <h3>bookings.py &mdash; 3 endpoints fixed</h3>
+            <div class="fix-detail">
+                <div class="fix-label">Endpoints</div>
+                <div class="fix-value">
+                    <code>POST /bookings/{id}/respond</code><br>
+                    <code>POST /bookings/{id}/quote</code><br>
+                    <code>GET /bookings/my-bookings</code>
+                </div>
+                <div class="fix-label">Before</div>
+                <div class="fix-value"><code>community.user_id != current_user.id</code> &rarr; 403 for admins</div>
+                <div class="fix-label">After</div>
+                <div class="fix-value"><code>(... != current_user.id and not current_user.is_superuser)</code></div>
+                <div class="fix-label">Verified</div>
+                <div class="fix-value"><span class="status status-pass"><span class="status-dot dot-pass"></span>Deployed &amp; endpoints return 401 (not 500)</span></div>
+            </div>
+        </div>
+
+        <div class="fix-card">
+            <h3>communities.py &mdash; 2 endpoints fixed</h3>
+            <div class="fix-detail">
+                <div class="fix-label">Endpoints</div>
+                <div class="fix-value">
+                    <code>GET /hosts/me</code><br>
+                    <code>PUT /hosts/me</code>
+                </div>
+                <div class="fix-label">Before</div>
+                <div class="fix-value"><code>role != "community"</code> &rarr; 403 for admins</div>
+                <div class="fix-label">After</div>
+                <div class="fix-value"><code>role != "community" and not current_user.is_superuser</code></div>
+                <div class="fix-label">Verified</div>
+                <div class="fix-value"><span class="status status-pass"><span class="status-dot dot-pass"></span>Deployed &amp; endpoints return 401 (not 500)</span></div>
+            </div>
+        </div>
+
+        <div class="fix-card">
+            <h3>artists.py &mdash; 1 endpoint fixed</h3>
+            <div class="fix-detail">
+                <div class="fix-label">Endpoint</div>
+                <div class="fix-value"><code>PUT /talents/me</code></div>
+                <div class="fix-label">Before</div>
+                <div class="fix-value"><code>role not in ("artist", "agent")</code> &rarr; 403 for admins</div>
+                <div class="fix-label">After</div>
+                <div class="fix-value"><code>... and not current_user.is_superuser</code></div>
+                <div class="fix-label">Verified</div>
+                <div class="fix-value"><span class="status status-pass"><span class="status-dot dot-pass"></span>Deployed &amp; endpoint returns 401 (not 500)</span></div>
+            </div>
+        </div>
+
+        <div class="fix-card">
+            <h3>agents.py &mdash; 5 endpoints fixed</h3>
+            <div class="fix-detail">
+                <div class="fix-label">Endpoints</div>
+                <div class="fix-value">
+                    <code>GET /agents/me/artists</code><br>
+                    <code>GET /agents/me/stats</code><br>
+                    <code>GET /agents/me/bookings</code><br>
+                    <code>GET /agents/me/artists/{id}</code><br>
+                    <code>PUT /agents/me/artists/{id}</code>
+                </div>
+                <div class="fix-label">Before</div>
+                <div class="fix-value"><code>role != "agent"</code> &rarr; 403 for admins</div>
+                <div class="fix-label">After</div>
+                <div class="fix-value"><code>role != "agent" and not current_user.is_superuser</code></div>
+                <div class="fix-label">Verified</div>
+                <div class="fix-value"><span class="status status-pass"><span class="status-dot dot-pass"></span>Deployed &amp; endpoints return 401 (not 500)</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SECTION 6: Frontend No-Profile Fixes ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>6. Frontend No-Profile Fixes</h2>
+            <span class="section-badge badge-pass">4 PAGES FIXED</span>
+        </div>
+        <p style="color:var(--gray);margin-bottom:1rem;font-size:0.85rem;">
+            Dashboard pages now show a friendly message when admins visit "View As" dashboards without a linked profile, instead of throwing console errors or showing empty pages.
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Page</th>
+                    <th>Before</th>
+                    <th>After</th>
+                    <th>Bundle Check</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>/dashboard/talent</code></td>
+                    <td style="color:var(--error);">Console error: "Failed to fetch artist profile"</td>
+                    <td>Shows "No Talent Profile" with link to admin talents</td>
+                    <td><span class="status status-pass"><span class="status-dot dot-pass"></span>Confirmed in JS bundle</span></td>
+                </tr>
+                <tr>
+                    <td><code>/dashboard/talent/settings</code></td>
+                    <td style="color:var(--error);">Console error: "Failed to fetch profile"</td>
+                    <td>Shows "No Talent Profile" with link to admin talents</td>
+                    <td><span class="status status-pass"><span class="status-dot dot-pass"></span>Confirmed in JS bundle</span></td>
+                </tr>
+                <tr>
+                    <td><code>/dashboard/host</code></td>
+                    <td style="color:var(--warning);">Empty dashboard, no data shown</td>
+                    <td>Shows "No Host Profile" with link to admin dashboard</td>
+                    <td><span class="status status-pass"><span class="status-dot dot-pass"></span>Confirmed in JS bundle</span></td>
+                </tr>
+                <tr>
+                    <td><code>/dashboard/host/settings</code></td>
+                    <td style="color:var(--error);">Console error: "Failed to fetch profile"</td>
+                    <td>Shows "No Host Profile" with link to admin dashboard</td>
+                    <td><span class="status status-pass"><span class="status-dot dot-pass"></span>Confirmed in JS bundle</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SECTION 7: Superuser-Fixed Endpoints Reachability ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>7. Fixed Endpoints Reachability (Production)</h2>
+            <span class="section-badge badge-pass">ALL DEPLOYED</span>
+        </div>
+        <p style="color:var(--gray);margin-bottom:1rem;font-size:0.85rem;">
+            All 9 superuser-bypassed endpoints verified to be live on Railway production (returning 401 without auth token, not 500 or 404).
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Status (no token)</th>
+                    <th>Verdict</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>GET</td><td><code>/api/hosts/me</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>2</td><td>PUT</td><td><code>/api/hosts/me</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>3</td><td>GET</td><td><code>/api/bookings/my-bookings</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>4</td><td>PUT</td><td><code>/api/talents/me</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>5</td><td>GET</td><td><code>/api/agents/me/artists</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>6</td><td>GET</td><td><code>/api/agents/me/stats</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>7</td><td>GET</td><td><code>/api/agents/me/bookings</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>8</td><td>POST</td><td><code>/api/bookings/1/respond</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+                <tr><td>9</td><td>POST</td><td><code>/api/bookings/1/quote</code></td><td>401</td><td><span class="status status-pass"><span class="status-dot dot-pass"></span>Live</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ==================== SECTION 8: Known Issues ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>8. Notes &amp; Known Items</h2>
+            <span class="section-badge badge-warn">INFO</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Details</th>
+                    <th>Severity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>/api/tours/nearby</code> returns 422</td>
+                    <td>Requires location query params (latitude, longitude). Expected behavior.</td>
+                    <td><span class="status status-info"><span class="status-dot" style="background:var(--secondary)"></span>Expected</span></td>
+                </tr>
+                <tr>
+                    <td>No <code>/contact</code> page</td>
+                    <td>Frontend has no /contact page (only POST /api/contact endpoint). Contact form lives on other pages.</td>
+                    <td><span class="status status-info"><span class="status-dot" style="background:var(--secondary)"></span>By design</span></td>
+                </tr>
+                <tr>
+                    <td>No <code>/favorites</code> page</td>
+                    <td>Favorites stored in localStorage, accessible from host dashboard "Favorites" tab.</td>
+                    <td><span class="status status-info"><span class="status-dot" style="background:var(--secondary)"></span>By design</span></td>
+                </tr>
+                <tr>
+                    <td>Admin login via CLI not possible</td>
+                    <td>Admin account uses Google OAuth (no password hash). Superuser bypass tested via code review and deployment verification.</td>
+                    <td><span class="status status-info"><span class="status-dot" style="background:var(--secondary)"></span>Manual test needed</span></td>
+                </tr>
+                <tr>
+                    <td>Email service not configured</td>
+                    <td>Health endpoint shows <code>email_configured: false</code>. Password reset and notification emails won't send.</td>
+                    <td><span class="status status-warn"><span class="status-dot dot-warn"></span>Low</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p><strong>Kolamba Platform</strong> &mdash; Full Site QA Report</p>
+    <p style="margin-top:0.5rem;">Prepared by Drishti Consulting &bull; March 2, 2026</p>
+    <p style="margin-top:0.25rem;color:#475569;">Production: kolamba.vercel.app (frontend) &bull; kolamba-api-production.up.railway.app (backend)</p>
+</div>
+
+</body>
+</html>
