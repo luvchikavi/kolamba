@@ -336,7 +336,7 @@ async def submit_quote(
         select(Artist).where(Artist.id == booking.artist_id)
     )
     artist = artist_result.scalar_one_or_none()
-    if not artist or artist.user_id != current_user.id:
+    if not artist or (artist.user_id != current_user.id and not current_user.is_superuser):
         raise HTTPException(status_code=403, detail="Only the talent on this booking can submit a quote")
 
     # Validate status
@@ -419,7 +419,7 @@ async def respond_to_quote(
         select(Community).where(Community.id == booking.community_id)
     )
     community = community_result.scalar_one_or_none()
-    if not community or community.user_id != current_user.id:
+    if not community or (community.user_id != current_user.id and not current_user.is_superuser):
         raise HTTPException(status_code=403, detail="Only the host on this booking can respond to the quote")
 
     # Validate status

@@ -19,6 +19,7 @@ import {
   Trash2,
   MessageSquare,
   Pencil,
+  Music,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { formatBudgetRange } from "@/lib/utils";
@@ -1229,6 +1230,7 @@ export default function ArtistDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [artistId, setArtistId] = useState<number | null>(null);
   const [artistStatus, setArtistStatus] = useState<string>("active");
+  const [noProfile, setNoProfile] = useState(false);
   const [rejectionReason, setRejectionReason] = useState<string | undefined>();
   const [suggestions, setSuggestions] = useState<TourSuggestion[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
@@ -1262,6 +1264,11 @@ export default function ArtistDashboardPage() {
       const profileRes = await fetch(`${API_URL}/talents/me`, { headers });
       if (profileRes.status === 401) {
         window.location.href = "/login";
+        return;
+      }
+      if (profileRes.status === 404) {
+        // Admin or user with no linked artist profile
+        setNoProfile(true);
         return;
       }
       if (!profileRes.ok) {
@@ -1591,6 +1598,26 @@ export default function ArtistDashboardPage() {
         <div className="text-center">
           <Loader2 size={40} className="animate-spin text-primary-500 mx-auto mb-4" />
           <p className="text-slate-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (noProfile) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <Music size={48} className="text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">No Talent Profile</h2>
+          <p className="text-slate-600 mb-6">
+            Your account doesn&apos;t have a linked talent profile. Use the admin talents page to view specific talent profiles.
+          </p>
+          <Link
+            href="/dashboard/admin/talents"
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            Go to Talents Management
+          </Link>
         </div>
       </div>
     );
