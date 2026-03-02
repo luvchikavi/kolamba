@@ -143,7 +143,7 @@ async def update_my_artist_profile(
     db: AsyncSession = Depends(get_db),
 ):
     """Update current user's artist profile."""
-    if current_user.role not in ("artist", "agent"):
+    if current_user.role not in ("artist", "agent") and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not a talent account")
 
     # Look up by user_id (artist role) or agent_user_id (agent role)

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2, CheckCircle, X } from "lucide-react";
+import { ArrowLeft, Save, Loader2, CheckCircle, X, Music } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
 const categories = [
@@ -51,6 +51,7 @@ interface ArtistProfile {
 
 export default function ArtistSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [noProfile, setNoProfile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +96,11 @@ export default function ArtistSettingsPage() {
 
       if (response.status === 401) {
         window.location.href = "/login";
+        return;
+      }
+
+      if (response.status === 404) {
+        setNoProfile(true);
         return;
       }
 
@@ -230,6 +236,26 @@ export default function ArtistSettingsPage() {
         <div className="text-center">
           <Loader2 size={40} className="animate-spin text-primary-500 mx-auto mb-4" />
           <p className="text-slate-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (noProfile) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-20 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <Music size={48} className="text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">No Talent Profile</h2>
+          <p className="text-slate-600 mb-6">
+            Your account doesn&apos;t have a linked talent profile.
+          </p>
+          <Link
+            href="/dashboard/admin/talents"
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            Go to Talents Management
+          </Link>
         </div>
       </div>
     );

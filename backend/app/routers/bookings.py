@@ -180,7 +180,7 @@ async def get_my_bookings(
     db: AsyncSession = Depends(get_db),
 ):
     """Get bookings for the authenticated community with artist names."""
-    if current_user.role != "community":
+    if current_user.role != "community" and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Only hosts can access this endpoint")
 
     # Get the community for this user

@@ -90,7 +90,7 @@ async def get_my_community_profile(
     db: AsyncSession = Depends(get_db),
 ):
     """Get current user's community profile."""
-    if current_user.role != "community":
+    if current_user.role != "community" and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not a host account")
 
     result = await db.execute(
@@ -111,7 +111,7 @@ async def update_my_community_profile(
     db: AsyncSession = Depends(get_db),
 ):
     """Update current user's community profile."""
-    if current_user.role != "community":
+    if current_user.role != "community" and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not a host account")
 
     result = await db.execute(

@@ -51,7 +51,7 @@ async def get_my_artists(
     db: AsyncSession = Depends(get_db),
 ):
     """Get all artists managed by the current agent."""
-    if current_user.role != "agent":
+    if current_user.role != "agent" and not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only agents can access this endpoint",
@@ -112,7 +112,7 @@ async def get_my_stats(
     db: AsyncSession = Depends(get_db),
 ):
     """Get dashboard stats for the current agent."""
-    if current_user.role != "agent":
+    if current_user.role != "agent" and not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only agents can access this endpoint",
@@ -164,7 +164,7 @@ async def get_my_artists_bookings(
     db: AsyncSession = Depends(get_db),
 ):
     """Get all bookings for artists managed by the current agent."""
-    if current_user.role != "agent":
+    if current_user.role != "agent" and not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only agents can access this endpoint",
@@ -211,7 +211,7 @@ async def get_my_artist(
     db: AsyncSession = Depends(get_db),
 ):
     """Get full artist profile for an artist managed by the current agent."""
-    if current_user.role != "agent":
+    if current_user.role != "agent" and not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only agents can access this endpoint",
@@ -257,7 +257,7 @@ async def update_my_artist(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a specific artist's profile (agent must own the artist)."""
-    if current_user.role != "agent":
+    if current_user.role != "agent" and not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only agents can access this endpoint",

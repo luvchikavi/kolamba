@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, ChevronDown, Building2 } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronDown, Building2, Home } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { showSuccess, showError } from "@/lib/toast";
 
@@ -140,6 +140,7 @@ export default function CommunitySettingsPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<CommunityProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [noProfile, setNoProfile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -174,6 +175,11 @@ export default function CommunitySettingsPage() {
 
       if (response.status === 401) {
         router.push("/login");
+        return;
+      }
+
+      if (response.status === 404) {
+        setNoProfile(true);
         return;
       }
 
@@ -289,6 +295,26 @@ export default function CommunitySettingsPage() {
     return (
       <div className="min-h-screen bg-slate-50 pt-24 flex items-center justify-center">
         <Loader2 size={40} className="animate-spin text-primary-500" />
+      </div>
+    );
+  }
+
+  if (noProfile) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-24 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <Home size={48} className="text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">No Host Profile</h2>
+          <p className="text-slate-600 mb-6">
+            Your account doesn&apos;t have a linked host profile.
+          </p>
+          <Link
+            href="/dashboard/admin"
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            Back to Admin Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
