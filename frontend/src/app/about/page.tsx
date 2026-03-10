@@ -6,6 +6,13 @@ import { ArrowLeft, Globe, Sparkles, Users, Target, Lightbulb, MapPin, Star, Che
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white pt-20">
+      {/* Hero */}
+      <div style={{ background: "linear-gradient(135deg, #0C1719 0%, #1a2e35 40%, #2a1f24 70%, #0C1719 100%)" }} className="text-white">
+        <div className="container-default py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold">All The World&apos;s a Stage</h1>
+        </div>
+      </div>
+
       <div className="container-default py-12">
         <Link
           href="/"
