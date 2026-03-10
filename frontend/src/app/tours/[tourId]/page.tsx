@@ -10,8 +10,10 @@ import {
   Users,
   Loader2,
   Music,
+  CheckCircle,
 } from "lucide-react";
 import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 interface TourStop {
   id: number;
@@ -51,6 +53,10 @@ export default function PublicTourDetailPage() {
   const [tour, setTour] = useState<TourDetail | null>(null);
   const [artist, setArtist] = useState<ArtistInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [communityId, setCommunityId] = useState<number | null>(null);
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinSent, setJoinSent] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchTour = async () => {
@@ -75,7 +81,66 @@ export default function PublicTourDetailPage() {
     };
 
     fetchTour();
+
+    // Check if user is logged in and get community ID
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      setIsLoggedIn(true);
+      fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((user) => {
+          if (user?.role === "community") {
+            // Get community profile
+            fetch(`${API_URL}/communities/me`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then((res) => (res.ok ? res.json() : null))
+              .then((community) => {
+                if (community?.id) setCommunityId(community.id);
+              })
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    }
   }, [tourId]);
+
+  const handleJoinRequest = async () => {
+    if (!communityId) {
+      toast.error("You need a host profile to join a tour. Please complete your profile first.");
+      return;
+    }
+
+    setIsJoining(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await fetch(`${API_URL}/tours/${tourId}/join-request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          community_id: communityId,
+          notes: "Interested in joining this tour",
+        }),
+      });
+
+      if (res.ok) {
+        setJoinSent(true);
+        toast.success("Join request sent! The artist will review your request.");
+      } else {
+        const data = await res.json();
+        toast.error(data.detail || "Failed to send join request");
+      }
+    } catch {
+      toast.error("Failed to send join request. Please try again.");
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -220,13 +285,40 @@ export default function PublicTourDetailPage() {
 
           {/* CTA */}
           <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap gap-3">
-            <Link
-              href={`/booking/${tour.artist_id}?tour=${tour.id}`}
-              className="btn-primary"
-            >
-              <Music size={18} />
-              Book This Tour
-            </Link>
+            {!isLoggedIn ? (
+              <Link
+                href={`/login?redirect=/tours/${tour.id}`}
+                className="btn-primary"
+              >
+                <Music size={18} />
+                Sign In to Book This Tour
+              </Link>
+            ) : joinSent ? (
+              <button
+                disabled
+                className="btn-primary opacity-60 cursor-not-allowed flex items-center gap-2"
+              >
+                <CheckCircle size={18} />
+                Join Request Sent
+              </button>
+            ) : communityId ? (
+              <button
+                onClick={handleJoinRequest}
+                disabled={isJoining}
+                className="btn-primary flex items-center gap-2"
+              >
+                <Music size={18} />
+                {isJoining ? "Sending Request..." : "Request to Join Tour"}
+              </button>
+            ) : (
+              <Link
+                href={`/booking/${tour.artist_id}?tour=${tour.id}`}
+                className="btn-primary"
+              >
+                <Music size={18} />
+                Book This Tour
+              </Link>
+            )}
             <Link
               href={`/talents/${tour.artist_id}`}
               className="btn-secondary"

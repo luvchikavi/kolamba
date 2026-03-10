@@ -37,6 +37,52 @@ router = APIRouter()
 settings = get_settings()
 
 
+async def _check_and_update_tour_status(db: AsyncSession, tour_id: int) -> None:
+    """
+    Auto-transition tour status based on confirmed bookings and min_tour_budget.
+
+    Rules:
+    - If tour has at least 1 confirmed booking → status becomes 'approved'
+    - If min_tour_budget is set and confirmed_revenue >= min_tour_budget → status becomes 'approved'
+    - If tour has 0 confirmed bookings → status stays/reverts to 'pending'
+    """
+    tour_result = await db.execute(select(Tour).where(Tour.id == tour_id))
+    tour = tour_result.scalar_one_or_none()
+    if not tour or tour.status in ("completed", "cancelled"):
+        return
+
+    # Count confirmed bookings and revenue
+    booking_result = await db.execute(
+        select(
+            sa_func.count(Booking.id),
+            sa_func.coalesce(sa_func.sum(Booking.budget), 0),
+        )
+        .where(Booking.tour_id == tour_id)
+        .where(Booking.status.in_(["approved", "confirmed"]))
+    )
+    row = booking_result.one()
+    confirmed_count = row[0]
+    confirmed_revenue = row[1]
+
+    new_status = tour.status
+    if confirmed_count > 0:
+        # At least one confirmed booking → approve the tour
+        if tour.min_tour_budget and confirmed_revenue >= tour.min_tour_budget:
+            new_status = "approved"
+        elif not tour.min_tour_budget and confirmed_count > 0:
+            # No min budget set, any confirmed booking approves
+            new_status = "approved"
+        else:
+            # Has bookings but hasn't met min budget yet — stay pending
+            new_status = "pending"
+    else:
+        new_status = "pending"
+
+    if new_status != tour.status:
+        tour.status = new_status
+        await db.flush()
+
+
 async def _load_tour_with_relations(db: AsyncSession, tour_id: int) -> Tour | None:
     """Load a tour with bookings and stops eagerly loaded."""
     result = await db.execute(
@@ -423,6 +469,9 @@ async def update_join_request_status(
             status="confirmed",
         )
         db.add(stop)
+
+        # Auto-check if tour should be approved now
+        await _check_and_update_tour_status(db, tour_id)
         await db.commit()
 
         return {
@@ -493,6 +542,8 @@ async def create_tour(
             )
             db.add(stop)
 
+    # Auto-check if tour should be approved based on added bookings
+    await _check_and_update_tour_status(db, tour.id)
     await db.commit()
 
     tour = await _load_tour_with_relations(db, tour.id)
@@ -715,6 +766,9 @@ async def add_booking_to_tour(
         status="confirmed" if booking.status in ("approved", "confirmed") else "inquiry",
     )
     db.add(stop)
+
+    # Auto-check if tour should be approved now
+    await _check_and_update_tour_status(db, tour_id)
     await db.commit()
 
     return {"message": "Booking added to tour successfully", "stop_id": stop.id}
@@ -751,6 +805,8 @@ async def remove_booking_from_tour(
     if stop:
         await db.delete(stop)
 
+    # Re-check tour status after removing a booking
+    await _check_and_update_tour_status(db, tour_id)
     await db.commit()
 
     return {"message": "Booking removed from tour successfully"}

@@ -495,7 +495,7 @@ async def find_nearby_tours(
         List of nearby tour opportunities sorted by distance
     """
     if status_filter is None:
-        status_filter = ["proposed", "confirmed", "in_progress"]
+        status_filter = ["pending", "approved"]
 
     # Get the community's location
     community_result = await db.execute(
