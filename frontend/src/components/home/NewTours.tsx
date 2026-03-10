@@ -140,11 +140,17 @@ export default function NewTours() {
                     <div className="card card-hover overflow-hidden">
                       <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 relative overflow-hidden">
                         {group.profileImage ? (
-                          <img
-                            src={group.profileImage}
-                            alt={group.artistName}
-                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
+                          <>
+                            <img
+                              src={group.profileImage}
+                              alt={group.artistName}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div
+                              className="absolute inset-0 mix-blend-color opacity-40 pointer-events-none"
+                              style={{ background: "linear-gradient(135deg, #CA7283 0%, #8E96AB 50%, #53B9CC 100%)" }}
+                            />
+                          </>
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-5xl font-bold text-white/40">

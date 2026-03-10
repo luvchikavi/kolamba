@@ -157,11 +157,17 @@ export default function ToursPage() {
                         <div className="flex items-center gap-4 p-4 border-b border-slate-100">
                           <div className="relative w-14 h-14 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
                             {tour.artist.profile_image ? (
-                              <img
-                                src={tour.artist.profile_image}
-                                alt={artistName}
-                                className="w-full h-full object-cover"
-                              />
+                              <>
+                                <img
+                                  src={tour.artist.profile_image}
+                                  alt={artistName}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div
+                                  className="absolute inset-0 mix-blend-color opacity-40 pointer-events-none"
+                                  style={{ background: "linear-gradient(135deg, #CA7283 0%, #8E96AB 50%, #53B9CC 100%)" }}
+                                />
+                              </>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-slate-400 text-lg font-semibold">
                                 {artistName[0]}
@@ -256,11 +262,17 @@ export default function ToursPage() {
                           <div className="card card-hover overflow-hidden">
                             <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 via-primary-50 to-accent-100 relative overflow-hidden">
                               {artist.profile_image ? (
-                                <img
-                                  src={artist.profile_image}
-                                  alt={artistName}
-                                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
+                                <>
+                                  <img
+                                    src={artist.profile_image}
+                                    alt={artistName}
+                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                  <div
+                                    className="absolute inset-0 mix-blend-color opacity-40 pointer-events-none"
+                                    style={{ background: "linear-gradient(135deg, #CA7283 0%, #8E96AB 50%, #53B9CC 100%)" }}
+                                  />
+                                </>
                               ) : (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                   <span className="text-5xl font-bold text-white/40">
