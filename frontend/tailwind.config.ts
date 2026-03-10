@@ -9,34 +9,49 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Modern Kolamba Brand Colors
+        // Kolamba Brand Colors
         primary: {
-          50: "#f0fdfa",
-          100: "#ccfbf1",
-          200: "#99f6e4",
-          300: "#5eead4",
-          400: "#2dd4bf",
-          500: "#14b8a6",
-          600: "#0d9488",
-          700: "#0f766e",
-          800: "#115e59",
-          900: "#134e4a",
-          950: "#042f2e",
+          50: "#eef9fb",
+          100: "#d4eff4",
+          200: "#a9dfea",
+          300: "#7ecfdf",
+          400: "#53B9CC",
+          500: "#53B9CC",
+          600: "#429bb0",
+          700: "#327d94",
+          800: "#215f78",
+          900: "#11415c",
+          950: "#082a3d",
         },
-        // Warm accent color
+        // Antique pink accent
         accent: {
-          50: "#fff1f2",
-          100: "#ffe4e6",
-          200: "#fecdd3",
-          300: "#fda4af",
-          400: "#fb7185",
-          500: "#f43f5e",
-          600: "#e11d48",
-          700: "#be123c",
-          800: "#9f1239",
-          900: "#881337",
+          50: "#fdf2f4",
+          100: "#fbe5e9",
+          200: "#f7ccd4",
+          300: "#e8a3b0",
+          400: "#CA7283",
+          500: "#CA7283",
+          600: "#b55a6c",
+          700: "#9a4456",
+          800: "#7f3041",
+          900: "#641d2d",
+          950: "#450f1c",
         },
-        // Neutral grays with slight warmth
+        // Kolamba gray
+        neutral: {
+          50: "#f8f9fa",
+          100: "#f0f1f2",
+          200: "#E8E9EA",
+          300: "#d0d1d3",
+          400: "#b0b2b5",
+          500: "#8e9196",
+          600: "#6e7177",
+          700: "#505358",
+          800: "#34373b",
+          900: "#1a1c1f",
+          950: "#0d0e10",
+        },
+        // Keep slate for backward compatibility
         slate: {
           50: "#f8fafc",
           100: "#f1f5f9",
@@ -55,9 +70,9 @@ const config: Config = {
         sans: ["var(--font-inter)", "Inter", "system-ui", "-apple-system", "sans-serif"],
         display: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
         serif: ["var(--font-frank-ruhl)", "Frank Ruhl Libre", "Georgia", "serif"],
-        // For when Almoni is added
+        heading: ["var(--font-poppins)", "Poppins", "system-ui", "sans-serif"],
+        category: ["var(--font-bungee)", "Bungee", "system-ui", "sans-serif"],
         almoni: ["Almoni", "var(--font-inter)", "system-ui", "sans-serif"],
-        // For when Primaries is added
         primaries: ["Primaries", "var(--font-frank-ruhl)", "Georgia", "serif"],
       },
       backgroundImage: {

@@ -77,19 +77,10 @@ export default function FeaturedArtists() {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        {/* Section Title with decorative elements */}
-        <div className="text-center mb-12 relative">
-          {/* Decorative flourishes */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 -mt-4 flex items-center gap-2 text-teal-400 opacity-60">
-            <span className="text-2xl">~</span>
-            <span className="text-lg">,</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight">
-            FEATURED TALENTS
-          </h2>
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 -mb-2 flex items-center gap-2 text-pink-400 opacity-60">
-            <span className="text-lg">~</span>
-          </div>
+        {/* Section Title — using exact design image */}
+        <div className="mb-12 max-w-4xl mx-auto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/design/heading-talents.png" alt="New Talents" className="w-full h-auto" />
         </div>
 
         {/* Artists Carousel */}

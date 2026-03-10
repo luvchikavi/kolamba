@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --primary: 20 184 166;
-    --accent: 244 63 94;
+    --primary: 83 185 204;
+    --accent: 202 114 131;
     --background: 248 250 252;
     --foreground: 15 23 42;
   }
@@ -125,6 +125,16 @@
   .link-underline:hover::after {
     @apply w-full;
   }
+}
+
+/* Hero animations — matching reference HTML */
+@keyframes heroFadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes grain {
+  0%  { background-position: 0 0; }
+  33% { background-position: -40px 20px; }
+  66% { background-position: 25px -35px; }
 }
 
 @layer utilities {

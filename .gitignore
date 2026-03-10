@@ -45,6 +45,7 @@ backend/backups/
 
 # Design assets (use CDN/Figma links, not git)
 design/
+!frontend/public/design/
 figma_screenshots/
 
 # Misc

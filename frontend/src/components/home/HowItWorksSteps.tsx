@@ -1,87 +1,114 @@
 "use client";
 
-import { Search, Calendar, Sparkles } from "lucide-react";
-
 const steps = [
   {
     number: "01",
-    icon: Search,
     title: "DISCOVER",
-    description: "Browse our curated selection of Israeli talents. Filter by category, language, and availability to find the perfect match for your event.",
-    color: "bg-teal-50",
-    iconColor: "text-teal-500",
+    description:
+      "Browse our curated selection of Israeli artists. Filter by category, language, and availability to find the perfect match for your community.",
+    titleClass: "bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent",
+    lineColor: "from-primary-400 to-primary-300",
   },
   {
     number: "02",
-    icon: Calendar,
     title: "BOOK",
-    description: "Send a booking request with your event details. Talents respond directly, and Kolamba helps coordinate tours to reduce costs for everyone.",
-    color: "bg-pink-50",
-    iconColor: "text-pink-500",
+    description:
+      "Send a booking request with your event details. Artists respond directly, and Kolamba helps coordinate tours to reduce costs for everyone.",
+    titleClass: "text-slate-800",
+    lineColor: "from-accent-400 to-accent-300",
   },
   {
     number: "03",
-    icon: Sparkles,
     title: "EXPERIENCE",
-    description: "Enjoy an unforgettable cultural event. From concerts to workshops, bring Israeli culture to your community and create lasting connections.",
-    color: "bg-amber-50",
-    iconColor: "text-amber-500",
+    description:
+      "Host an unforgettable cultural event. From concerts to workshops, bring Israeli culture to your community and create lasting connections.",
+    titleClass: "text-accent-500",
+    lineColor: "from-accent-400 to-primary-400",
   },
 ];
 
 export default function HowItWorksSteps() {
   return (
-    <section className="py-20 bg-white">
+    <section
+      className="py-20 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, #CA7283 0%, #a889a0 30%, #8E96AB 50%, #6fa8b8 70%, #53B9CC 100%)" }}
+    >
       <div className="container mx-auto px-4">
-        {/* Section Title */}
-        <div className="text-center mb-16 relative">
-          {/* Decorative flourishes */}
-          <div className="absolute left-1/3 top-0 text-teal-400 opacity-40 text-xl hidden md:block">
-            ~
-          </div>
-          <div className="absolute right-1/3 top-0 text-pink-400 opacity-40 text-xl hidden md:block">
-            ,~
-          </div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 italic tracking-tight">
-            HOW IT WORKS
-          </h2>
+        {/* Section Title — using exact design image */}
+        <div className="mb-16 max-w-4xl mx-auto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/design/heading-howitworks.png" alt="How it Works" className="w-full h-auto" />
         </div>
 
-        {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <div key={index} className="relative">
-                {/* Connector Line (on desktop) */}
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-16 left-1/2 w-full h-0.5 bg-slate-200" />
-                )}
+        {/* Steps — staggered tall cards with dotted connectors */}
+        <div className="max-w-5xl mx-auto relative">
+          {/* Dotted S-curve connectors (desktop only) */}
+          <svg
+            className="absolute inset-0 w-full h-full z-0 hidden md:block pointer-events-none"
+            viewBox="0 0 900 600"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            {/* Curve from card 1 bottom to card 2 top */}
+            <path
+              d="M200,380 C200,500 450,30 450,150"
+              fill="none"
+              stroke="white"
+              strokeWidth="3"
+              strokeDasharray="6,8"
+              opacity="0.6"
+            />
+            {/* Curve from card 2 bottom to card 3 top */}
+            <path
+              d="M450,420 C450,540 700,70 700,190"
+              fill="none"
+              stroke="white"
+              strokeWidth="3"
+              strokeDasharray="6,8"
+              opacity="0.6"
+            />
+          </svg>
 
-                <div className={`${step.color} rounded-3xl p-8 text-center relative z-10`}>
-                  {/* Step Number */}
-                  <div className="text-6xl font-serif font-bold text-slate-200 mb-4">
-                    {step.number}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 relative z-10">
+            {steps.map((step, index) => {
+              // Stagger: first at top, second offset down, third offset more
+              const offsetClass =
+                index === 0
+                  ? "md:mt-0"
+                  : index === 1
+                  ? "md:mt-24"
+                  : "md:mt-48";
+
+              return (
+                <div key={index} className={offsetClass}>
+                  <div
+                    className="bg-white p-8 pt-10 text-center shadow-lg flex flex-col items-center min-h-[320px]"
+                    style={{ borderRadius: "2.5rem 2.5rem 2.5rem 2.5rem" }}
+                  >
+                    {/* Top decorative line */}
+                    <div className={`w-14 h-[2px] bg-gradient-to-r ${step.lineColor} mb-6`} />
+
+                    {/* Step Number */}
+                    <div className="text-3xl font-serif font-bold text-slate-900 italic mb-3">
+                      {step.number}
+                    </div>
+
+                    {/* Bottom decorative line */}
+                    <div className={`w-10 h-[2px] bg-gradient-to-r ${step.lineColor} mb-6`} />
+
+                    {/* Title */}
+                    <h3 className={`text-2xl font-bold ${step.titleClass} mb-4 tracking-wide italic`}>
+                      {step.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-slate-500 leading-relaxed text-sm">
+                      {step.description}
+                    </p>
                   </div>
-
-                  {/* Icon */}
-                  <div className={`w-16 h-16 ${step.color} rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm`}>
-                    <Icon size={28} className={step.iconColor} />
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">
-                    {step.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-slate-600 leading-relaxed">
-                    {step.description}
-                  </p>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

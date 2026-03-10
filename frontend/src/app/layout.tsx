@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Frank_Ruhl_Libre } from "next/font/google";
+import { Inter, Frank_Ruhl_Libre, Poppins, Bungee } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -24,6 +24,22 @@ const frankRuhlLibre = Frank_Ruhl_Libre({
   subsets: ["latin", "hebrew"],
   weight: ["400", "500", "700", "900"],
   variable: "--font-frank-ruhl",
+  display: "swap",
+});
+
+// Section headings font - Poppins
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["600"],
+  variable: "--font-poppins",
+  display: "swap",
+});
+
+// Category buttons font - Bungee (heavy display)
+const bungee = Bungee({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-bungee",
   display: "swap",
 });
 
@@ -84,7 +100,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${frankRuhlLibre.variable}`}>
+    <html lang="en" className={`${inter.variable} ${frankRuhlLibre.variable} ${poppins.variable} ${bungee.variable}`}>
       <body className="font-sans">
         <Providers>
           <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-white focus:text-coral-600">
