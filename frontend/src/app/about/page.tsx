@@ -5,14 +5,7 @@ import { ArrowLeft, Globe, Sparkles, Users, Target, Lightbulb, MapPin, Star, Che
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-slate-50 pt-20">
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-        <div className="container-default py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold">כל העולם במה | All The World&apos;s a Stage</h1>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white pt-20">
       <div className="container-default py-12">
         <Link
           href="/"
@@ -26,7 +19,7 @@ export default function AboutPage() {
           {/* Who We Are */}
           <section className="card p-8 md:p-12">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
                 <Users className="text-white" size={28} />
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Who We Are</h2>
@@ -47,7 +40,7 @@ export default function AboutPage() {
           {/* The Platform */}
           <section className="card p-8 md:p-12">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
                 <Sparkles className="text-white" size={28} />
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">The Platform</h2>
@@ -60,8 +53,8 @@ export default function AboutPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                  <Target className="text-teal-600" size={20} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <Target className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">AI-Powered Matching</h3>
@@ -70,8 +63,8 @@ export default function AboutPage() {
               </div>
 
               <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                  <Users className="text-teal-600" size={20} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <Users className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Hundreds of Talents</h3>
@@ -80,8 +73,8 @@ export default function AboutPage() {
               </div>
 
               <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="text-teal-600" size={20} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">On the Map</h3>
@@ -90,8 +83,8 @@ export default function AboutPage() {
               </div>
 
               <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                  <Star className="text-teal-600" size={20} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <Star className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Verified Reviews</h3>
@@ -100,8 +93,8 @@ export default function AboutPage() {
               </div>
 
               <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="text-teal-600" size={20} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <Lightbulb className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Personalized Recommendations</h3>
@@ -110,8 +103,8 @@ export default function AboutPage() {
               </div>
 
               <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="text-teal-600" size={20} />
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">Collaborative Booking</h3>
@@ -122,14 +115,14 @@ export default function AboutPage() {
           </section>
 
           {/* Future Vision */}
-          <section className="card p-8 md:p-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+          <section className="card p-8 md:p-12 text-white" style={{ background: "linear-gradient(135deg, #0C1719 0%, #1a2e35 40%, #2a1f24 70%, #0C1719 100%)" }}>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
                 <Globe className="text-white" size={28} />
               </div>
               <h2 className="text-2xl md:text-3xl font-bold">Future Vision</h2>
             </div>
-            <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-teal-400 rounded-full mb-6" />
+            <div className="h-1 w-24 bg-gradient-to-r from-accent-400 to-primary-400 rounded-full mb-6" />
             <p className="text-slate-300 leading-relaxed text-lg mb-4">
               Following our initial US operations, we plan to expand to encompass global Jewish communities.
               Every talent who travels abroad returns home enriched by the diversity of Jewish life, becoming
@@ -146,7 +139,7 @@ export default function AboutPage() {
           {/* The Team */}
           <section className="card p-8 md:p-12">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-500 to-primary-500 flex items-center justify-center">
                 <Users className="text-white" size={28} />
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-slate-900">The Team</h2>
@@ -177,7 +170,7 @@ export default function AboutPage() {
                   <img
                     src="/team/avi-luvchik.jpeg"
                     alt="Avi Luvchik"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover grayscale"
                   />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 mb-1">Avi Luvchik</h3>
