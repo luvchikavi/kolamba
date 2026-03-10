@@ -9,7 +9,7 @@ import CTASection from "@/components/home/CTASection";
 const HeroSection = dynamic(() => import("@/components/home/HeroSection"), {
   ssr: false,
   loading: () => (
-    <section className="h-screen" style={{ backgroundColor: "#0C1719" }} />
+    <section className="h-[67vh]" style={{ backgroundColor: "#0C1719" }} />
   ),
 });
 

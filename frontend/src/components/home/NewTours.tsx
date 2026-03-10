@@ -96,7 +96,7 @@ export default function NewTours() {
         {/* Section Title */}
         <div className="flex items-center gap-4 mb-12 max-w-4xl mx-auto">
           <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500" />
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading font-semibold text-slate-900 tracking-tight whitespace-nowrap">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-slate-900 whitespace-nowrap">
             Upcoming Tours
           </h2>
           <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500" />

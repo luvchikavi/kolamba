@@ -47,10 +47,12 @@ export default function CTASection() {
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Title */}
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-heading font-semibold text-white tracking-tight">
-            Contact us
+        <div className="flex items-center gap-4 mb-12 max-w-4xl mx-auto">
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500 opacity-50" />
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-white whitespace-nowrap">
+            Contact Us
           </h2>
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500 opacity-50" />
         </div>
 
         {/* Form in rounded container */}

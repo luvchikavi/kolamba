@@ -32,10 +32,13 @@ export default function HowItWorks() {
   return (
     <section className="py-20 bg-slate-50">
       <div className="container mx-auto px-4 max-w-4xl">
-        {/* Section Title — using exact design image */}
-        <div className="mb-12">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/design/heading-qa.png" alt="Common Q&A" className="w-full h-auto" />
+        {/* Section Title */}
+        <div className="flex items-center gap-4 mb-12">
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500" />
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-slate-900 whitespace-nowrap">
+            {"Common Q&A"}
+          </h2>
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500" />
         </div>
 
         {/* FAQ Accordion */}

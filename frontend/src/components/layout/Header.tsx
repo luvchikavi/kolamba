@@ -21,6 +21,9 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   // Don't render header on dashboard pages (they have their own headers)
   const isDashboard = pathname?.startsWith("/dashboard");
@@ -103,6 +106,11 @@ export default function Header() {
     return null;
   }
 
+  // Prevent hydration mismatch — render nothing until mounted on client
+  if (!mounted) {
+    return <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4" />;
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
       {/* Floating pill header */}
@@ -119,7 +127,8 @@ export default function Header() {
             href="/"
             className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"
           >
-            <span className="text-sm uppercase tracking-wide font-bold">KOLAMBA</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/kolamba_logo_header.png" alt="Kolamba" className="h-8" />
           </Link>
 
           {/* Center: Navigation Links */}

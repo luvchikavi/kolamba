@@ -81,14 +81,21 @@ export default function ArtistCard({
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-teal-50">
           {hasImage ? (
-            <Image
-              src={image}
-              alt={name}
-              fill
-              unoptimized={isExternal}
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={() => setImgError(true)}
-            />
+            <>
+              <Image
+                src={image}
+                alt={name}
+                fill
+                unoptimized={isExternal}
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={() => setImgError(true)}
+              />
+              {/* Spectrum color overlay */}
+              <div
+                className="absolute inset-0 mix-blend-color opacity-40 pointer-events-none"
+                style={{ background: "linear-gradient(135deg, #CA7283 0%, #8E96AB 50%, #53B9CC 100%)" }}
+              />
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-6xl font-serif font-bold text-pink-300/60">

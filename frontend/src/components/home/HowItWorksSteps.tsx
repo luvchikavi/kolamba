@@ -14,7 +14,7 @@ const steps = [
     title: "BOOK",
     description:
       "Send a booking request with your event details. Artists respond directly, and Kolamba helps coordinate tours to reduce costs for everyone.",
-    titleClass: "text-slate-800",
+    titleClass: "bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent",
     lineColor: "from-accent-400 to-accent-300",
   },
   {
@@ -22,7 +22,7 @@ const steps = [
     title: "EXPERIENCE",
     description:
       "Host an unforgettable cultural event. From concerts to workshops, bring Israeli culture to your community and create lasting connections.",
-    titleClass: "text-accent-500",
+    titleClass: "bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent",
     lineColor: "from-accent-400 to-primary-400",
   },
 ];
@@ -34,10 +34,13 @@ export default function HowItWorksSteps() {
       style={{ background: "linear-gradient(135deg, #CA7283 0%, #a889a0 30%, #8E96AB 50%, #6fa8b8 70%, #53B9CC 100%)" }}
     >
       <div className="container mx-auto px-4">
-        {/* Section Title — using exact design image */}
-        <div className="mb-16 max-w-4xl mx-auto">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/design/heading-howitworks.png" alt="How it Works" className="w-full h-auto" />
+        {/* Section Title */}
+        <div className="flex items-center gap-4 mb-16 max-w-4xl mx-auto">
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500" />
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-white whitespace-nowrap">
+            How it Works
+          </h2>
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500" />
         </div>
 
         {/* Steps — staggered tall cards with dotted connectors */}
