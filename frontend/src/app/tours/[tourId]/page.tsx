@@ -301,7 +301,7 @@ export default function PublicTourDetailPage() {
                 <CheckCircle size={18} />
                 Join Request Sent
               </button>
-            ) : communityId ? (
+            ) : (
               <button
                 onClick={handleJoinRequest}
                 disabled={isJoining}
@@ -310,14 +310,6 @@ export default function PublicTourDetailPage() {
                 <Music size={18} />
                 {isJoining ? "Sending Request..." : "Request to Join Tour"}
               </button>
-            ) : (
-              <Link
-                href={`/booking/${tour.artist_id}?tour=${tour.id}`}
-                className="btn-primary"
-              >
-                <Music size={18} />
-                Book This Tour
-              </Link>
             )}
             <Link
               href={`/talents/${tour.artist_id}`}
