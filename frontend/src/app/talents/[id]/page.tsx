@@ -68,6 +68,7 @@ interface UserInfo {
 
 interface TourInfo {
   id: number;
+  artist_id: number;
   name: string;
   region: string;
   start_date: string | null;
@@ -155,7 +156,10 @@ function ArtistDetailContent({ params }: { params: { id: string } }) {
           const res = await fetch(`${API_URL}/tours/${tourId}`);
           if (res.ok) {
             const data = await res.json();
-            setTourInfo(data);
+            // Only show tour if it belongs to this artist
+            if (data.artist_id === Number(params.id)) {
+              setTourInfo(data);
+            }
           }
         } catch {
           // Silent fail

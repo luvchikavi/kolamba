@@ -117,7 +117,7 @@ export default function Header() {
       <div
         className={`transition-all duration-300 ${
           isScrolled
-            ? "bg-white shadow-lg w-full max-w-none rounded-none -mt-4 pt-4"
+            ? "bg-white shadow-lg w-full max-w-none rounded-none -mt-4 pt-4 px-2 sm:px-0"
             : "bg-white shadow-xl rounded-full max-w-xl"
         }`}
       >
@@ -131,8 +131,8 @@ export default function Header() {
               <img src="/kolamba_logo_header.png" alt="Kolamba" className="h-8" />
           </Link>
 
-          {/* Center: Navigation Links */}
-          <div className="flex items-center gap-4">
+          {/* Center: Navigation Links - hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-4">
             <Link
               href="/search"
               className="flex items-center gap-2 text-slate-700 hover:text-slate-900 font-medium transition-colors"

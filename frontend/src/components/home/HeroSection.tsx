@@ -139,13 +139,13 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/register/host"
-            className="px-8 py-3.5 bg-white text-black rounded-full font-bold hover:bg-gray-100 transition-all duration-200 min-w-[220px] text-center uppercase tracking-wider text-sm"
+            className="px-8 py-3.5 bg-white text-black rounded-full font-bold hover:bg-gray-100 transition-all duration-200 w-full sm:w-auto sm:min-w-[220px] text-center uppercase tracking-wider text-sm"
           >
             Host Sign Up
           </Link>
           <Link
             href="/register/talent"
-            className="px-8 py-3.5 bg-black text-white rounded-full font-bold hover:bg-gray-900 transition-all duration-200 min-w-[220px] text-center uppercase tracking-wider text-sm"
+            className="px-8 py-3.5 bg-black text-white rounded-full font-bold hover:bg-gray-900 transition-all duration-200 w-full sm:w-auto sm:min-w-[220px] text-center uppercase tracking-wider text-sm"
           >
             Talent Sign Up
           </Link>

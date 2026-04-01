@@ -91,16 +91,8 @@ export default function PublicTourDetailPage() {
       })
         .then((res) => (res.ok ? res.json() : null))
         .then((user) => {
-          if (user?.role === "community") {
-            // Get community profile
-            fetch(`${API_URL}/communities/me`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-              .then((res) => (res.ok ? res.json() : null))
-              .then((community) => {
-                if (community?.id) setCommunityId(community.id);
-              })
-              .catch(() => {});
+          if (user?.role === "community" && user?.community_id) {
+            setCommunityId(user.community_id);
           }
         })
         .catch(() => {});

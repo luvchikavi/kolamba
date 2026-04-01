@@ -49,7 +49,7 @@ export default function CTASection() {
         {/* Section Title */}
         <div className="flex items-center gap-4 mb-12 max-w-4xl mx-auto">
           <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500 opacity-50" />
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-white whitespace-nowrap">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-white sm:whitespace-nowrap uppercase">
             Contact Us
           </h2>
           <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500 opacity-50" />
@@ -57,7 +57,7 @@ export default function CTASection() {
 
         {/* Form in rounded container */}
         <div className="max-w-3xl mx-auto">
-          <div className="border border-white/20 rounded-[3rem] p-8 md:p-12">
+          <div className="border border-white/20 rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-5">

@@ -35,7 +35,7 @@ export default function HowItWorks() {
         {/* Section Title */}
         <div className="flex items-center gap-4 mb-12">
           <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500" />
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-slate-900 whitespace-nowrap">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-slate-900 sm:whitespace-nowrap uppercase">
             {"Common Q&A"}
           </h2>
           <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500" />

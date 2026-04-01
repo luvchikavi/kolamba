@@ -80,8 +80,8 @@ export default function FeaturedArtists() {
         {/* Section Title */}
         <div className="flex items-center gap-4 mb-12 max-w-4xl mx-auto">
           <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500" />
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-slate-900 whitespace-nowrap">
-            New Talents
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-slate-900 sm:whitespace-nowrap uppercase">
+            Featured Talents
           </h2>
           <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500" />
         </div>
@@ -111,7 +111,7 @@ export default function FeaturedArtists() {
             {artists.map((artist) => (
               <div
                 key={artist.id}
-                className="flex-shrink-0 w-72 snap-start"
+                className="flex-shrink-0 w-64 sm:w-72 snap-start"
               >
                 <ArtistCard
                   id={artist.id}

@@ -27,10 +27,10 @@ import { formatBudgetRange } from "@/lib/utils";
 interface TourSuggestion {
   region: string;
   communities: { id: number; name: string; location: string }[];
-  suggested_start: string;
-  suggested_end: string;
-  total_distance_km: number;
-  estimated_budget: number;
+  suggested_start?: string | null;
+  suggested_end?: string | null;
+  total_distance_km?: number | null;
+  estimated_budget?: number | null;
 }
 
 interface Tour {
@@ -164,8 +164,9 @@ function TourSuggestionCard({
           <div>
             <p className="text-xs text-slate-500">Suggested Dates</p>
             <p className="text-sm font-medium">
-              {new Date(suggestion.suggested_start).toLocaleDateString()} -{" "}
-              {new Date(suggestion.suggested_end).toLocaleDateString()}
+              {suggestion.suggested_start && suggestion.suggested_end
+                ? `${new Date(suggestion.suggested_start).toLocaleDateString()} - ${new Date(suggestion.suggested_end).toLocaleDateString()}`
+                : "Dates TBD"}
             </p>
           </div>
         </div>
@@ -173,7 +174,11 @@ function TourSuggestionCard({
           <DollarSign size={16} className="text-slate-400" />
           <div>
             <p className="text-xs text-slate-500">Est. Budget</p>
-            <p className="text-sm font-medium">${suggestion.estimated_budget.toLocaleString()}</p>
+            <p className="text-sm font-medium">
+              {suggestion.estimated_budget != null
+                ? `$${suggestion.estimated_budget.toLocaleString()}`
+                : "TBD"}
+            </p>
           </div>
         </div>
       </div>
@@ -193,10 +198,12 @@ function TourCard({
   tour,
   onEdit,
   onDelete,
+  onApprove,
 }: {
   tour: Tour;
   onEdit: (tour: Tour) => void;
   onDelete: (tourId: number) => void;
+  onApprove: (tourId: number) => void;
 }) {
   const confirmedCount = tour.confirmed_shows ?? tour.bookings?.length ?? 0;
 
@@ -255,10 +262,14 @@ function TourCard({
           View Details
           <ChevronRight size={16} className="ml-1" />
         </Link>
-        {tour.status === "pending" && confirmedCount > 0 && (
-          <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-            Ready to approve
-          </span>
+        {tour.status === "pending" && (
+          <button
+            onClick={() => onApprove(tour.id)}
+            className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-full transition-colors"
+          >
+            <CheckCircle size={14} />
+            Approve Tour
+          </button>
         )}
       </div>
     </div>
@@ -1447,15 +1458,30 @@ export default function ArtistDashboardPage() {
   const handleLinkBookingToTour = async (bookingId: number, tourId: number | null) => {
     try {
       const token = localStorage.getItem("access_token");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
-      const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ tour_id: tourId }),
-      });
+      let response: Response;
+      if (tourId) {
+        // Use the proper tour endpoint that creates TourStop and links correctly
+        response = await fetch(`${API_URL}/tours/${tourId}/bookings/${bookingId}`, {
+          method: "POST",
+          headers,
+        });
+      } else {
+        // Unlink: find current tour and remove booking from it
+        const booking = [...pendingBookings, ...approvedBookings].find(b => b.id === bookingId);
+        if (booking?.tour_id) {
+          response = await fetch(`${API_URL}/tours/${booking.tour_id}/bookings/${bookingId}`, {
+            method: "DELETE",
+            headers,
+          });
+        } else {
+          return;
+        }
+      }
 
       if (response.ok) {
         const updateBooking = (list: Booking[]) =>
@@ -1523,6 +1549,27 @@ export default function ArtistDashboardPage() {
       console.error("Failed to create tour:", error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleApproveTour = async (tourId: number) => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(`${API_URL}/tours/${tourId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "approved" }),
+      });
+
+      if (response.ok) {
+        setTours(tours.map((t) => (t.id === tourId ? { ...t, status: "approved" } : t)));
+      }
+    } catch (error) {
+      console.error("Failed to approve tour:", error);
     }
   };
 
@@ -1872,6 +1919,7 @@ export default function ArtistDashboardPage() {
                     setIsEditTourModalOpen(true);
                   }}
                   onDelete={handleDeleteTour}
+                  onApprove={handleApproveTour}
                 />
               ))
             )}

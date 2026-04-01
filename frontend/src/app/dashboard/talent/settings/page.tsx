@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2, CheckCircle, X, Music } from "lucide-react";
+import { ArrowLeft, Save, Loader2, CheckCircle, X, Music, Upload, Image, Video, Plus, Trash2 } from "lucide-react";
 import { API_URL } from "@/lib/api";
 
 const categories = [
@@ -36,6 +36,9 @@ interface ArtistProfile {
   bio_he: string | null;
   bio_en: string | null;
   profile_image: string | null;
+  portfolio_images: string[];
+  video_urls: string[];
+  spotify_links: string[];
   price_single: number | null;
   price_tour: number | null;
   languages: string[];
@@ -71,7 +74,16 @@ export default function ArtistSettingsPage() {
     languages: [] as string[],
     performance_types: [] as string[],
     category_ids: [] as number[],
+    profile_image: "",
+    portfolio_images: [] as string[],
+    video_urls: [] as string[],
+    spotify_links: [] as string[],
   });
+
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+  const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const portfolioInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -125,6 +137,10 @@ export default function ArtistSettingsPage() {
         languages: profile.languages || [],
         performance_types: profile.performance_types || [],
         category_ids: profile.categories.map((c) => c.id),
+        profile_image: profile.profile_image || "",
+        portfolio_images: profile.portfolio_images || [],
+        video_urls: profile.video_urls || [],
+        spotify_links: profile.spotify_links || [],
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile");
@@ -160,6 +176,10 @@ export default function ArtistSettingsPage() {
         languages: formData.languages,
         performance_types: formData.performance_types,
         category_ids: formData.category_ids,
+        profile_image: formData.profile_image || null,
+        portfolio_images: formData.portfolio_images.filter(url => url.trim() !== ""),
+        video_urls: formData.video_urls.filter(url => url.trim() !== ""),
+        spotify_links: formData.spotify_links.filter(url => url.trim() !== ""),
       };
 
       const response = await fetch(
@@ -227,6 +247,56 @@ export default function ArtistSettingsPage() {
         ...formData,
         category_ids: [...formData.category_ids, catId],
       });
+    }
+  };
+
+  const handleProfilePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) { setError("Please upload a JPG, PNG, WebP, or GIF image"); return; }
+    if (file.size > 10 * 1024 * 1024) { setError("File too large. Maximum size is 10MB"); return; }
+    setIsUploadingProfile(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const response = await fetch(`${API_URL}/uploads/public/image`, { method: "POST", body: fd });
+      if (!response.ok) { const data = await response.json(); throw new Error(data.detail || "Upload failed"); }
+      const data = await response.json();
+      setFormData({ ...formData, profile_image: data.url });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setIsUploadingProfile(false);
+      if (profileInputRef.current) profileInputRef.current.value = "";
+    }
+  };
+
+  const handlePortfolioImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const validFiles = Array.from(files).filter(f => allowedTypes.includes(f.type) && f.size <= 10 * 1024 * 1024);
+    if (validFiles.length === 0) { setError("No valid images selected"); return; }
+    setIsUploadingPortfolio(true);
+    setError(null);
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of validFiles) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const response = await fetch(`${API_URL}/uploads/public/image`, { method: "POST", body: fd });
+        if (response.ok) { const data = await response.json(); uploadedUrls.push(data.url); }
+      }
+      if (uploadedUrls.length > 0) {
+        setFormData({ ...formData, portfolio_images: [...formData.portfolio_images, ...uploadedUrls] });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setIsUploadingPortfolio(false);
+      if (portfolioInputRef.current) portfolioInputRef.current.value = "";
     }
   };
 
@@ -539,6 +609,221 @@ export default function ArtistSettingsPage() {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Media Section - Full Width */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+          {/* Profile Photo */}
+          <div className="card p-6">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Profile Photo</h2>
+            <p className="text-sm text-slate-500 mb-3">
+              Upload a professional photo (JPG, PNG, max 10MB)
+            </p>
+            {formData.profile_image ? (
+              <div className="flex items-center gap-4">
+                <img
+                  src={formData.profile_image}
+                  alt="Profile preview"
+                  className="w-24 h-24 object-cover rounded-xl border-2 border-slate-200"
+                />
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (profileInputRef.current) profileInputRef.current.click();
+                    }}
+                    className="px-4 py-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors inline-flex items-center gap-2 text-sm"
+                  >
+                    <Upload size={16} />
+                    Change Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, profile_image: "" })}
+                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-flex items-center gap-2 text-sm"
+                  >
+                    <Trash2 size={16} />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="settings-profile-upload"
+                  className={`flex items-center gap-2 px-4 py-3 border-2 border-primary-300 bg-primary-50 text-primary-700 rounded-lg cursor-pointer hover:bg-primary-100 transition-colors ${
+                    isUploadingProfile ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {isUploadingProfile ? (
+                    <><Loader2 size={18} className="animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Upload size={18} /> Upload Photo</>
+                  )}
+                </label>
+              </div>
+            )}
+            <input
+              ref={profileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleProfilePhotoUpload}
+              className="hidden"
+              id="settings-profile-upload"
+            />
+          </div>
+
+          {/* Portfolio Images */}
+          <div className="card p-6">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Image size={20} />
+              Portfolio Images
+            </h2>
+            {formData.portfolio_images.length > 0 && (
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {formData.portfolio_images.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={url}
+                      alt={`Portfolio ${index + 1}`}
+                      className="w-full aspect-square object-cover rounded-lg border-2 border-slate-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          portfolio_images: formData.portfolio_images.filter((_, i) => i !== index),
+                        });
+                      }}
+                      className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <label
+                htmlFor="settings-portfolio-upload"
+                className={`flex items-center gap-2 px-4 py-3 border-2 border-primary-300 bg-primary-50 text-primary-700 rounded-lg cursor-pointer hover:bg-primary-100 transition-colors ${
+                  isUploadingPortfolio ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {isUploadingPortfolio ? (
+                  <><Loader2 size={18} className="animate-spin" /> Uploading...</>
+                ) : (
+                  <><Upload size={18} /> Upload Images</>
+                )}
+              </label>
+            </div>
+            <input
+              ref={portfolioInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              onChange={handlePortfolioImageUpload}
+              className="hidden"
+              id="settings-portfolio-upload"
+            />
+          </div>
+
+          {/* Video Links */}
+          <div className="card p-6">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Video size={20} />
+              Video Clips
+            </h2>
+            <p className="text-sm text-slate-500 mb-3">
+              Add YouTube or Vimeo links to showcase your performances
+            </p>
+            <div className="space-y-2">
+              {formData.video_urls.map((url, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => {
+                      const newUrls = [...formData.video_urls];
+                      newUrls[index] = e.target.value;
+                      setFormData({ ...formData, video_urls: newUrls });
+                    }}
+                    placeholder="https://youtube.com/watch?v=..."
+                    className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        video_urls: formData.video_urls.filter((_, i) => i !== index),
+                      });
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, video_urls: [...formData.video_urls, ""] })}
+                className="px-4 py-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors inline-flex items-center gap-2"
+              >
+                <Plus size={18} />
+                Add Video Link
+              </button>
+            </div>
+          </div>
+
+          {/* Spotify Links */}
+          <div className="card p-6">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Music size={20} />
+              Spotify Links
+            </h2>
+            <p className="text-sm text-slate-500 mb-3">
+              Add links to your Spotify tracks or albums
+            </p>
+            <div className="space-y-2">
+              {formData.spotify_links.map((url, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => {
+                      const newUrls = [...formData.spotify_links];
+                      newUrls[index] = e.target.value;
+                      setFormData({ ...formData, spotify_links: newUrls });
+                    }}
+                    placeholder="https://open.spotify.com/..."
+                    className="flex-1 px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        spotify_links: formData.spotify_links.filter((_, i) => i !== index),
+                      });
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, spotify_links: [...formData.spotify_links, ""] })}
+                className="px-4 py-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors inline-flex items-center gap-2"
+              >
+                <Plus size={18} />
+                Add Spotify Link
+              </button>
             </div>
           </div>
         </div>

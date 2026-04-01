@@ -37,7 +37,7 @@ export default function HowItWorksSteps() {
         {/* Section Title */}
         <div className="flex items-center gap-4 mb-16 max-w-4xl mx-auto">
           <div className="flex-1 h-[2px] bg-gradient-to-r from-accent-500 to-primary-500" />
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-white whitespace-nowrap">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold italic text-white sm:whitespace-nowrap uppercase">
             How it Works
           </h2>
           <div className="flex-1 h-[2px] bg-gradient-to-r from-primary-500 to-accent-500" />
@@ -84,7 +84,7 @@ export default function HowItWorksSteps() {
               return (
                 <div key={index} className={offsetClass}>
                   <div
-                    className="bg-white p-8 pt-10 text-center shadow-lg flex flex-col items-center min-h-[320px]"
+                    className="bg-white p-6 sm:p-8 pt-8 sm:pt-10 text-center shadow-lg flex flex-col items-center md:min-h-[320px]"
                     style={{ borderRadius: "2.5rem 2.5rem 2.5rem 2.5rem" }}
                   >
                     {/* Top decorative line */}
