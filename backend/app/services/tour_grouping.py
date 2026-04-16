@@ -514,7 +514,7 @@ async def find_nearby_tours(
         select(Tour)
         .options(
             selectinload(Tour.bookings).selectinload(Booking.community),
-            selectinload(Tour.artist),
+            selectinload(Tour.artist).selectinload(Artist.categories),
         )
         .where(Tour.status.in_(status_filter))
     )

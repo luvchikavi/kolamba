@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError, jwt
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 
 from app.database import get_db
@@ -39,6 +39,13 @@ class RegisterRequest(BaseModel):
     password: str
     name: str
     role: str  # 'artist' or 'community'
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
 
 
 class ArtistRegisterRequest(BaseModel):
@@ -396,6 +403,12 @@ async def refresh_token(
     """Refresh access token using refresh token."""
     try:
         payload = jwt.decode(body.refresh_token, settings.secret_key, algorithms=[settings.algorithm])
+        # Verify this is actually a refresh token (not an access or reset token)
+        if payload.get("purpose") != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+            )
         user_id_str = payload.get("sub")
         if user_id_str is None:
             raise HTTPException(
@@ -471,6 +484,13 @@ class ResetPasswordRequest(BaseModel):
     """Request body for resetting password."""
     token: str
     new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        return v
 
 
 @router.post("/reset-password")

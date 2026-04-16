@@ -12,6 +12,10 @@ from alembic import context
 # Import models and Base
 from app.database import Base
 from app.models import User, Artist, Community, Category, ArtistCategory, Booking, Tour, TourStop
+from app.models.artist_tour_date import ArtistTourDate
+from app.models.conversation import Conversation, Message
+from app.models.tour import TourJoinRequest
+from app.models.notification import Notification
 from app.config import get_settings
 
 # Alembic Config object

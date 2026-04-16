@@ -635,7 +635,7 @@ async def get_community(community_id: int, db: AsyncSession = Depends(get_db)):
     return community
 
 
-@router.post("", response_model=CommunityResponse)
+@router.post("")
 async def create_community(
     request: CommunityRegisterRequest,
     db: AsyncSession = Depends(get_db),
@@ -700,7 +700,17 @@ async def create_community(
     await db.commit()
     await db.refresh(community)
 
-    return community
+    # Generate tokens so the user is auto-logged-in after registration
+    from app.utils.security import create_access_token, create_refresh_token
+    access_token = create_access_token(data={"sub": user.id, "email": user.email, "role": user.role})
+    refresh_token = create_refresh_token(data={"sub": user.id})
+
+    return {
+        "community": community,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
 
 
 @router.put("/{community_id}", response_model=CommunityResponse)

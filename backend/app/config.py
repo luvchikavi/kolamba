@@ -73,4 +73,11 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    # Fail fast if using the default secret key in production
+    if s.env != "development" and s.secret_key == "your-secret-key-change-in-production":
+        raise RuntimeError(
+            "CRITICAL: SECRET_KEY is set to the insecure default. "
+            "Set the SECRET_KEY environment variable before deploying."
+        )
+    return s

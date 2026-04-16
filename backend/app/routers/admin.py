@@ -784,9 +784,12 @@ async def seed_superusers(
     if settings.env != "development":
         raise HTTPException(status_code=403, detail="Seed endpoints are only available in development environment")
 
+    import os
+    import secrets
+    seed_password = os.environ.get("SEED_SUPERUSER_PASSWORD", secrets.token_urlsafe(16))
     superusers_data = [
-        {"email": "avi@kolamba.org", "name": "Avi Luvchik", "password": "Kolamba!26"},
-        {"email": "avital@kolamba.org", "name": "Avital", "password": "Kolamba!26"},
+        {"email": "avi@kolamba.org", "name": "Avi Luvchik", "password": seed_password},
+        {"email": "avital@kolamba.org", "name": "Avital", "password": seed_password},
     ]
 
     created = []
@@ -875,7 +878,7 @@ async def update_booking_status(
     db: AsyncSession = Depends(get_db),
 ):
     """Update booking status."""
-    valid_statuses = ["pending", "confirmed", "rejected", "cancelled"]
+    valid_statuses = ["pending", "quote_sent", "approved", "declined", "rejected", "completed", "cancelled"]
     if status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
 

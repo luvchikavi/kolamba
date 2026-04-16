@@ -19,16 +19,16 @@
 
 | ID | Issue | Status | Fixed In | Notes |
 |----|-------|--------|----------|-------|
-| H1 | Insecure default secret key | :white_circle: Pending | | |
-| H2 | Refresh/access token indistinguishable | :white_circle: Pending | | |
-| H3 | No password complexity | :white_circle: Pending | | |
-| H4 | Public upload no rate limit | :white_circle: Pending | | |
-| H5 | Upload delete path traversal | :white_circle: Pending | | |
-| H6 | Lazy loading crash in tour_grouping | :white_circle: Pending | | |
-| H7 | Alembic missing 5 model imports | :white_circle: Pending | | |
-| H8 | Host registration no tokens returned | :white_circle: Pending | | |
-| H9 | Hardcoded seed passwords | :white_circle: Pending | | |
-| H10 | Admin booking status enum mismatch | :white_circle: Pending | | |
+| H1 | Insecure default secret key | :white_check_mark: Fixed | 2026-04-16 | Startup check fails fast if default key used in non-dev env |
+| H2 | Refresh/access token indistinguishable | :white_check_mark: Fixed | 2026-04-16 | Refresh tokens now have `purpose: "refresh"` claim; refresh endpoint validates it |
+| H3 | No password complexity | :white_check_mark: Fixed | 2026-04-16 | Min 8 chars on registration and password reset |
+| H4 | Public upload no rate limit | :white_check_mark: Fixed | 2026-04-16 | Added 5/minute rate limit to public image upload |
+| H5 | Upload delete path traversal | :white_check_mark: Fixed | 2026-04-16 | Strict prefix check + `..` path traversal block |
+| H6 | Lazy loading crash in tour_grouping | :white_check_mark: Fixed | 2026-04-16 | Added `selectinload(Artist.categories)` to tour query |
+| H7 | Alembic missing 5 model imports | :white_check_mark: Fixed | 2026-04-16 | Added ArtistTourDate, Conversation, Message, TourJoinRequest, Notification |
+| H8 | Host registration no tokens returned | :white_check_mark: Fixed | 2026-04-16 | Registration now returns access_token + refresh_token for auto-login |
+| H9 | Hardcoded seed passwords | :white_check_mark: Fixed | 2026-04-16 | Reads from SEED_SUPERUSER_PASSWORD env var, falls back to random token |
+| H10 | Admin booking status enum mismatch | :white_check_mark: Fixed | 2026-04-16 | Aligned with actual model statuses: pending, quote_sent, approved, declined, rejected, completed, cancelled |
 
 ## Phase 3: Medium Priority (target: next sprint)
 
@@ -68,3 +68,4 @@
 | Date | Commit | Items Fixed |
 |------|--------|-------------|
 | 2026-04-16 | security-hardening | C1, C2, C3, C4, C5 — all critical security issues |
+| 2026-04-16 | high-priority-fixes | H1-H10 — all high priority issues |

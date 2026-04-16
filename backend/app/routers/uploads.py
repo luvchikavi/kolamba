@@ -4,7 +4,8 @@ import logging
 
 import cloudinary
 import cloudinary.uploader
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request, status
+from app.rate_limit import limiter
 from pydantic import BaseModel
 from typing import Optional
 
@@ -214,11 +215,18 @@ async def delete_upload(
             detail="File upload service not configured",
         )
 
-    # Verify the file belongs to this user (check folder structure)
-    if f"kolamba/artists/{current_user.id}" not in public_id:
+    # Verify the file belongs to this user (strict prefix check, no path traversal)
+    allowed_prefix = f"kolamba/artists/{current_user.id}/"
+    if not public_id.startswith(allowed_prefix) and not public_id.startswith(f"kolamba/artists/{current_user.id}"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only delete your own files",
+        )
+    # Block path traversal attempts
+    if ".." in public_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file path",
         )
 
     try:
@@ -241,7 +249,9 @@ async def upload_status():
 
 
 @router.post("/public/image", response_model=UploadResponse)
+@limiter.limit("5/minute")
 async def upload_image_public(
+    request: Request,
     file: UploadFile = File(...),
 ):
     """Upload a single image for registration (no auth required).
