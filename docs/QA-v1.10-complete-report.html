@@ -70,8 +70,198 @@
 
 <div class="container">
 
+  <!-- ============================================================ -->
+  <!-- ORIGINAL QA DOCUMENT ISSUES -->
+  <!-- ============================================================ -->
+  <h2 style="margin-top:0">Original QA Document Issues (QA Kolamba.docx, 12.4.26)</h2>
+  <p style="color:#64748b; font-size:13px; margin-bottom:16px;">
+    The client submitted 3 issues in the QA document. Below is a detailed breakdown of each issue,
+    what was requested, what was implemented, and exactly where in the code.
+  </p>
+
+  <!-- ISSUE 1 -->
+  <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="background:#dc2626; color:white; padding:2px 10px; border-radius:9999px; font-size:12px; font-weight:700;">Issue 1</span>
+      <strong style="font-size:16px;">Confirmed Shows / Artist Profile Calendar</strong>
+      <span class="badge badge-fixed" style="margin-left:auto;">Fixed</span>
+    </div>
+
+    <h3 style="color:#dc2626; margin-top:0;">Problem (from QA doc)</h3>
+    <ul style="font-size:13px; color:#475569; margin:8px 0 16px 20px;">
+      <li>When a booking is approved, it does NOT appear as a "confirmed show" on the artist's public profile</li>
+      <li>Only manually created <code>ArtistTourDate</code> entries show in the calendar — not real bookings</li>
+      <li>No indication on the artist's profile of active tours or community-booked shows</li>
+      <li>The tour schedule on the profile only shows the rare manually created "confirmed shows", not the full picture (rest days, open slots, etc.)</li>
+      <li>Booking info only visible in private dashboards, not on public profile</li>
+    </ul>
+
+    <h3 style="color:#dc2626; margin-top:0;">Requested Fix (from QA doc)</h3>
+    <ol style="font-size:13px; color:#475569; margin:8px 0 16px 20px;">
+      <li>Understand why approved bookings don't become confirmed shows</li>
+      <li>If an artist has approved bookings (standalone or part of a tour), display them on the profile calendar. For tours — pull full data including rest days, open slots, not just confirmed stops.</li>
+    </ol>
+
+    <h3 style="color:#166534; margin-top:0;">What Was Implemented</h3>
+    <table style="margin:0;">
+      <thead><tr><th>Change</th><th>File</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>New backend endpoint</td>
+          <td><span class="file-path">backend/app/routers/artist_tour_dates.py</span><br>Lines 96–170</td>
+          <td><code>GET /api/talents/{id}/schedule</code> — returns:<br>
+            &bull; Approved standalone bookings (not linked to any tour)<br>
+            &bull; All tour stops from active tours (confirmed, open, rest_day, inquiry)<br>
+            &bull; Active tours summary with name, region, dates, status
+          </td>
+        </tr>
+        <tr>
+          <td>Calendar fetches schedule</td>
+          <td><span class="file-path">frontend/src/components/calendar/TourDatesCalendar.tsx</span><br>Lines 83–97</td>
+          <td>Component now fetches BOTH <code>/tour-dates</code> (artist announcements) AND <code>/schedule</code> (real bookings + tour stops). Previously only fetched tour-dates.</td>
+        </tr>
+        <tr>
+          <td>Color-coded calendar cells</td>
+          <td><span class="file-path">frontend/src/components/calendar/TourDatesCalendar.tsx</span></td>
+          <td>
+            &bull; <span style="background:#dcfce7; padding:1px 8px; border-radius:4px; font-size:12px;">Green</span> = Confirmed/Approved shows<br>
+            &bull; <span style="background:#fef3c7; padding:1px 8px; border-radius:4px; font-size:12px;">Amber</span> = Open slots<br>
+            &bull; <span style="background:#f1f5f9; padding:1px 8px; border-radius:4px; font-size:12px;">Gray</span> = Rest days<br>
+            &bull; <span style="background:#dbeafe; padding:1px 8px; border-radius:4px; font-size:12px;">Blue</span> = Inquiries<br>
+            &bull; <span style="background:#ede9fe; padding:1px 8px; border-radius:4px; font-size:12px;">Purple</span> = Tour date announcements
+          </td>
+        </tr>
+        <tr>
+          <td>Active tours shown above calendar</td>
+          <td><span class="file-path">frontend/src/components/calendar/TourDatesCalendar.tsx</span></td>
+          <td>Clickable links showing tour name, region, date range, and status badge (Active/Open). Links to tour detail page.</td>
+        </tr>
+        <tr>
+          <td>Legend below calendar</td>
+          <td><span class="file-path">frontend/src/components/calendar/TourDatesCalendar.tsx</span></td>
+          <td>Visual legend explaining color coding for Confirmed, Open Slot, Tour Dates, Rest Day.</td>
+        </tr>
+        <tr>
+          <td>Click-to-detail</td>
+          <td><span class="file-path">frontend/src/components/calendar/TourDatesCalendar.tsx</span></td>
+          <td>Clicking a date shows: location, status badge, date, and tour name (if part of a tour).</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ISSUE 2 -->
+  <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="background:#ea580c; color:white; padding:2px 10px; border-radius:9999px; font-size:12px; font-weight:700;">Issue 2</span>
+      <strong style="font-size:16px;">Join Tour Flow / הצטרפות לטור</strong>
+      <span class="badge badge-fixed" style="margin-left:auto;">Fixed</span>
+    </div>
+
+    <h3 style="color:#ea580c; margin-top:0;">Problem (from QA doc)</h3>
+    <ul style="font-size:13px; color:#475569; margin:8px 0 16px 20px;">
+      <li>Clicking "Request to Join Tour" shows a success message ("request sent to artist")</li>
+      <li>But in practice the artist never receives any notification — the request is silently created in the database</li>
+    </ul>
+
+    <h3 style="color:#ea580c; margin-top:0;">Requested Fix (from QA doc — 3 progressive options)</h3>
+    <ol type="A" style="font-size:13px; color:#475569; margin:8px 0 16px 20px;">
+      <li><strong>Ideal:</strong> Button opens the booking flow. Date field shows the tour schedule for picking dates from it.</li>
+      <li><strong>Medium:</strong> Booking flow opens with date picker constrained to the tour's date range only.</li>
+      <li><strong>Simplest:</strong> Tour date range shown as informational text, calendar opens to the tour's start month.</li>
+      <li style="list-style-type:none; margin-top:8px;"><em>In all cases:</em> The booking should automatically be linked to the tour.</li>
+    </ol>
+
+    <h3 style="color:#166534; margin-top:0;">What Was Implemented (Options B + C)</h3>
+    <table style="margin:0;">
+      <thead><tr><th>Change</th><th>File</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Button redirects to booking</td>
+          <td><span class="file-path">frontend/src/app/tours/[tourId]/page.tsx</span><br>Lines 88–93, 249–253</td>
+          <td>"Request to Join Tour" replaced with <strong>"Book a Show on This Tour"</strong>. Clicking redirects to <code>/booking/{artistId}?tourId=X&tourStart=Y&tourEnd=Z</code> instead of silently creating a join request.</td>
+        </tr>
+        <tr>
+          <td>Booking page reads tour params</td>
+          <td><span class="file-path">frontend/src/app/booking/[artistId]/page.tsx</span><br>Lines 164–166</td>
+          <td>Reads <code>tourId</code>, <code>tourStart</code>, <code>tourEnd</code> from URL query params.</td>
+        </tr>
+        <tr>
+          <td>Tour date range info banner (Option C)</td>
+          <td><span class="file-path">frontend/src/app/booking/[artistId]/page.tsx</span><br>Lines 589–596</td>
+          <td>Blue info banner on Step 2 (Select a Date): <em>"This booking is part of a tour (May 10 – May 24, 2026). Please select a date within the tour period."</em></td>
+        </tr>
+        <tr>
+          <td>Date picker constrained (Option B)</td>
+          <td><span class="file-path">frontend/src/app/booking/[artistId]/page.tsx</span><br>Lines 623–624, 639–640, 653–654</td>
+          <td>Date picker <code>min</code> set to <code>tourStart</code>, <code>max</code> set to <code>tourEnd</code>. Users can only select dates within the tour period. Works for both single date and date range modes.</td>
+        </tr>
+        <tr>
+          <td>Booking auto-linked to tour</td>
+          <td><span class="file-path">frontend/src/app/booking/[artistId]/page.tsx</span><br>Line 425</td>
+          <td><code>tour_id</code> is sent in the booking creation payload.</td>
+        </tr>
+        <tr>
+          <td>Backend validates tour_id</td>
+          <td><span class="file-path">backend/app/routers/bookings.py</span><br>Lines 95–104</td>
+          <td>Validates tour exists and belongs to the correct artist. Sets <code>tour_id</code> on the created Booking record.</td>
+        </tr>
+        <tr>
+          <td>Tour info in review step</td>
+          <td><span class="file-path">frontend/src/app/booking/[artistId]/page.tsx</span><br>Lines 739–742</td>
+          <td>Step 4 (Review & Submit) shows: <em>"This booking will be linked to a tour"</em></td>
+        </tr>
+        <tr>
+          <td>"Book Now" on tours list</td>
+          <td><span class="file-path">frontend/src/app/tours/page.tsx</span><br>Line 223</td>
+          <td>"Book Now" button on the tours listing page also passes <code>tourId</code>, <code>tourStart</code>, <code>tourEnd</code> params.</td>
+        </tr>
+        <tr>
+          <td>"Book for This Tour" on artist profile</td>
+          <td><span class="file-path">frontend/src/app/talents/[id]/page.tsx</span><br>Line 267</td>
+          <td>Tour banner link on artist profile also passes all tour params.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ISSUE 3 -->
+  <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+      <span style="background:#2563eb; color:white; padding:2px 10px; border-radius:9999px; font-size:12px; font-weight:700;">Issue 3</span>
+      <strong style="font-size:16px;">Hero Background Cut Off / רקע נחתך</strong>
+      <span class="badge badge-fixed" style="margin-left:auto;">Fixed</span>
+    </div>
+
+    <h3 style="color:#2563eb; margin-top:0;">Problem (from QA doc)</h3>
+    <ul style="font-size:13px; color:#475569; margin:8px 0 16px 20px;">
+      <li>The design isn't responsive (acknowledged — skip for now)</li>
+      <li>But the background is cut right at the registration buttons on laptop screens</li>
+      <li>Requested: extend the background by 1–2 cm so it looks good on laptop</li>
+    </ul>
+
+    <h3 style="color:#166534; margin-top:0;">What Was Implemented</h3>
+    <table style="margin:0;">
+      <thead><tr><th>Change</th><th>File</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Hero height increased</td>
+          <td><span class="file-path">frontend/src/components/home/HeroSection.tsx</span><br>Line 93</td>
+          <td>Changed from <code>h-[67vh]</code> to <code>h-[72vh]</code> — adds ~80px on a 1080p screen (~2cm). The animated gradient canvas and grain overlay expand automatically since they use <code>h-full</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr style="border:none; border-top:2px solid #e2e8f0; margin:32px 0;">
+
+  <h2 style="margin-top:0;">Additional Issues Found During Full-Codebase Audit</h2>
+  <p style="color:#64748b; font-size:13px; margin-bottom:16px;">
+    Beyond the 3 issues in the original QA document, a comprehensive audit of every endpoint, page, and data model
+    uncovered 33 additional issues (5 critical, 10 high, 9 medium, 9 low). All were fixed and verified.
+  </p>
+
   <!-- Summary Cards -->
-  <div class="summary-grid">
     <div class="summary-card critical">
       <div class="number">5</div>
       <div class="label">Critical Fixed</div>
@@ -90,7 +280,7 @@
     </div>
     <div class="summary-card total">
       <div class="number">36</div>
-      <div class="label">Total Issues Resolved</div>
+      <div class="label">Additional Audit Issues</div>
     </div>
   </div>
 
