@@ -88,9 +88,12 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     // Use shared promise to prevent concurrent refresh calls
     if (!isRefreshing) {
       isRefreshing = true;
-      refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = refreshAccessToken();
+      // Only clear after all consumers have resolved
+      refreshPromise.finally(() => {
         isRefreshing = false;
-        refreshPromise = null;
+        // Delay nulling so concurrent awaits can still read the resolved value
+        setTimeout(() => { refreshPromise = null; }, 100);
       });
     }
 

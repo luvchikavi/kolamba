@@ -620,7 +620,7 @@ function BookingPageContent() {
                       type="date"
                       value={bookingData.date}
                       onChange={(e) => updateBookingData("date", e.target.value)}
-                      min={tourStart || undefined}
+                      min={tourStart || new Date().toISOString().split("T")[0]}
                       max={tourEnd || undefined}
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
@@ -636,7 +636,7 @@ function BookingPageContent() {
                         type="date"
                         value={bookingData.date}
                         onChange={(e) => updateBookingData("date", e.target.value)}
-                        min={tourStart || undefined}
+                        min={tourStart || new Date().toISOString().split("T")[0]}
                         max={tourEnd || undefined}
                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />

@@ -145,14 +145,14 @@ async def register(
             detail="Role must be 'artist' or 'community'",
         )
 
-    # Check if email already exists
+    # Check if email already exists (generic message to prevent enumeration)
     existing_user = await db.execute(
         select(User).where(User.email == body.email)
     )
     if existing_user.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
+            detail="Unable to create account. Please try a different email or sign in.",
         )
 
     # Create user
@@ -250,7 +250,7 @@ async def register_artist(
         if existing_user.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered",
+                detail="Unable to create account. Please try a different email or sign in.",
             )
 
         # Use provided password or generate a temporary one

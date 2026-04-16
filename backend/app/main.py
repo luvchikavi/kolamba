@@ -132,11 +132,12 @@ async def contact_form(request: Request, body: ContactRequest):
     logger.info("Contact form from %s <%s>", body.full_name, body.email)
 
     if is_configured():
+        from html import escape
         _send(
             "avi@kolamba.org",
             f"Kolamba Contact: {body.full_name}",
-            f"<p><strong>From:</strong> {body.full_name} ({body.email})</p>"
-            f"<p><strong>Message:</strong></p><p>{body.message}</p>",
+            f"<p><strong>From:</strong> {escape(body.full_name)} ({escape(body.email)})</p>"
+            f"<p><strong>Message:</strong></p><p>{escape(body.message)}</p>",
         )
 
     return {"message": "Thank you! We'll get back to you soon."}

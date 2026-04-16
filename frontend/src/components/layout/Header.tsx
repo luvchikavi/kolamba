@@ -204,18 +204,16 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile menu button - shown when scrolled */}
-      {isScrolled && (
-        <button
-          className="md:hidden fixed top-4 right-4 p-2 rounded-lg bg-white shadow-lg text-slate-600 hover:bg-slate-100 z-50"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={isMenuOpen}
-          aria-controls="mobile-menu"
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      )}
+      {/* Mobile menu button - always visible on mobile */}
+      <button
+        className="md:hidden fixed top-4 right-4 p-2 rounded-lg bg-white shadow-lg text-slate-600 hover:bg-slate-100 z-50"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Toggle menu"
+        aria-expanded={isMenuOpen}
+        aria-controls="mobile-menu"
+      >
+        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
 
       {/* Mobile menu */}
       {isMenuOpen && (

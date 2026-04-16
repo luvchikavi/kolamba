@@ -15,16 +15,16 @@ import {
 } from "lucide-react";
 
 const categories = [
-  { slug: "music", name: "Music", icon: Music, count: 45, color: "from-violet-500 to-purple-500" },
-  { slug: "literature", name: "Literature", icon: BookOpen, count: 20, color: "from-cyan-500 to-blue-500" },
-  { slug: "journalism", name: "Journalism", icon: Newspaper, count: 15, color: "from-slate-500 to-gray-500" },
-  { slug: "film-television", name: "Film & Television", icon: Film, count: 18, color: "from-red-500 to-pink-500" },
-  { slug: "religion-judaism", name: "Religion & Judaism", icon: BookHeart, count: 22, color: "from-indigo-500 to-violet-500" },
-  { slug: "comedy", name: "Comedy", icon: Mic, count: 15, color: "from-yellow-500 to-amber-500" },
-  { slug: "theater", name: "Theater", icon: Theater, count: 18, color: "from-amber-500 to-orange-500" },
-  { slug: "visual-arts", name: "Visual Arts", icon: Palette, count: 12, color: "from-emerald-500 to-teal-500" },
-  { slug: "culinary", name: "Culinary", icon: ChefHat, count: 10, color: "from-orange-500 to-red-500" },
-  { slug: "inspiration", name: "Inspiration", icon: Sparkles, count: 25, color: "from-pink-500 to-rose-500" },
+  { slug: "music", name: "Music", icon: Music, color: "from-violet-500 to-purple-500" },
+  { slug: "literature", name: "Literature", icon: BookOpen, color: "from-cyan-500 to-blue-500" },
+  { slug: "journalism", name: "Journalism", icon: Newspaper, color: "from-slate-500 to-gray-500" },
+  { slug: "film-television", name: "Film & Television", icon: Film, color: "from-red-500 to-pink-500" },
+  { slug: "religion-judaism", name: "Religion & Judaism", icon: BookHeart, color: "from-indigo-500 to-violet-500" },
+  { slug: "comedy", name: "Comedy", icon: Mic, color: "from-yellow-500 to-amber-500" },
+  { slug: "theater", name: "Theater", icon: Theater, color: "from-amber-500 to-orange-500" },
+  { slug: "visual-arts", name: "Visual Arts", icon: Palette, color: "from-emerald-500 to-teal-500" },
+  { slug: "culinary", name: "Culinary", icon: ChefHat, color: "from-orange-500 to-red-500" },
+  { slug: "inspiration", name: "Inspiration", icon: Sparkles, color: "from-pink-500 to-rose-500" },
 ];
 
 export default function CategoriesPage() {
@@ -68,7 +68,7 @@ export default function CategoriesPage() {
                   {category.name}
                 </h3>
                 <p className="text-sm text-slate-500">
-                  {category.count} artists
+                  Browse artists
                 </p>
               </Link>
             );

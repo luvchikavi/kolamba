@@ -233,7 +233,7 @@ function ArtistDetailContent({ params }: { params: { id: string } }) {
             </Link>
             <span>/</span>
             <Link
-              href="/search"
+              href="/talents"
               className="hover:text-primary-600 transition-colors"
             >
               Talents

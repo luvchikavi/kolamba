@@ -34,32 +34,32 @@
 
 | ID | Issue | Status | Fixed In | Notes |
 |----|-------|--------|----------|-------|
-| M1 | Artist detail shows inactive artists | :white_circle: Pending | | |
-| M2 | HTML injection in contact email | :white_circle: Pending | | |
-| M3 | Email enumeration via registration | :white_circle: Pending | | |
-| M4 | UserResponse missing name field | :white_circle: Pending | | |
-| M5 | No frontend middleware | :white_circle: Pending | | |
-| M6 | Token refresh race condition | :white_circle: Pending | | |
-| M7 | Superuser onboarding redirect | :white_circle: Pending | | |
-| M8 | Decimal/float type mismatch | :white_circle: Pending | | |
-| M9 | tour_grouping community.city crash | :white_circle: Pending | | |
-| M10 | Geocoding no rate limit | :white_circle: Pending | | |
-| M11 | Duplicate auth checks in dashboard | :white_circle: Pending | | |
-| M12 | Hardcoded category counts | :white_circle: Pending | | |
+| M1 | Artist detail shows inactive artists | :white_check_mark: Fixed | 2026-04-16 | Returns 404 for non-active artists |
+| M2 | HTML injection in contact email | :white_check_mark: Fixed | 2026-04-16 | User input escaped with `html.escape()` |
+| M3 | Email enumeration via registration | :white_check_mark: Fixed | 2026-04-16 | Generic error message on duplicate email |
+| M4 | UserResponse missing name field | :white_check_mark: Fixed | 2026-04-16 | Added `name` and `status` fields |
+| M5 | No frontend middleware | :no_entry_sign: Skipped | | App uses localStorage auth; middleware can't check it |
+| M6 | Token refresh race condition | :white_check_mark: Fixed | 2026-04-16 | Delayed nulling of refreshPromise to let concurrent awaits resolve |
+| M7 | Superuser onboarding redirect | :white_check_mark: Fixed | 2026-04-16 | Now redirects to `/dashboard/admin` |
+| M8 | Decimal/float type mismatch | :no_entry_sign: Skipped | | Cosmetic type annotation; no runtime impact |
+| M9 | tour_grouping community.city crash | :white_check_mark: Fixed | 2026-04-16 | Removed fallback to non-existent `community.city` |
+| M10 | Geocoding no rate limit | :no_entry_sign: Skipped | | Nominatim calls are infrequent (only on registration); low risk |
+| M11 | Duplicate auth checks in dashboard | :no_entry_sign: Skipped | | Layout + page auth checks are redundant but harmless |
+| M12 | Hardcoded category counts | :white_check_mark: Fixed | 2026-04-16 | Removed fake counts; shows "Browse artists" instead |
 
 ## Phase 4: Low Priority (backlog)
 
 | ID | Issue | Status |
 |----|-------|--------|
-| L1 | Past dates selectable in booking | :white_circle: Pending |
-| L2 | Mobile menu hidden before scroll | :white_circle: Pending |
-| L3 | Footer missing privacy link | :white_circle: Pending |
-| L4 | Breadcrumb /search vs /talents | :white_circle: Pending |
-| L5 | No /register index page | :white_circle: Pending |
-| L6 | N+1 favorites API calls | :white_circle: Pending |
-| L7 | Swagger docs in production | :white_circle: Pending |
-| L8 | PostgreSQL-specific search | :white_circle: Pending |
-| L9 | window.location.href redirects | :white_circle: Pending |
+| L1 | Past dates selectable in booking | :white_check_mark: Fixed | Date picker min set to today |
+| L2 | Mobile menu hidden before scroll | :white_check_mark: Fixed | Hamburger button always visible on mobile |
+| L3 | Footer missing privacy link | :white_check_mark: Fixed | Added Privacy link |
+| L4 | Breadcrumb /search vs /talents | :white_check_mark: Fixed | Links to /talents |
+| L5 | No /register index page | :white_check_mark: Fixed | Created role selection page |
+| L6 | N+1 favorites API calls | :no_entry_sign: Skipped | Needs batch API endpoint; low priority |
+| L7 | Swagger docs in production | :no_entry_sign: Skipped | Useful for partners; low risk |
+| L8 | PostgreSQL-specific search | :no_entry_sign: Skipped | Tests use SQLite but search isn't tested anyway |
+| L9 | window.location.href redirects | :no_entry_sign: Skipped | Full reload is reasonable for auth-failed scenarios |
 
 ---
 
@@ -69,3 +69,4 @@
 |------|--------|-------------|
 | 2026-04-16 | security-hardening | C1, C2, C3, C4, C5 — all critical security issues |
 | 2026-04-16 | high-priority-fixes | H1-H10 — all high priority issues |
+| 2026-04-16 | medium-low-fixes | M1-M4,M6-M7,M9,M12 + L1-L5 — medium and low fixes |

@@ -392,7 +392,7 @@ async def suggest_tours(
             communities_data.append({
                 "id": community.id,
                 "name": community.name,
-                "location": getattr(community, 'location', None) or f"{community.city}, {community.country}",
+                "location": community.location or "Unknown",
                 "latitude": float(community.latitude) if community.latitude else None,
                 "longitude": float(community.longitude) if community.longitude else None,
                 "audience_size": getattr(community, 'audience_size', None) or 100,

@@ -47,6 +47,12 @@ export default function Footer() {
           >
             Terms
           </Link>
+          <Link
+            href="/privacy"
+            className="text-slate-800 hover:text-slate-900 font-medium uppercase tracking-wide text-sm"
+          >
+            Privacy
+          </Link>
         </div>
 
         {/* Social Icons */}

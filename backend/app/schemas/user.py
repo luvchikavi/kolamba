@@ -25,7 +25,9 @@ class UserLogin(BaseModel):
 class UserResponse(UserBase):
     """Schema for user response (excludes password)."""
     id: int
+    name: Optional[str] = None
     role: str
+    status: Optional[str] = None
     is_active: bool
     created_at: datetime
 

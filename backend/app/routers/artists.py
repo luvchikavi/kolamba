@@ -191,7 +191,7 @@ async def update_my_artist_profile(
 
 @router.get("/{artist_id}", response_model=ArtistResponse)
 async def get_artist(artist_id: int, db: AsyncSession = Depends(get_db)):
-    """Get artist profile by ID."""
+    """Get artist profile by ID. Only returns active artists publicly."""
     result = await db.execute(
         select(Artist)
         .options(selectinload(Artist.categories))
@@ -200,6 +200,10 @@ async def get_artist(artist_id: int, db: AsyncSession = Depends(get_db)):
     artist = result.scalar_one_or_none()
 
     if not artist:
+        raise HTTPException(status_code=404, detail="Talent not found")
+
+    # Hide inactive/pending artists from public view
+    if artist.status not in (None, "active"):
         raise HTTPException(status_code=404, detail="Talent not found")
 
     return artist

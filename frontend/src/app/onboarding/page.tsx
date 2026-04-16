@@ -40,7 +40,7 @@ export default function OnboardingPage() {
 
         // Already has a profile — redirect to correct dashboard
         if (user.is_superuser) {
-          router.replace("/dashboard/host");
+          router.replace("/dashboard/admin");
           return;
         }
         if (user.community_id) {
