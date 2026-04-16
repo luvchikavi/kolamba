@@ -220,7 +220,7 @@ export default function ToursPage() {
                             View Tour Details
                           </Link>
                           <Link
-                            href={`/booking/${tour.artist.id}?tour=${tour.id}`}
+                            href={`/booking/${tour.artist.id}?tourId=${tour.id}${tour.start_date ? `&tourStart=${tour.start_date}` : ""}${tour.end_date ? `&tourEnd=${tour.end_date}` : ""}`}
                             className="flex-1 text-center justify-center text-sm px-4 py-2.5 font-semibold rounded-full border-2 border-primary-500 text-primary-600 hover:bg-primary-50 transition-colors"
                           >
                             Book Now

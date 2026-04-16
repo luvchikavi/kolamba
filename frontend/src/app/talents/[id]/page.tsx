@@ -264,7 +264,7 @@ function ArtistDetailContent({ params }: { params: { id: string } }) {
               )}
             </div>
             <Link
-              href={`/booking/${artist.id}?tour=${tourInfo.id}`}
+              href={`/booking/${artist.id}?tourId=${tourInfo.id}${tourInfo.start_date ? `&tourStart=${tourInfo.start_date}` : ""}${tourInfo.end_date ? `&tourEnd=${tourInfo.end_date}` : ""}`}
               className="btn-primary whitespace-nowrap"
             >
               Book for This Tour
