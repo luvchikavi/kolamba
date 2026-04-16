@@ -83,6 +83,9 @@ async def get_current_user_optional(
 
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        # Reject tokens with a special purpose (e.g. password reset, refresh)
+        if payload.get("purpose") is not None:
+            return None
         user_id = payload.get("sub")
         if user_id is None:
             return None
@@ -127,12 +130,12 @@ async def register(
     body: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Register new user (artist, community, or admin)."""
-    # Validate role
-    if body.role not in ["artist", "community", "admin", "agent"]:
+    """Register new user (artist or community)."""
+    # Validate role — only artist and community can self-register
+    if body.role not in ["artist", "community"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Role must be 'artist', 'community', 'admin', or 'agent'",
+            detail="Role must be 'artist' or 'community'",
         )
 
     # Check if email already exists

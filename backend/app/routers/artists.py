@@ -207,14 +207,14 @@ async def get_artist(artist_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("")
 async def create_artist():
-    """Create new artist profile (authenticated)."""
-    return {"message": "Create artist endpoint - to be implemented with auth"}
+    """Create new artist profile (not yet implemented)."""
+    raise HTTPException(status_code=501, detail="Artist creation via API is not yet implemented. Use the registration flow.")
 
 
 @router.put("/{artist_id}")
 async def update_artist(artist_id: int):
-    """Update artist profile (authenticated, owner only)."""
-    return {"message": f"Update artist {artist_id} - to be implemented with auth"}
+    """Update artist profile (not yet implemented)."""
+    raise HTTPException(status_code=501, detail="Artist update via API is not yet implemented. Use the dashboard.")
 
 
 @router.post("/seed")

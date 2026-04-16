@@ -708,8 +708,9 @@ async def update_community(
     community_id: int,
     update_data: CommunityUpdate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
-    """Update community profile."""
+    """Update community profile. Requires authentication."""
     result = await db.execute(
         select(Community).where(Community.id == community_id)
     )
@@ -744,7 +745,11 @@ async def update_community(
 
 
 @router.delete("/{community_id}")
-async def delete_community(community_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_community(
+    community_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
     """Deactivate a community (soft delete)."""
     result = await db.execute(
         select(Community).where(Community.id == community_id)

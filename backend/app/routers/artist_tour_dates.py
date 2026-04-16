@@ -18,6 +18,8 @@ from app.schemas.artist_tour_date import (
     ArtistTourDateUpdate,
     ArtistTourDateResponse,
 )
+from app.models.user import User
+from app.routers.auth import get_current_user
 from app.services.geocoding import geocode_location
 
 router = APIRouter()
@@ -266,6 +268,7 @@ async def create_artist_tour_date(
     artist_id: int,
     tour_date_data: ArtistTourDateCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Create a new tour date for an artist."""
     # Verify artist exists
@@ -328,6 +331,7 @@ async def update_artist_tour_date(
     tour_date_id: int,
     update_data: ArtistTourDateUpdate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Update a tour date."""
     result = await db.execute(
@@ -364,6 +368,7 @@ async def delete_artist_tour_date(
     artist_id: int,
     tour_date_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Delete a tour date."""
     result = await db.execute(

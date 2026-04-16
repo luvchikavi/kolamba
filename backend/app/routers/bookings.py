@@ -249,9 +249,35 @@ async def list_bookings(
     limit: int = Query(20, le=100),
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """List bookings with optional filters."""
+    """List bookings with optional filters. Requires authentication."""
     query = select(Booking)
+
+    # Scope to user's own bookings unless superuser
+    if not current_user.is_superuser:
+        artist_result = await db.execute(
+            select(Artist).where(Artist.user_id == current_user.id)
+        )
+        user_artist = artist_result.scalar_one_or_none()
+        community_result = await db.execute(
+            select(Community).where(Community.user_id == current_user.id)
+        )
+        user_community = community_result.scalar_one_or_none()
+
+        user_artist_id = user_artist.id if user_artist else None
+        user_community_id = user_community.id if user_community else None
+
+        if user_artist_id and user_community_id:
+            query = query.where(
+                (Booking.artist_id == user_artist_id) | (Booking.community_id == user_community_id)
+            )
+        elif user_artist_id:
+            query = query.where(Booking.artist_id == user_artist_id)
+        elif user_community_id:
+            query = query.where(Booking.community_id == user_community_id)
+        else:
+            return []
 
     if status:
         query = query.where(Booking.status == status)
@@ -268,8 +294,12 @@ async def list_bookings(
 
 
 @router.get("/{booking_id}", response_model=BookingResponse)
-async def get_booking(booking_id: int, db: AsyncSession = Depends(get_db)):
-    """Get booking details."""
+async def get_booking(
+    booking_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get booking details. Requires authentication."""
     result = await db.execute(
         select(Booking).where(Booking.id == booking_id)
     )
@@ -277,6 +307,13 @@ async def get_booking(booking_id: int, db: AsyncSession = Depends(get_db)):
 
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+
+    # Ownership check: user must be the artist, the community, or a superuser
+    if not current_user.is_superuser:
+        user_artist = (await db.execute(select(Artist.id).where(Artist.user_id == current_user.id))).scalar_one_or_none()
+        user_community = (await db.execute(select(Community.id).where(Community.user_id == current_user.id))).scalar_one_or_none()
+        if booking.artist_id != user_artist and booking.community_id != user_community:
+            raise HTTPException(status_code=403, detail="Not authorized to view this booking")
 
     return booking
 
@@ -286,8 +323,9 @@ async def update_booking(
     booking_id: int,
     update_data: BookingUpdate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """Update booking status (approve/reject)."""
+    """Update booking status (approve/reject). Requires authentication."""
     result = await db.execute(
         select(Booking).where(Booking.id == booking_id)
     )
@@ -295,6 +333,13 @@ async def update_booking(
 
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+
+    # Ownership check
+    if not current_user.is_superuser:
+        user_artist = (await db.execute(select(Artist.id).where(Artist.user_id == current_user.id))).scalar_one_or_none()
+        user_community = (await db.execute(select(Community.id).where(Community.user_id == current_user.id))).scalar_one_or_none()
+        if booking.artist_id != user_artist and booking.community_id != user_community:
+            raise HTTPException(status_code=403, detail="Not authorized to update this booking")
 
     # Update fields
     update_dict = update_data.model_dump(exclude_unset=True)
@@ -308,8 +353,12 @@ async def update_booking(
 
 
 @router.delete("/{booking_id}")
-async def cancel_booking(booking_id: int, db: AsyncSession = Depends(get_db)):
-    """Cancel a booking."""
+async def cancel_booking(
+    booking_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Cancel a booking. Requires authentication."""
     result = await db.execute(
         select(Booking).where(Booking.id == booking_id)
     )
@@ -317,6 +366,13 @@ async def cancel_booking(booking_id: int, db: AsyncSession = Depends(get_db)):
 
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+
+    # Ownership check
+    if not current_user.is_superuser:
+        user_artist = (await db.execute(select(Artist.id).where(Artist.user_id == current_user.id))).scalar_one_or_none()
+        user_community = (await db.execute(select(Community.id).where(Community.user_id == current_user.id))).scalar_one_or_none()
+        if booking.artist_id != user_artist and booking.community_id != user_community:
+            raise HTTPException(status_code=403, detail="Not authorized to cancel this booking")
 
     booking.status = "cancelled"
     await db.commit()

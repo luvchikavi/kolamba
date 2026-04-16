@@ -308,6 +308,7 @@ async def request_to_join_tour(
     tour_id: int,
     request: JoinTourRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Submit a request to join an existing tour.
@@ -381,6 +382,7 @@ async def get_tour_join_requests(
     tour_id: int,
     status: Optional[str] = Query(None, description="Filter by status"),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get all join requests for a tour (for artists/admins)."""
     # Verify tour exists
@@ -419,6 +421,7 @@ async def update_join_request_status(
     request_id: int,
     new_status: str = Query(..., pattern="^(approved|rejected)$"),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Approve or reject a tour join request."""
     # Get the request
@@ -486,6 +489,7 @@ async def update_join_request_status(
 async def create_tour(
     tour_data: TourCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Create a new tour and optionally add bookings to it."""
     # Verify artist exists
@@ -590,6 +594,7 @@ async def update_tour(
     tour_id: int,
     update_data: TourUpdate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Update tour details or status."""
     result = await db.execute(
@@ -618,6 +623,7 @@ async def create_tour_stop(
     tour_id: int,
     stop_data: TourStopCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Create a new stop on a tour (anchor show, open slot, or rest day)."""
     # Verify tour exists
@@ -676,6 +682,7 @@ async def update_tour_stop(
     stop_id: int,
     update_data: TourStopUpdate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Update a tour stop's details (logistics, financials, status)."""
     result = await db.execute(
@@ -700,6 +707,7 @@ async def delete_tour_stop(
     tour_id: int,
     stop_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Remove a stop from a tour."""
     result = await db.execute(
@@ -722,6 +730,7 @@ async def add_booking_to_tour(
     tour_id: int,
     booking_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Add a booking to an existing tour. Auto-creates a TourStop."""
     # Get the tour
@@ -779,6 +788,7 @@ async def remove_booking_from_tour(
     tour_id: int,
     booking_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Remove a booking from a tour. Also removes the associated TourStop."""
     # Get the booking
@@ -813,7 +823,11 @@ async def remove_booking_from_tour(
 
 
 @router.delete("/{tour_id}")
-async def delete_tour(tour_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_tour(
+    tour_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
     """Delete a tour (removes tour but keeps bookings)."""
     result = await db.execute(
         select(Tour).where(Tour.id == tour_id)
