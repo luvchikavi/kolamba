@@ -13,7 +13,7 @@ import {
   Building2,
   ChevronRight,
 } from "lucide-react";
-import { API_URL, clearAuthTokens } from "@/lib/api";
+import { API_URL, setAuthTokens, clearAuthTokens } from "@/lib/api";
 
 interface UserInfo {
   id: number;
@@ -100,16 +100,14 @@ export default function DashboardLayout({
             });
             if (refreshRes.ok) {
               const tokens = await refreshRes.json();
-              localStorage.setItem("access_token", tokens.access_token);
-              localStorage.setItem("refresh_token", tokens.refresh_token);
+              setAuthTokens(tokens.access_token, tokens.refresh_token);
               res = await fetch(`${API_URL}/auth/me`, {
                 headers: { Authorization: `Bearer ${tokens.access_token}` },
               });
             }
           }
           if (!res.ok) {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
+            clearAuthTokens();
             router.replace("/login");
             return;
           }

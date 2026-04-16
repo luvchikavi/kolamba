@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, Search, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
-import { API_URL } from "@/lib/api";
+import { API_URL, clearAuthTokens } from "@/lib/api";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
 interface UserInfo {
@@ -86,8 +86,7 @@ export default function Header() {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearAuthTokens();
     setUser(null);
     setShowUserMenu(false);
     router.push("/");

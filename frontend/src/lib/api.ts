@@ -292,6 +292,7 @@ export interface Booking {
 
 export interface BookingCreateRequest {
   artist_id: number;
+  tour_id?: number;
   requested_date?: string;
   location?: string;
   budget?: number;
