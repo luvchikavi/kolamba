@@ -90,7 +90,7 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative h-[67vh] flex items-center justify-center overflow-hidden"
+      className="relative h-[72vh] flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: "#0C1719" }}
     >
       {/* Animated gradient canvas — exact replica of reference HTML */}

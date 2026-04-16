@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight, Calendar, DollarSign, MapPin, Users, Loader2, ChevronDown } from "lucide-react";
 import { API_URL } from "@/lib/api";
@@ -154,10 +154,16 @@ const steps = [
   { number: 4, title: "Review And Submit" },
 ];
 
-export default function BookingPage() {
+function BookingPageContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const artistId = params.artistId as string;
+
+  // Tour context — passed when booking via "Join Tour" flow
+  const tourId = searchParams.get("tourId");
+  const tourStart = searchParams.get("tourStart");
+  const tourEnd = searchParams.get("tourEnd");
 
   const [artist, setArtist] = useState<{ name: string; category: string }>({ name: "Loading...", category: "" });
   const [isLoadingArtist, setIsLoadingArtist] = useState(true);
@@ -416,6 +422,7 @@ export default function BookingPage() {
         },
         body: JSON.stringify({
           artist_id: parseInt(artistId, 10),
+          tour_id: tourId ? parseInt(tourId, 10) : null,
           requested_date: bookingData.date || null,
           location: bookingData.venueCity ? `${bookingData.venueCity}, ${bookingData.venueCountry}` : null,
           budget: budgetValue || null,
@@ -578,6 +585,18 @@ export default function BookingPage() {
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">When would you like to host the event?</h2>
 
+                {/* Tour date range info */}
+                {tourId && tourStart && (
+                  <div className="p-4 bg-primary-50 border border-primary-200 rounded-xl">
+                    <p className="text-sm font-medium text-primary-800">
+                      <Calendar size={16} className="inline mr-2" />
+                      This booking is part of a tour ({tourStart ? new Date(tourStart).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}
+                      {tourEnd ? ` – ${new Date(tourEnd).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}).
+                      Please select a date within the tour period.
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -601,6 +620,8 @@ export default function BookingPage() {
                       type="date"
                       value={bookingData.date}
                       onChange={(e) => updateBookingData("date", e.target.value)}
+                      min={tourStart || undefined}
+                      max={tourEnd || undefined}
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
@@ -615,6 +636,8 @@ export default function BookingPage() {
                         type="date"
                         value={bookingData.date}
                         onChange={(e) => updateBookingData("date", e.target.value)}
+                        min={tourStart || undefined}
+                        max={tourEnd || undefined}
                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                     </div>
@@ -627,7 +650,8 @@ export default function BookingPage() {
                         type="date"
                         value={bookingData.dateRangeEnd}
                         onChange={(e) => updateBookingData("dateRangeEnd", e.target.value)}
-                        min={bookingData.date || undefined}
+                        min={bookingData.date || tourStart || undefined}
+                        max={tourEnd || undefined}
                         className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                     </div>
@@ -712,6 +736,11 @@ export default function BookingPage() {
                 {/* Summary */}
                 <div className="bg-slate-50 rounded-xl p-6 space-y-4">
                   <h3 className="font-semibold text-slate-900">Booking Summary</h3>
+                  {tourId && (
+                    <p className="text-sm text-primary-700 bg-primary-50 px-3 py-2 rounded-lg">
+                      This booking will be linked to a tour
+                    </p>
+                  )}
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-slate-500">Talent</p>
@@ -802,5 +831,13 @@ export default function BookingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center"><Loader2 size={40} className="animate-spin text-teal-500" /></div>}>
+      <BookingPageContent />
+    </Suspense>
   );
 }

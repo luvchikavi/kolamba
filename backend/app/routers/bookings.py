@@ -36,6 +36,7 @@ router = APIRouter()
 class BookingCreateRequest(BaseModel):
     """Request body for creating a booking."""
     artist_id: int
+    tour_id: Optional[int] = None
     requested_date: Optional[date] = None
     location: Optional[str] = None
     budget: Optional[int] = None
@@ -92,9 +93,22 @@ async def create_booking(
             raise HTTPException(status_code=400, detail="No hosts exist in the database")
         community_id = fc.id
 
+    # Validate tour_id if provided
+    if body.tour_id:
+        from app.models.tour import Tour
+        tour_result = await db.execute(
+            select(Tour).where(Tour.id == body.tour_id)
+        )
+        tour = tour_result.scalar_one_or_none()
+        if not tour:
+            raise HTTPException(status_code=404, detail="Tour not found")
+        if tour.artist_id != body.artist_id:
+            raise HTTPException(status_code=400, detail="Tour does not belong to this artist")
+
     booking = Booking(
         artist_id=body.artist_id,
         community_id=community_id,
+        tour_id=body.tour_id,
         requested_date=body.requested_date,
         location=body.location,
         budget=body.budget,

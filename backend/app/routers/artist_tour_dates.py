@@ -11,6 +11,8 @@ from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.artist_tour_date import ArtistTourDate
 from app.models.artist import Artist
+from app.models.booking import Booking
+from app.models.tour import Tour, TourStop
 from app.schemas.artist_tour_date import (
     ArtistTourDateCreate,
     ArtistTourDateUpdate,
@@ -87,6 +89,102 @@ async def get_artist_tour_dates(
     result = await db.execute(query)
     tour_dates = result.scalars().all()
     return tour_dates
+
+
+@router.get("/{artist_id}/schedule")
+async def get_artist_public_schedule(
+    artist_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get artist's public schedule: approved bookings + active tour stops.
+
+    Returns a combined view of all confirmed/approved events for the artist's
+    public profile calendar.
+    """
+    # Verify artist exists
+    artist_result = await db.execute(
+        select(Artist).where(Artist.id == artist_id)
+    )
+    artist = artist_result.scalar_one_or_none()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Talent not found")
+
+    from datetime import date as date_cls
+
+    # 1. Get approved standalone bookings (not linked to a tour)
+    standalone_bookings_q = (
+        select(Booking)
+        .where(
+            Booking.artist_id == artist_id,
+            Booking.status.in_(["approved", "completed"]),
+            Booking.tour_id.is_(None),
+            Booking.requested_date >= date_cls.today(),
+        )
+        .order_by(Booking.requested_date)
+    )
+    standalone_result = await db.execute(standalone_bookings_q)
+    standalone_bookings = standalone_result.scalars().all()
+
+    # 2. Get active tours with their stops
+    tours_q = (
+        select(Tour)
+        .where(
+            Tour.artist_id == artist_id,
+            Tour.status.in_(["pending", "approved"]),
+        )
+        .options(selectinload(Tour.stops))
+        .order_by(Tour.start_date)
+    )
+    tours_result = await db.execute(tours_q)
+    tours = tours_result.scalars().all()
+
+    # Build response
+    schedule_items = []
+
+    # Add standalone bookings
+    for b in standalone_bookings:
+        if b.requested_date:
+            schedule_items.append({
+                "type": "booking",
+                "date": b.requested_date.isoformat(),
+                "location": b.location,
+                "status": b.status,
+                "booking_id": b.id,
+                "tour_id": None,
+                "tour_name": None,
+            })
+
+    # Add tour stops
+    for tour in tours:
+        for stop in tour.stops:
+            if stop.date >= date_cls.today():
+                schedule_items.append({
+                    "type": "tour_stop",
+                    "date": stop.date.isoformat(),
+                    "location": stop.city or stop.venue_name,
+                    "status": stop.status,
+                    "booking_id": stop.booking_id,
+                    "tour_id": tour.id,
+                    "tour_name": tour.name,
+                })
+
+    # Sort by date
+    schedule_items.sort(key=lambda x: x["date"])
+
+    return {
+        "items": schedule_items,
+        "tours": [
+            {
+                "id": t.id,
+                "name": t.name,
+                "region": t.region,
+                "start_date": t.start_date.isoformat() if t.start_date else None,
+                "end_date": t.end_date.isoformat() if t.end_date else None,
+                "status": t.status,
+            }
+            for t in tours
+        ],
+    }
 
 
 @router.get("/{artist_id}/tour-dates/ical")
