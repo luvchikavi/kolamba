@@ -10,8 +10,12 @@ from app.database import get_db
 from app.models.artist import Artist
 from app.models.category import Category
 from app.schemas.artist import ArtistListResponse
+from app.config import get_settings
 
 from app.rate_limit import limiter
+
+_settings = get_settings()
+_is_postgres = "postgresql" in _settings.database_url
 
 router = APIRouter()
 
@@ -64,35 +68,48 @@ async def search_artists(
     # Full-text search with relevance ranking
     rank_column = None
     if q:
-        tsquery_str = _build_tsquery(q)
-        if tsquery_str:
-            # Build tsvector from name and bio fields (coalesce NULLs)
-            tsvector = func.to_tsvector(
-                "simple",
-                func.coalesce(Artist.name_he, "")
-                + " "
-                + func.coalesce(Artist.name_en, "")
-                + " "
-                + func.coalesce(Artist.bio_he, "")
-                + " "
-                + func.coalesce(Artist.bio_en, "")
-                + " "
-                + func.coalesce(Artist.city, ""),
-            )
-            tsquery = func.to_tsquery("simple", tsquery_str)
+        ilike_term = f"%{q}%"
 
-            # Filter: must match full-text search OR fall back to ILIKE for partial matches
-            ilike_term = f"%{q}%"
+        if _is_postgres:
+            tsquery_str = _build_tsquery(q)
+            if tsquery_str:
+                # Build tsvector from name and bio fields (coalesce NULLs)
+                tsvector = func.to_tsvector(
+                    "simple",
+                    func.coalesce(Artist.name_he, "")
+                    + " "
+                    + func.coalesce(Artist.name_en, "")
+                    + " "
+                    + func.coalesce(Artist.bio_he, "")
+                    + " "
+                    + func.coalesce(Artist.bio_en, "")
+                    + " "
+                    + func.coalesce(Artist.city, ""),
+                )
+                tsquery = func.to_tsquery("simple", tsquery_str)
+
+                # Filter: must match full-text search OR fall back to ILIKE for partial matches
+                query = query.where(
+                    or_(
+                        tsvector.op("@@")(tsquery),
+                        Artist.name_he.ilike(ilike_term),
+                        Artist.name_en.ilike(ilike_term),
+                    )
+                )
+
+                # Compute relevance rank for sorting
+                rank_column = func.ts_rank(tsvector, tsquery)
+        else:
+            # SQLite fallback: LIKE-only search
             query = query.where(
                 or_(
-                    tsvector.op("@@")(tsquery),
                     Artist.name_he.ilike(ilike_term),
                     Artist.name_en.ilike(ilike_term),
+                    Artist.bio_he.ilike(ilike_term),
+                    Artist.bio_en.ilike(ilike_term),
+                    Artist.city.ilike(ilike_term),
                 )
             )
-
-            # Compute relevance rank for sorting
-            rank_column = func.ts_rank(tsvector, tsquery)
 
     # Category filter
     if category:

@@ -1,6 +1,7 @@
 """Community model for Jewish communities profiles."""
 
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional, List
 from sqlalchemy import String, Numeric, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -73,8 +74,8 @@ class Community(Base):
     location: Mapped[str] = mapped_column(String(255), nullable=False)
 
     # Geographic coordinates for tour algorithm
-    latitude: Mapped[Optional[float]] = mapped_column(Numeric(10, 8), nullable=True)
-    longitude: Mapped[Optional[float]] = mapped_column(Numeric(11, 8), nullable=True)
+    latitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 8), nullable=True)
+    longitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(11, 8), nullable=True)
 
     # Member count (numeric range instead of categorical)
     member_count_min: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)

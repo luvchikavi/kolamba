@@ -21,6 +21,20 @@ export class ApiError extends Error {
   }
 }
 
+/** Store auth tokens in localStorage and set cookie for middleware */
+export function setAuthTokens(accessToken: string, refreshToken: string) {
+  localStorage.setItem("access_token", accessToken);
+  localStorage.setItem("refresh_token", refreshToken);
+  document.cookie = "kolamba_auth=1; path=/; max-age=604800; SameSite=Lax";
+}
+
+/** Clear auth tokens from localStorage and cookie */
+export function clearAuthTokens() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  document.cookie = "kolamba_auth=; path=/; max-age=0";
+}
+
 // Token refresh state to prevent concurrent refresh attempts
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
@@ -39,8 +53,7 @@ async function refreshAccessToken(): Promise<string | null> {
     if (!response.ok) {
       // Refresh token is also expired — clear tokens and redirect
       if (typeof window !== "undefined") {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        clearAuthTokens();
         window.location.href = "/login";
       }
       return null;
@@ -48,8 +61,7 @@ async function refreshAccessToken(): Promise<string | null> {
 
     const data = await response.json();
     if (typeof window !== "undefined") {
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      setAuthTokens(data.access_token, data.refresh_token);
     }
     return data.access_token;
   } catch {

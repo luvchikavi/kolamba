@@ -5,7 +5,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
-import { API_URL } from "@/lib/api";
+import { API_URL, setAuthTokens } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 
 declare global {
@@ -51,8 +51,7 @@ function LoginForm() {
       }
 
       const data = await res.json();
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      setAuthTokens(data.access_token, data.refresh_token);
 
       // Honor redirect param if present
       if (redirectTo) {
@@ -148,8 +147,7 @@ function LoginForm() {
       }
 
       const data = await response.json();
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      setAuthTokens(data.access_token, data.refresh_token);
 
       // Honor redirect param if present
       if (redirectTo) {

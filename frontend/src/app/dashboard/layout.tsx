@@ -13,7 +13,7 @@ import {
   Building2,
   ChevronRight,
 } from "lucide-react";
-import { API_URL } from "@/lib/api";
+import { API_URL, clearAuthTokens } from "@/lib/api";
 
 interface UserInfo {
   id: number;
@@ -141,8 +141,7 @@ export default function DashboardLayout({
   }, [router, pathname]);
 
   const handleSignOut = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearAuthTokens();
     localStorage.removeItem("admin_access_token");
     localStorage.removeItem("admin_refresh_token");
     router.push("/login");

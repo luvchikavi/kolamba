@@ -1,9 +1,14 @@
 """Geocoding service - converts location text to lat/long coordinates."""
 
+import asyncio
 import httpx
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Rate limit: Nominatim requires max 1 request/second
+_last_geocode_time: float = 0
+_geocode_lock = asyncio.Lock()
 
 
 async def geocode_location(location: str) -> tuple[float, float] | None:
@@ -30,6 +35,16 @@ async def geocode_location(location: str) -> tuple[float, float] | None:
     }
 
     try:
+        # Enforce 1 request/second rate limit for Nominatim
+        import time
+        global _last_geocode_time
+        async with _geocode_lock:
+            now = time.monotonic()
+            elapsed = now - _last_geocode_time
+            if elapsed < 1.0:
+                await asyncio.sleep(1.0 - elapsed)
+            _last_geocode_time = time.monotonic()
+
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(url, params=params, headers=headers)
             response.raise_for_status()

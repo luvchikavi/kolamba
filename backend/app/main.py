@@ -40,14 +40,15 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down Kolamba API...")
 
 
+_is_dev = settings.env == "development"
 app = FastAPI(
     title="Kolamba API",
     description="Marketplace platform connecting Israeli/Jewish artists with Jewish communities worldwide",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    docs_url="/api/docs" if _is_dev else None,
+    redoc_url="/api/redoc" if _is_dev else None,
+    openapi_url="/api/openapi.json" if _is_dev else None,
 )
 
 # Rate limiting

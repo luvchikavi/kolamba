@@ -392,17 +392,16 @@ export default function HostDashboardPage() {
         setFavoriteArtists([]);
         return;
       }
-      const results: FavoriteArtist[] = [];
-      for (const id of allIds) {
-        try {
-          const res = await fetch(`${API_URL}/talents/${id}`);
-          if (res.ok) {
-            const data = await res.json();
-            results.push(data);
-          }
-        } catch { /* skip */ }
-      }
-      setFavoriteArtists(results);
+      const results = await Promise.all(
+        allIds.map(async (id) => {
+          try {
+            const res = await fetch(`${API_URL}/talents/${id}`);
+            if (res.ok) return res.json();
+          } catch { /* skip */ }
+          return null;
+        })
+      );
+      setFavoriteArtists(results.filter(Boolean) as FavoriteArtist[]);
     } finally {
       setIsFavoritesLoading(false);
     }

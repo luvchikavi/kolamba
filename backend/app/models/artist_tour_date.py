@@ -1,6 +1,7 @@
 """ArtistTourDate model - tour dates announced by artists."""
 
 from datetime import datetime, date, timezone
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Integer, Boolean, DateTime, Date, Text, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -25,8 +26,8 @@ class ArtistTourDate(Base):
 
     # Location info
     location: Mapped[str] = mapped_column(String(255), nullable=False)
-    latitude: Mapped[Optional[float]] = mapped_column(Numeric(10, 8), nullable=True)
-    longitude: Mapped[Optional[float]] = mapped_column(Numeric(11, 8), nullable=True)
+    latitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 8), nullable=True)
+    longitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(11, 8), nullable=True)
 
     # Dates
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
